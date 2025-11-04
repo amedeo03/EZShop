@@ -58,20 +58,22 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 
 # Stakeholders
 
-| Stakeholder name | Description |
-| :--------------: | :---------: |
-| Developers  | EZShop developers, in charge of developing and maintaining the product  |
-| Shop owner | owner of the shop, who is the one choosing to adopt EZShop for his business |
-| End user  | individual who directly interacts with the software, often a sale manager of some kind |
-| IT administrator | he who manages the IT infrastructure of the shop and is in charge of locally deploying EZShop |
-| Cash register software  | responsible for exchanging data with EzShop to record product sales |
-| Payment service | used **only**  to pay the monthly fee | 
-| Accounting software | possible other software present in the business with whom EZShop will need to interact |
+| Stakeholder name       | Description                                                                                      |
+| :--------------------: | :----------------------------------------------------------------------------------------------: |
+| Developers             | EZShop developers, in charge of developing and maintaining the product                           |
+| Shop owner             | owner of the shop, who is the one choosing to adopt EZShop for his business                      |
+| End user               | individual who directly interacts with the software, often a sale manager of some kind           |
+| IT administrator       | he who manages the IT infrastructure of the shop and is in charge of locally deploying EZShop    |
+| Cash register software | responsible for exchanging data with EzShop to record product sales                              |
+| Payment service        | used **only**  to pay the monthly fee                                                            |
+| Accounting software    | possible other software present in the business with whom EZShop will need to interact           |
+
 
 # Context Diagram and interfaces
 
 ## Context Diagram
-#TODO Already done, need to be inserted by Andrei 
+![Context Diagram](media/context-diagram-ezshop.jpg)
+
 
 ## Interfaces
 
