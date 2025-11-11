@@ -83,7 +83,6 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 |   Actor   | Logical Interface | Physical Interface |
 | :-------: | :---------------: | :----------------: |
 | End user               |        EZShop GUI      | laptop or desktop   |
-| Account manager        |        EZShop GUI      | laptop or desktop   |
 | Cash register software | Register software APIs | internet connection |
 | Payment service        | Credit card circuit    | internet connection |
 | Accounting software    | Standardized product data exhange APIs | internet connection |
@@ -135,7 +134,6 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 |  Actor   | FR1         | FR2 | FR3 | FR4 | FR5 | FR6 |
 | :---:    | :---------: | :---: | :---: | :---: | :---: | :---: |
 | end user | y | y | y | y | n | n |
-| account manager | n | n | n | n | y | n |
 #TODO ask if we have to add each FR
 
 # Use case diagram and use cases
@@ -143,7 +141,7 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 ## Use case brief
 |  UC name   | Goal         | Description |
 | :---:    | :---------: | :---: |
-| UC1 Account creation | Activate a new account for a shop | main actor: end user - The account manager inserts the requested credentials in the EZShop account database |
+| UC1 Account creation | Activate a new account for a shop | main actor: end user - The end user inserts the requested credentials in the EZShop account database |
 | UC2 Payment of the subscription | Activate the subscription for the selected account | main actor: shop owner, payment service - Thanks to a credit card circuit, the shop owner is able to (automatically) pay the monthly fee |
 | UC3 Account activation | Having access to EZShop | main actor: end user - after paying the subscription fee through the payment service, the end user can use every features of application |
 | UC4 Login process | Access to main functions | main actor: end user - With a given pair of credentials the end user can login to EZShop and start using it |
