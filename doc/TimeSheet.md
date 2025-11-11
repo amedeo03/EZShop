@@ -11,7 +11,7 @@ These figures will not be used to evaluate neither the project nor the team, the
 |      Week      | requirement engineering | design | coding | unit testing | integration testing | acceptance testing | containerization | management |
 | :------------: | :---------------------: | :----: | :----: | :----------: | :-----------------: | :----------------: | :--------------: | :--------: |
 | Oct 27 - Nov 2 |           10            |        |        |              |                     |                    |                  |            |
-|   Nov 3 - 9    |          12.5           |        |        |              |                     |                    |                  |            |
+|   Nov 3 - 9    |          22.5           |        |        |              |                     |                    |                  |            |
 |  Nov 10 - 16   |                         |        |        |              |                     |                    |                  |            |
 |  Nov 17 - 23   |                         |        |        |              |                     |                    |                  |            |
 |  Nov 24 - 30   |                         |        |        |              |                     |                    |                  |            |
