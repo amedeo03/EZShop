@@ -1,8 +1,8 @@
 # Project Estimation
 
-Date:
+Date: 13/11/25
 
-Version:
+Version: 1.0
 
 # Estimation approach
 
@@ -35,7 +35,6 @@ Consider the EZShop project as described in your requirements document, assume t
 | Menagment documents |                    25             |
 |   total | 275 |
 
-Estimated duration: (calendar time)
 
 # Estimate by activity decomposition + Gantt chart
 
@@ -58,9 +57,8 @@ step 1: activities (WBS), step 2 Gantt chart
 ###
 
 ## Gantt chart
-Insert here Gantt chart
+![Grafico gantt](media/gantt.png)
 
-Estimated duration: (calendar time)
 
 # Summary
 
@@ -68,6 +66,6 @@ Report here the results of the three estimation approaches. The estimates may di
 
 |                                    | Estimated effort (ph) | Estimated duration (calendar time, relative)|
 | ---------------------------------- | ---------------- | ------------------ |
-| estimate by size                   |                  |                    |
-| estimate by product decomposition  |                  |                    |
-| estimate by activity decomposition (Gantt) |          |                    |
+| estimate by size                   |          540        |         ~3 weeks           |
+| estimate by product decomposition  |          275        |         ~2 weeks           |
+| estimate by activity decomposition (Gantt) |    345      |             3 weeks       |
