@@ -19,7 +19,7 @@ Consider the EZShop project as described in your requirements document, assume t
 | S = Estimated size of project, in LOC (= NC \* A)                                                       |      5400    |
 | E = Estimated effort, in person hours (here use productivity 10 LOC per person hour)                    |    540 ph     |
 | C = Estimated cost, in euro (here use 1 person hour cost = 30 euro)                                     |    16,200.00 €    |
-| Estimated calendar time, in calendar weeks (Assume team of 5 people, 8 hours per day, 5 days per week ) |     3 week     |
+| Estimated calendar time, in calendar weeks (Assume team of 5 people, 8 hours per day, 5 days per week ) |    ~3 week     |
 
 # Estimate by product decomposition
 
@@ -27,12 +27,13 @@ Consider the EZShop project as described in your requirements document, assume t
 
 | component name       | Estimated effort (person hours) |
 | -------------------- | ------------------------------- |
-| requirement document |                                 |
-| ....                 |                                 |
-|                      |                                 |
-|                      |                                 |
-|                      |                                 |
-|                      |                                 |
+| Requirement document |                25                 |
+| Design document      |                  25               |
+| code                 |                 100                |
+| code test            |                   30              |
+| api and comunication test |               70                  |
+| Menagment documents |                    25             |
+|   total | 275 |
 
 Estimated duration: (calendar time)
 
@@ -42,8 +43,16 @@ Estimated duration: (calendar time)
 step 1: activities (WBS), step 2 Gantt chart
 | Activity name | Estimated effort (person hours) |
 | ------------- | ------------------------------- |
-|               |                                 |
-
+| Requirement analysis and definition | 15 |
+| System, architecture and database desing | 20 |
+| Cash register comunication and API Development| 25 |
+| Backend Development | 70 |
+| Database and query Development| 50 |
+| Frontend Development | 30 |
+| Testing | 100 |
+| Create a Documentation | 15 |
+| Sundry Feedback | 20 |
+| Total| 345 |
 
 
 ###
