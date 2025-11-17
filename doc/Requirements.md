@@ -227,4 +227,4 @@ Steps
 # Hardware Software architecture
 
 ## Deployement Diagram
-![Deployement Diagram](media/deployement_diagram.png)
+![Deployement Diagram](media/deployment_diagram.png)
