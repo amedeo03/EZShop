@@ -213,10 +213,22 @@ Steps
 ..
 
 # Glossary
+1. Transaction: A record of a commercial transaction between customer and shop, where customer buys a number of products.
+2. Product: Represents a distinct item (a catalog entry) that the shop sells and tracks in inventory.
+3. Supplier: A company organization or entity that supplies products to the shop.
+4. Order: Transaction sent to the Supplier's email to restock products and start a refill procedure when there are few products remaining in the shop.
+5. Shop: Represents the single retail business entity using the EZShop software.
+6. End User: An individual (e.g., shop owner, manager) with authorized credentials with which interacts with the EZShop platform.
+7. Account: A set of credentials  used by an End User to authenticate and gain access to the system
+8. Subscription: Tracks the payment status for using the EZShop platform.
+
 
 \<use UML class diagram to define important terms, or concepts in the domain of the application, and their relationships>
 
 \<concepts must be used consistently all over the document, ex in use cases, requirements etc>
+
+![Glossary](media/glossary-ezshop.png)
+
 
 # System Design
 
