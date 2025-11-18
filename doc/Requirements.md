@@ -221,7 +221,7 @@ Steps
 6. End User: An individual (e.g., shop owner, manager) with authorized credentials with which interacts with the EZShop platform.
 7. Account: A set of credentials  used by an End User to authenticate and gain access to the system
 8. Subscription: Tracks the payment status for using the EZShop platform.
-
+9. Payment Service: External provider used for subscription activation.
 
 \<use UML class diagram to define important terms, or concepts in the domain of the application, and their relationships>
 
