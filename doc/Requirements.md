@@ -145,16 +145,16 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 | :---:    | :---------: | :---: |
 | UC1 Account creation | Activate a new account for a shop | main actor: end user - The end user inserts the requested credentials in the EZShop account database |
 | UC2 Payment of the subscription | Activate the subscription for the selected account | main actor: shop owner, payment service - Thanks to a credit card circuit, the shop owner is able to (automatically) pay the monthly fee |
-| UC4 Login process | Access to main functions | main actor: end user - With a given pair of credentials the end user can login to EZShop and start using it |
-| UC5 Logout process | Sign out from the currently signed in account | main actor: end user - the user is able to log out and lose access to EZShop features |
-| UC6 Register a new product | Registration of a new product in stock | main actor: end user - A new product can be inserted in the inventory manually |
-| UC7 Record a new sale | Record a sale | main actor: end user - A new sale can be inserted in the sale database by the end user |
-| UC8 Record a refund | Record a refund | main actor: end user, cash register software - A customer can decide to ask for a refund of a previously sold product. This operation can be both managed by the cash register software as well as the end user |
-| UC9 Manage supplier contacts | Create and keep supplier information up to date | main actor: end user - The end user can add, edit, or delete supplier contact details. Supplier data is stored in a dedicated database table for use when creating purchase orders |
-| UC10 Submit a new purchase order | Generate a new purchase order to restock items | main actor: end user, supplier - The end user selects a supplier and specifies the products and quantities needed. The system generates a purchase order document and stores it in the database. The system automatically sends an email to the supplier |
-| UC11 Mark an order as completed | End the order procedure | main actor: end user - when one order is delivered, the end user marks it as completed |
-| UC12 Update inventory | Update inventory | main actor: end user - end user can change manually the amounts of products in stock |
-| UC13 Visualization of data | Show charts, aggregating data | main actor: end user - end user can filter the data as desired |
+| UC3 Login process | Access to main functions | main actor: end user - With a given pair of credentials the end user can login to EZShop and start using it |
+| UC4 Logout process | Sign out from the currently signed in account | main actor: end user - the user is able to log out and lose access to EZShop features |
+| UC5 Register a new product | Registration of a new product in stock | main actor: end user - A new product can be inserted in the inventory manually |
+| UC6 Record a new sale | Record a sale | main actor: end user - A new sale can be inserted in the sale database by the end user |
+| UC7 Record a refund | Record a refund | main actor: end user, cash register software - A customer can decide to ask for a refund of a previously sold product. This operation can be both managed by the cash register software as well as the end user |
+| UC8 Manage supplier contacts | Create and keep supplier information up to date | main actor: end user - The end user can add, edit, or delete supplier contact details. Supplier data is stored in a dedicated database table for use when creating purchase orders |
+| UC9 Submit a new purchase order | Generate a new purchase order to restock items | main actor: end user, supplier - The end user selects a supplier and specifies the products and quantities needed. The system generates a purchase order document and stores it in the database. The system automatically sends an email to the supplier |
+| UC10 Mark an order as completed | End the order procedure | main actor: end user - when one order is delivered, the end user marks it as completed |
+| UC11 Update inventory | Update inventory | main actor: end user - end user can change manually the amounts of products in stock |
+| UC12 Visualization of data | Show charts, aggregating data | main actor: end user - end user can filter the data as desired |
 
 
 ## Use case diagram
@@ -303,7 +303,7 @@ Steps
 
 ---
 
-### Use case 4, UC4: Login Process
+### Use case 3, UC3: Login Process
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -313,9 +313,9 @@ Steps
 | Variants | N/A |
 | Exceptions | 1a. Invalid email or password. <br> 2a. Subscription is not active. <br> 3a. 2FA code is incorrect. |
 
-##### Scenario 4.1: Successful Login
+##### Scenario 3.1: Successful Login
 
-| Scenario 4.1 | Successful login |
+| Scenario 3.1 | Successful login |
 | :---: | :--- |
 | Precondition | User is on the login screen. |
 | Post condition | User is logged in and viewing the main dashboard. |
@@ -331,9 +331,9 @@ Steps
 | | 7. Creates an active session for the user. | |
 | | 8. Displays the main application dashboard. | NFR6 |
 
-##### Scenario 4.2: (Exception) Invalid Credentials
+##### Scenario 3.2: (Exception) Invalid Credentials
 
-| Scenario 4.2 | Invalid email or password |
+| Scenario 3.2 | Invalid email or password |
 | :---: | :--- |
 | Precondition | User is on the login screen. |
 | Post condition | User is not logged in. |
@@ -346,9 +346,9 @@ Steps
 | | 3. Displays an "Invalid email or password" error message. | |
 | | 4. User remains on the login screen. | |
 
-##### Scenario 4.3: (Exception) Subscription Inactive
+##### Scenario 3.3: (Exception) Subscription Inactive
 
-| Scenario 4.3 | Subscription is not active |
+| Scenario 3.3 | Subscription is not active |
 | :---: | :--- |
 | Precondition | User is on the login screen. |
 | Post condition | User is not logged in; redirected to payment (UC2). |
@@ -362,9 +362,9 @@ Steps
 | | 4. Displays "Subscription expired/inactive. Please pay to continue." | FR5.4 |
 | | 5. Redirects the user to the subscription payment screen (initiating UC2). | FR5.4 |
 
-##### Scenario 4.4: (Exception) Incorrect 2FA Code
+##### Scenario 3.4: (Exception) Incorrect 2FA Code
 
-| Scenario 4.4 | 2FA code is incorrect |
+| Scenario 3.4 | 2FA code is incorrect |
 | :---: | :--- |
 | Precondition | User has entered valid credentials and is on the 2FA screen. |
 | Post condition | User is not logged in. |
@@ -373,14 +373,14 @@ Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| | 1. (From Scenario 4.1) System has validated credentials and prompts for 2FA. | NFR5 |
+| | 1. (From Scenario 3.1) System has validated credentials and prompts for 2FA. | NFR5 |
 | 2. Enters an incorrect or expired 2FA code. | 3. Validates the 2FA code (it fails). | NFR5 |
 | | 4. Displays an "Incorrect code, please try again" error message. | |
 | | 5. User remains on the 2FA screen. | |
 
 ---
 
-### Use case 5, UC5: Logout Process
+### Use case 4, UC4: Logout Process
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -390,9 +390,9 @@ Steps
 | Variants | N/A |
 | Exceptions | N/A |
 
-##### Scenario 5.1: Successful Logout
+##### Scenario 4.1: Successful Logout
 
-| Scenario 5.1 | Successful logout |
+| Scenario 4.1 | Successful logout |
 | :---: | :--- |
 | Precondition | User is logged in and interacting with the application. |
 | Post condition | User is logged out and sees the login screen. |
@@ -407,7 +407,7 @@ Steps
 
 ---
 
-### Use case 6, UC6: Register a New Product
+### Use case 5, UC5: Register a New Product
 
 | Actors Involved | End User, Cash Register Software (External) |
 | :---: | :--- |
@@ -417,9 +417,9 @@ Steps
 | Variants | N/A |
 | Exceptions | 1a. The barcode or product ID already exists. <br> 2a. Invalid data (e.g., negative quantity, missing name). |
 
-##### Scenario 6.1: Manual Product Registration
+##### Scenario 5.1: Manual Product Registration
 
-| Scenario 6.1 | Manual product registration |
+| Scenario 5.1 | Manual product registration |
 | :---: | :--- |
 | Precondition | User is logged in and in the "Inventory" or "Products" section. |
 | Post condition | A new Product record is saved to the database. |
@@ -434,9 +434,9 @@ Steps
 | | 6. Displays a "Product Saved" success message. | |
 
 
-##### Scenario 6.2: (Exception) Barcode Already Exists
+##### Scenario 5.2: (Exception) Barcode Already Exists
 
-| Scenario 6.2 | Barcode already exists |
+| Scenario 5.2 | Barcode already exists |
 | :---: | :--- |
 | Precondition | User is in the "Add New Product" form (Scenario 6.1). |
 | Post condition | The new product is not saved. |
@@ -449,9 +449,9 @@ Steps
 | | 3. Displays an error message: "This barcode is already in use by another product." | |
 | | 4. User remains on the product form. | |
 
-##### Scenario 6.3: (Exception) Invalid Data
+##### Scenario 5.3: (Exception) Invalid Data
 
-| Scenario 6.3 | Invalid data |
+| Scenario 5.3 | Invalid data |
 | :---: | :--- |
 | Precondition | User is in the "Add New Product" form (Scenario 6.1). |
 | Post condition | The new product is not saved. |
@@ -466,37 +466,19 @@ Steps
 
 ---
 
-### Use case 7, UC7: Record a New Sale
+### Use case 6, UC6: Record a New Sale
 
-| Actors Involved | Cash Register Software (Primary), End User (Secondary) |
+| Actors Involved | End User |
 | :---: | :--- |
 | Precondition | Product(s) exist in the inventory (UC6). |
 | Post condition | A new Sale (Transaction) record is created. The Product.current_quantity for sold items is decreased. |
-| Nominal Scenario | (Automatic) The Cash Register Software reports a completed sale via API, and the system records the sale and updates inventory. |
-| Variants | 1v. (Manual) The End User manually enters a sale into the EZShop interface. |
+| Nominal Scenario | The End User manually enters a sale into the EZShop interface. |
+| Variants | N/A |
 | Exceptions | 1a. Product not found in inventory. <br> 2a. API connection failure. |
 
-##### Scenario 7.1: (Nominal) Automatic Sale Record from POS
+##### Scenario 6.1: (Variant) Manual Sale Record
 
-| Scenario 7.1 | Automatic sale record from POS |
-| :---: | :--- |
-| Precondition | A customer completes a purchase at the Cash Register. |
-| Post condition | Sale record is created. Product inventory is updated. Low stock notification is triggered if necessary. |
-
-Steps
-
-| Actor's action | System action | FR needed |
-| :--- | :--- | :---: |
-| 1. (Cash Register) Sends transaction data (list of SaleItems) via API. | | FR6.1, FR6.2 |
-| | 2. Receives the transaction data. | NFR3 |
-| | 3. Creates a new Sale record and associated SaleItem records. | FR1.1 |
-| | 4. For each SaleItem: <br> &nbsp;&nbsp; a. Finds the matching Product. <br> &nbsp;&nbsp; b. Decreases the Product.current_quantity. | FR2.1 |
-| | 5. For each updated Product, checks if current_quantity <= low_stock_threshold. | FR2.2 |
-| | 6. If stock is low, generates a low stock notification for the End User. | FR2.2 |
-
-##### Scenario 7.2: (Variant) Manual Sale Record
-
-| Scenario 7.2 | Manual sale record |
+| Scenario 6.1 | Manual sale record |
 | :---: | :--- |
 | Precondition | User is logged in. |
 | Post condition | Sale record is created. Product inventory is updated. |
@@ -508,9 +490,9 @@ Steps
 | 1. Navigates to "Sales" and clicks "Add Manual Sale". | 2. Displays a form to select products and enter quantities and other details. | FR1.1 |
 | 3. Selects products/quantities and clicks "Save". | 4. Performs steps 3-6 from Scenario 7.1. | FR1.1, FR2.1, FR2.2 |
 
-##### Scenario 7.3: (Exception) Product Not Found
+##### Scenario 6.3: (Exception) Product Not Found
 
-| Scenario 7.3 | Product not found |
+| Scenario 6.3 | Product not found |
 | :---: | :--- |
 | Precondition | System receives sale data (manual or automatic). |
 | Post condition | Sale record is (partially) created, but inventory for the unknown item is not updated. An alert is logged. |
@@ -523,26 +505,12 @@ Steps
 | | 2. Creates the Sale record. | FR1.1 |
 | | 3. Attempts to update inventory for barcode 'XYZ', but fails. | FR2.1 |
 | | 4. Logs an error: "Sold item 'XYZ' not found in inventory. Stock not updated." | |
-| | 5. (Optional) Creates a placeholder Product (see UC6, Scenario 6.2). | FR2.1 |
+| | 5. (Optional) Creates a placeholder Product (see UC5, Scenario 5.2). | FR2.1 |
 
-##### Scenario 7.4: (Exception) API Connection Failure
-
-| Scenario 7.4 | API connection failure |
-| :---: | :--- |
-| Precondition | Cash Register attempts to send sale data. |
-| Post condition | Sale is not recorded in EZShop. |
-
-Steps
-
-| Actor's action | System action | FR needed |
-| :--- | :--- | :---: |
-| 1. (Cash Register) Attempts to send transaction data via API. | | FR6.1 |
-| | 2. System is unreachable (e.g., no internet, server down). | |
-| | 3. (Cash Register) Fails to send data. (It must queue the data locally for a later attempt). | |
 
 ---
 
-### Use case 8, UC8: Record a Refund
+### Use case 7, UC7: Record a Refund
 
 | Actors Involved | Cash Register Software (Primary), End User (Secondary) |
 | :---: | :--- |
@@ -552,9 +520,9 @@ Steps
 | Variants | 1v. (Manual) The End User manually enters a refund. |
 | Exceptions | 1a. Original sale not found (if refund requires it). |
 
-##### Scenario 8.1: (Nominal) Automatic Refund Record from POS
+##### Scenario 7.1: (Nominal) Automatic Refund Record from POS
 
-| Scenario 8.1 | Automatic refund record from POS |
+| Scenario 7.1 | Automatic refund record from POS |
 | :---: | :--- |
 | Precondition | A customer refund is processed at the Cash Register. |
 | Post condition | Refund record is created. Product inventory is restocked. |
@@ -568,9 +536,9 @@ Steps
 | | 3. Creates a new Refund record. | FR1.2 |
 | | 4. For each refunded item: <br> &nbsp;&nbsp; a. Finds the matching Product. <br> &nbsp;&nbsp; b. Increases the Product.current_quantity. | FR2.1 |
 
-##### Scenario 8.2: (Variant) Manual Refund Record
+##### Scenario 7.2: (Variant) Manual Refund Record
 
-| Scenario 8.2 | Manual refund record |
+| Scenario 7.2 | Manual refund record |
 | :---: | :--- |
 | Precondition | User is logged in. |
 | Post condition | Refund record is created. Product inventory is restocked. |
@@ -580,13 +548,13 @@ Steps
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Navigates to "Refunds" and clicks "Add Manual Refund". | 2. Displays a form to select products and enter quantities. | FR1.2 |
-| 3. Selects products/quantities (and optionally links to original sale) and clicks "Save". | 4. Performs steps 3-4 from Scenario 8.1. | FR1.2, FR2.1 |
+| 3. Selects products/quantities (and optionally links to original sale) and clicks "Save". | 4. Performs steps 3-4 from Scenario 7.1. | FR1.2, FR2.1 |
 
-##### Scenario 8.3: (Exception) Original Sale Not Found
+##### Scenario 7.3: (Exception) Original Sale Not Found
 
-| Scenario 8.3 | Original sale not found |
+| Scenario 7.3 | Original sale not found |
 | :---: | :--- |
-| Precondition | User is in the "Manual Refund" form (Scenario 8.2) and the process requires linking to an original sale. |
+| Precondition | User is in the "Manual Refund" form (Scenario 7.2) and the process requires linking to an original sale. |
 | Post condition | Refund is not created. |
 
 Steps
@@ -599,7 +567,7 @@ Steps
 
 ---
 
-### Use case 9, UC9: Manage Supplier Contacts
+### Use case 8, UC8: Manage Supplier Contacts
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -609,9 +577,9 @@ Steps
 | Variants | N/A |
 | Exceptions | 1a. Invalid data (e.g., missing supplier name or email). <br> 2a. Cannot delete a supplier with existing orders. |
 
-##### Scenario 9.1: (Nominal) Add a New Supplier
+##### Scenario 8.1: (Nominal) Add a New Supplier
 
-| Scenario 9.1 | Add a new supplier |
+| Scenario 8.1 | Add a new supplier |
 | :---: | :--- |
 | Precondition | User is logged in and in the "Suppliers" section. |
 | Post condition | A new Supplier record is created. |
@@ -625,9 +593,9 @@ Steps
 | | 5. Creates a new Supplier record in the database. | FR3.1 |
 | | 6. Displays the updated list of suppliers. | FR3.1 (Read) |
 
-##### Scenario 9.2: (Nominal) Update a Supplier
+##### Scenario 8.2: (Nominal) Update a Supplier
 
-| Scenario 9.2 | Update a supplier |
+| Scenario 8.2 | Update a supplier |
 | :---: | :--- |
 | Precondition | User is in the "Suppliers" section. A supplier exists. |
 | Post condition | The Supplier record is updated. |
@@ -640,9 +608,9 @@ Steps
 | 3. Changes the supplier's email address and clicks "Save". | 4. Validates the data. | |
 | | 5. Updates the Supplier record in the database. | FR3.1 (Update) |
 
-##### Scenario 9.3: (Nominal) Delete a Supplier
+##### Scenario 8.3: (Nominal) Delete a Supplier
 
-| Scenario 9.3 | Delete a supplier |
+| Scenario 8.3 | Delete a supplier |
 | :---: | :--- |
 | Precondition | User is in the "Suppliers" section. A supplier (with no associated orders) exists. |
 | Post condition | The Supplier record is deleted. |
@@ -655,11 +623,11 @@ Steps
 | 3. Confirms the deletion. | 4. Checks for associated Order records (finds none). | |
 | | 5. Deletes the Supplier record from the database. | FR3.1 (Delete) |
 
-##### Scenario 9.4: (Exception) Cannot Delete Supplier with Orders
+##### Scenario 8.4: (Exception) Cannot Delete Supplier with Orders
 
-| Scenario 9.4 | Cannot delete supplier with existing orders |
+| Scenario 8.4 | Cannot delete supplier with existing orders |
 | :---: | :--- |
-| Precondition | User attempts to delete a supplier (Scenario 9.3). |
+| Precondition | User attempts to delete a supplier (Scenario 8.3). |
 | Post condition | The Supplier record is not deleted. |
 
 Steps
@@ -672,7 +640,7 @@ Steps
 
 ---
 
-### Use case 10, UC10: Submit a New Purchase Order
+### Use case 9, UC9: Submit a New Purchase Order
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -682,9 +650,9 @@ Steps
 | Variants | N/A |
 | Exceptions | 1a. Supplier email address is missing. <br> 2a. The email sending service fails. |
 
-##### Scenario 10.1: Create and Send Purchase Order
+##### Scenario 9.1: Create and Send Purchase Order
 
-| Scenario 10.1 | Create and send purchase order |
+| Scenario 9.1 | Create and send purchase order |
 | :---: | :--- |
 | Precondition | User is in the "Purchase Orders" section. |
 | Post condition | Order is saved with 'Sent' status. Email is sent to the supplier. |
@@ -701,11 +669,11 @@ Steps
 | | 9. Sends the email to the selected Supplier.email. | FR3.3 |
 | | 10. Updates the Order status to 'Sent'. | FR3.4 |
 
-##### Scenario 10.2: (Exception) Supplier Email Missing
+##### Scenario 9.2: (Exception) Supplier Email Missing
 
-| Scenario 10.2 | Supplier email address is missing |
+| Scenario 9.2 | Supplier email address is missing |
 | :---: | :--- |
-| Precondition | User clicks "Submit Order" (Scenario 10.1, step 6). |
+| Precondition | User clicks "Submit Order" (Scenario 9.1, step 6). |
 | Post condition | Order is saved with status 'Pending' or 'Draft'. Email is not sent. |
 
 Steps
@@ -718,11 +686,11 @@ Steps
 | | 4. Does not send the email. Updates Order status to 'Draft' or 'Error'. | |
 | | 5. Notifies the user: "Order saved as Draft. Cannot send: Supplier email is missing." | |
 
-##### Scenario 10.3: (Exception) Email Sending Service Fails
+##### Scenario 9.3: (Exception) Email Sending Service Fails
 
-| Scenario 10.3 | The email sending service fails |
+| Scenario 9.3 | The email sending service fails |
 | :---: | :--- |
-| Precondition | User clicks "Submit Order" (Scenario 10.1, step 6). |
+| Precondition | User clicks "Submit Order" (Scenario 9.1, step 6). |
 | Post condition | Order is saved with status 'Pending'. Email is not sent. |
 
 Steps
@@ -737,7 +705,7 @@ Steps
 
 ---
 
-### Use case 11, UC11: Mark an Order as Completed
+### Use case 10, UC10: Mark an Order as Completed
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -747,9 +715,9 @@ Steps
 | Variants | 1v. (Partial Delivery) User marks only some items as received, Order status becomes 'Partially Received'. |
 | Exceptions | 1a. User tries to mark an already completed order. |
 
-##### Scenario 11.1: Receive Full Order
+##### Scenario 10.1: Receive Full Order
 
-| Scenario 11.1 | Receive full order |
+| Scenario 10.1 | Receive full order |
 | :---: | :--- |
 | Precondition | A physical delivery from a supplier has arrived. User is logged in. |
 | Post condition | Order status is 'Completed'. Product inventory is restocked. |
@@ -763,9 +731,9 @@ Steps
 | 4. Confirms all quantities are correct and clicks "Confirm". | 5. Updates the Order status to 'Completed'. | FR3.5 |
 | | 6. For each OrderItem in the order: <br> &nbsp;&nbsp; a. Finds the matching Product. <br> &nbsp;&nbsp; b. Increases Product.current_quantity by the received amount. | FR3.5, FR2.1 |
 
-##### Scenario 11.2: (Variant) Receive Partial Order
+##### Scenario 10.2: (Variant) Receive Partial Order
 
-| Scenario 11.2 | Receive partial order |
+| Scenario 10.2 | Receive partial order |
 | :---: | :--- |
 | Precondition | A partial delivery has arrived. User is logged in. |
 | Post condition | Order status is 'Partially Received'. Inventory is updated only for received items. |
@@ -780,9 +748,9 @@ Steps
 | | 6. Increases Product.current_quantity for 'Apple' by 10. | FR3.5, FR2.1 |
 | | 7. Does not update inventory for 'Banana'. | |
 
-##### Scenario 11.3: (Exception) Order Already Completed
+##### Scenario 10.3: (Exception) Order Already Completed
 
-| Scenario 11.3 | Order already completed |
+| Scenario 10.3 | Order already completed |
 | :---: | :--- |
 | Precondition | User navigates to an order that is already marked 'Completed'. |
 | Post condition | No change is made. |
@@ -797,7 +765,7 @@ Steps
 
 ---
 
-### Use case 12, UC12: Update Inventory (Manual Adjustment)
+### Use case 11, UC11: Update Inventory (Manual Adjustment)
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -807,9 +775,9 @@ Steps
 | Variants | N/A |
 | Exceptions | 1a. User enters an invalid quantity (e.g., non-numeric, negative). |
 
-##### Scenario 12.1: Manual Stock Adjustment
+##### Scenario 11.1: Manual Stock Adjustment
 
-| Scenario 12.1 | Manual stock adjustment |
+| Scenario 11.1 | Manual stock adjustment |
 | :---: | :--- |
 | Precondition | User is in the "Inventory" section. |
 | Post condition | The Product.current_quantity is updated. |
@@ -823,11 +791,11 @@ Steps
 | 4. Clicks "Save". | 5. Updates the Product.current_quantity in the database to the new value. | FR2.1 (Update) |
 | | 6. (Optional) Creates a log entry for the stock adjustment. | |
 
-##### Scenario 12.2: (Exception) Invalid Quantity Entered
+##### Scenario 11.2: (Exception) Invalid Quantity Entered
 
-| Scenario 12.2 | Invalid quantity entered |
+| Scenario 11.2 | Invalid quantity entered |
 | :---: | :--- |
-| Precondition | User is in the stock adjustment form (Scenario 12.1). |
+| Precondition | User is in the stock adjustment form (Scenario 11.1). |
 | Post condition | Inventory is not updated. |
 
 Steps
@@ -841,7 +809,7 @@ Steps
 
 ---
 
-### Use case 13, UC13: Visualization of Data
+### Use case 12, UC12: Visualization of Data
 
 | Actors Involved | End User |
 | :---: | :--- |
@@ -851,9 +819,9 @@ Steps
 | Variants | 1v. User exports data to CSV/XML for Accounting Software. |
 | Exceptions |  |
 
-##### Scenario 13.1: View and Filter Dashboard
+##### Scenario 12.1: View and Filter Dashboard
 
-| Scenario 13.1 | View and filter dashboard |
+| Scenario 12.1 | View and filter dashboard |
 | :---: | :--- |
 | Precondition | User is logged in. |
 | Post condition | User views charts/data based on selected filters. |
@@ -869,9 +837,9 @@ Steps
 | | 6. Re-queries the database with the new filter. | NFR2 |
 | | 7. Updates the charts and metrics to reflect the filtered data. | FR4.1, FR4.2 |
 
-##### Scenario 13.2: (Variant) Export Data for Accounting
+##### Scenario 12.2: (Variant) Export Data for Accounting
 
-| Scenario 13.2 | Export data for accounting |
+| Scenario 12.2 | Export data for accounting |
 | :---: | :--- |
 | Precondition | User is in the "Reports" section. |
 | Post condition | A file (CSV/XML) is downloaded to the user's computer. |
