@@ -148,7 +148,7 @@ EZShop will cost a monthly fee of x euros/month. The product won't contain adver
 | UC4 Login process | Access to main functions | main actor: end user - With a given pair of credentials the end user can login to EZShop and start using it |
 | UC5 Logout process | Sign out from the currently signed in account | main actor: end user - the user is able to log out and lose access to EZShop features |
 | UC6 Register a new product | Registration of a new product in stock | main actor: end user - A new product can be inserted in the inventory manually |
-| UC7 Record a new sale | Record a sale | main actor: end user, cash register - A new sale can be inserted in the sale database both manually (by the end user) and automatically thanks to the ability to exchange data with the cash register software |
+| UC7 Record a new sale | Record a sale | main actor: end user - A new sale can be inserted in the sale database by the end user |
 | UC8 Record a refund | Record a refund | main actor: end user, cash register software - A customer can decide to ask for a refund of a previously sold product. This operation can be both managed by the cash register software as well as the end user |
 | UC9 Manage supplier contacts | Create and keep supplier information up to date | main actor: end user - The end user can add, edit, or delete supplier contact details. Supplier data is stored in a dedicated database table for use when creating purchase orders |
 | UC10 Submit a new purchase order | Generate a new purchase order to restock items | main actor: end user, supplier - The end user selects a supplier and specifies the products and quantities needed. The system generates a purchase order document and stores it in the database. The system automatically sends an email to the supplier |
@@ -505,7 +505,7 @@ Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Navigates to "Sales" and clicks "Add Manual Sale". | 2. Displays a form to select products and enter quantities. | FR1.1 |
+| 1. Navigates to "Sales" and clicks "Add Manual Sale". | 2. Displays a form to select products and enter quantities and other details. | FR1.1 |
 | 3. Selects products/quantities and clicks "Save". | 4. Performs steps 3-6 from Scenario 7.1. | FR1.1, FR2.1, FR2.2 |
 
 ##### Scenario 7.3: (Exception) Product Not Found
