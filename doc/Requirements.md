@@ -484,65 +484,45 @@ Steps
 | | 2. Attempts to update inventory for the specified product, but fails. | FR2.1 |
 | | 3. Displays an error message. | |
 
-
 ---
 
 ### Use case 7, UC7: Record a Refund
 
 | Actors Involved | Cash Register Software (Primary), End User (Secondary) |
 | :---: | :--- |
-| Precondition | A previous Sale transaction exists. Product(s) exist. |
-| Post condition | A new Refund (Transaction) record is created. The Product.current_quantity for refunded items is increased. |
-| Nominal Scenario | (Automatic) The Cash Register reports a refund, and the system records it and updates (restocks) inventory. |
+| Precondition | A previous Sale record exists. Product(s) exist. |
+| Post condition | The sale record is updated changing its status from 'completed' to 'refunded' |
+| Nominal Scenario | (Automatic) The Cash Register reports a refund, and the system records it |
 | Variants | 1v. (Manual) The End User manually enters a refund. |
-| Exceptions | 1a. Original sale not found (if refund requires it). |
+| Exceptions | 1a. Original sale not found. |
 
-##### Scenario 7.1: (Nominal) Automatic Refund Record from POS
+##### Scenario 7.1: (Nominal) Automatic Refund Record from Casg Register
 
-| Scenario 7.1 | Automatic refund record from POS |
+| Scenario 7.1 | Automatic refund record from Cash Register |
 | :---: | :--- |
 | Precondition | A customer refund is processed at the Cash Register. |
-| Post condition | Refund record is created. Product inventory is restocked. |
+| Post condition | The sale record is updated changing its status from 'completed' to 'refunded'. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. (Cash Register) Sends refund data (list of items) via API. | | FR6.1, FR6.2 |
-| | 2. Receives the refund data. | NFR3 |
-| | 3. Creates a new Refund record. | FR1.2 |
-| | 4. For each refunded item: <br> &nbsp;&nbsp; a. Finds the matching Product. <br> &nbsp;&nbsp; b. Increases the Product.current_quantity. | FR2.1 |
+| | 2. Receives the refund data. | FR6.1, FR6.2 |
+| | 3. Updates the corresponding sale record, changing its status from 'completed' to 'refunded'. | FR1.2 |
 
 ##### Scenario 7.2: (Variant) Manual Refund Record
 
 | Scenario 7.2 | Manual refund record |
 | :---: | :--- |
-| Precondition | User is logged in. |
-| Post condition | Refund record is created. Product inventory is restocked. |
+| Precondition | End User is logged in. |
+| Post condition | The sale record is updated changing its status from 'completed' to 'refunded'. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Navigates to "Refunds" and clicks "Add Manual Refund". | 2. Displays a form to select products and enter quantities. | FR1.2 |
-| 3. Selects products/quantities (and optionally links to original sale) and clicks "Save". | 4. Performs steps 3-4 from Scenario 7.1. | FR1.2, FR2.1 |
-
-##### Scenario 7.3: (Exception) Original Sale Not Found
-
-| Scenario 7.3 | Original sale not found |
-| :---: | :--- |
-| Precondition | User is in the "Manual Refund" form (Scenario 7.2) and the process requires linking to an original sale. |
-| Post condition | Refund is not created. |
-
-Steps
-
-| Actor's action | System action | FR needed |
-| :--- | :--- | :---: |
-| 1. Tries to create a manual refund, entering an original sale ID '123'. | 2. System searches for Sale ID '123' and does not find it. | FR1.2 |
-| | 3. Displays an error: "Original Sale ID not found." | |
-| | 4. User remains on the refund form. | |
-
----
+| 1. Navigates to "Sales" and opens the context menu for a given sale, clicking on 'Mark as Refunded'. | 3. Updates the corresponding sale record, changing its status from 'completed' to 'refunded'. | FR1.2 |
 
 ### Use case 8, UC8: Manage Supplier Contacts
 
