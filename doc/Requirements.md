@@ -528,33 +528,32 @@ Steps
 
 | Actors Involved | End User |
 | :---: | :--- |
-| Precondition | User is logged in (UC4). |
+| Precondition | End User is logged in (UC3). |
 | Post condition | The Supplier database table is modified (record created, updated, or deleted). |
 | Nominal Scenario | The user accesses the "Suppliers" section and performs Create, Read, Update, or Delete (CRUD) operations on supplier records. |
 | Variants | N/A |
-| Exceptions | 1a. Invalid data (e.g., missing supplier name or email). <br> 2a. Cannot delete a supplier with existing orders. |
+| Exceptions | 1a. Invalid data. <br> 2a. Cannot delete a supplier with existing orders. |
 
 ##### Scenario 8.1: (Nominal) Add a New Supplier
 
 | Scenario 8.1 | Add a new supplier |
 | :---: | :--- |
-| Precondition | User is logged in and in the "Suppliers" section. |
+| Precondition | End User is logged in and in the "Suppliers" section. |
 | Post condition | A new Supplier record is created. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Clicks "Add New Supplier". | 2. Displays the new supplier form (company_name, email). | FR3.1 |
-| 3. Fills in the supplier details and clicks "Save". | 4. Validates the data. | |
+| 1. Clicks "New Supplier". | 2. Displays the new supplier form. | FR3.1 |
+| 3. Fills in the supplier details and clicks "Add New Supplier". | 4. Validates the data. | |
 | | 5. Creates a new Supplier record in the database. | FR3.1 |
-| | 6. Displays the updated list of suppliers. | FR3.1 (Read) |
 
 ##### Scenario 8.2: (Nominal) Update a Supplier
 
 | Scenario 8.2 | Update a supplier |
 | :---: | :--- |
-| Precondition | User is in the "Suppliers" section. A supplier exists. |
+| Precondition | End User is in the "Suppliers" section. A supplier exists. |
 | Post condition | The Supplier record is updated. |
 
 Steps
@@ -562,38 +561,37 @@ Steps
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Selects a supplier from the list and clicks "Edit". | 2. Displays the supplier form populated with existing data. | FR3.1 (Read) |
-| 3. Changes the supplier's email address and clicks "Save". | 4. Validates the data. | |
+| 3. Changes the supplier's data and clicks "Save". | 4. Validates the data. | |
 | | 5. Updates the Supplier record in the database. | FR3.1 (Update) |
 
 ##### Scenario 8.3: (Nominal) Delete a Supplier
 
 | Scenario 8.3 | Delete a supplier |
 | :---: | :--- |
-| Precondition | User is in the "Suppliers" section. A supplier (with no associated orders) exists. |
+| Precondition | End User is in the "Suppliers" section. A supplier (with no associated orders) exists. |
 | Post condition | The Supplier record is deleted. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Selects a supplier from the list and clicks "Delete". | 2. Displays a confirmation prompt: "Are you sure?" | FR3.1 |
-| 3. Confirms the deletion. | 4. Checks for associated Order records (finds none). | |
-| | 5. Deletes the Supplier record from the database. | FR3.1 (Delete) |
+| 1. Selects a supplier from the list and clicks "Delete". | 2. Checks for associated Order records, finding none. | FR3.1 |
+| | 3. Deletes the Supplier record from the supplier table. | FR3.1 (Delete) |
 
 ##### Scenario 8.4: (Exception) Cannot Delete Supplier with Orders
 
 | Scenario 8.4 | Cannot delete supplier with existing orders |
 | :---: | :--- |
-| Precondition | User attempts to delete a supplier (Scenario 8.3). |
+| Precondition | End User attempts to delete a supplier (Scenario 8.3). |
 | Post condition | The Supplier record is not deleted. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Confirms the deletion of a supplier. | 2. Checks for associated Order records and finds existing orders linked to this supplier. | FR3.1 |
-| | 3. Does not delete the supplier. | |
-| | 4. Displays an error: "Cannot delete supplier. They are associated with existing purchase orders." | |
+| 1. Selects a supplier from the list and clicks "Delete". | 2. Checks for associated Order records, finding some. | FR3.1 |
+| | 3. Displays an error: "Cannot delete supplier. They are associated with existing purchase orders." | |
+| | 4. Supplier table remains untouched |
 
 ---
 
