@@ -310,9 +310,11 @@ Steps
 
 # System Design
 
-\<describe here system design>
+EzShop system is composed of:
+- EzShop Backend
+- EzShop Frontend
+- MySQL Database
 
-\<must be consistent with Context diagram>
 
 # Hardware Software architecture
 
