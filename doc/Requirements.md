@@ -363,7 +363,7 @@ Steps
 
 | Actors Involved | End User |
 | :---: | :--- |
-| Precondition | User is currently logged in (Post-condition of UC4). |
+| Precondition | End User is currently logged in (Post-condition of UC4). |
 | Post condition | The user's session is terminated. The system displays the login screen. |
 | Nominal Scenario | The user clicks the "Logout" button and is successfully signed out. |
 | Variants | N/A |
@@ -373,15 +373,15 @@ Steps
 
 | Scenario 4.1 | Successful logout |
 | :---: | :--- |
-| Precondition | User is logged in and interacting with the application. |
-| Post condition | User is logged out and sees the login screen. |
+| Precondition | End User is logged in and interacting with the application. |
+| Post condition | User is logged out and the login screen is displayed. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Clicks the "Logout" button. | | FR5.2 |
-| | 2. Terminates and invalidates the user's active session. | |
+| | 2. Terminates the user's active session. | |
 | | 3. Redirects the user to the main login screen (UC4). | |
 
 ---
