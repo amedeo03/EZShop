@@ -289,7 +289,7 @@ Steps
 | :---: | :--- |
 | Precondition | End User has an active Account. |
 | Post condition | The End User is authenticated. |
-| Nominal Scenario | The end user provides valid credentials (email, password, 2FA) and gains access to the system. |
+| Nominal Scenario | The End User provides valid credentials and gains access to the system. |
 | Variants | N/A |
 | Exceptions | 1a. Invalid email or password. <br> 2a. Subscription is not active. <br> 3a. 2FA code is incorrect. |
 
@@ -297,17 +297,17 @@ Steps
 
 | Scenario 3.1 | Successful login |
 | :---: | :--- |
-| Precondition | User is on the login screen. |
-| Post condition | User is logged in and viewing the main dashboard. |
+| Precondition | End User is on the login screen. |
+| Post condition | End User is logged in and the main dashboard is diplayed. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Enters email and password. Clicks "Login". | 2. Verifies credentials against the Account database. | FR5.1 |
-| | 3. Checks if the Subscription linked to the Account is 'active'. | FR5.3 |
-| | 4. Prompts the user to enter their 2FA (Two-Factor Authentication) code. | NFR5 |
-| 5. Enters the 2FA code. | 6. Validates the 2FA code. | NFR5 |
+| | 3. Prompts the user to enter their 2FA (Two-Factor Authentication) code. | NFR5 |
+| 4. Enters the 2FA code. | 5. Validates the 2FA code. | NFR5 |
+| | 6. Checks if the Subscription linked to the Account is 'active'. | FR5.3 |
 | | 7. Creates an active session for the user. | |
 | | 8. Displays the main application dashboard. | NFR6 |
 
@@ -323,7 +323,7 @@ Steps
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Enters incorrect email or password. Clicks "Login". | 2. Verifies credentials against the Account database and fails to find a match. | FR5.1 |
-| | 3. Displays an "Invalid email or password" error message. | |
+| | 3. Displays an error message. | |
 | | 4. User remains on the login screen. | |
 
 ##### Scenario 3.3: (Exception) Subscription Inactive
@@ -331,16 +331,15 @@ Steps
 | Scenario 3.3 | Subscription is not active |
 | :---: | :--- |
 | Precondition | User is on the login screen. |
-| Post condition | User is not logged in; redirected to payment (UC2). |
+| Post condition | User is logged in, but has no access to the main dashboard. He is instead redirected to payment (UC2). |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
 | 1. Enters email and password. Clicks "Login". | 2. Verifies credentials against the Account database (success). | FR5.1 |
-| | 3. Checks if the Subscription linked to the Account is 'active' (it is 'inactive'). | FR5.3 |
-| | 4. Displays "Subscription expired/inactive. Please pay to continue." | FR5.4 |
-| | 5. Redirects the user to the subscription payment screen (initiating UC2). | FR5.4 |
+| | 3. Checks if the Subscription status and find it is 'inactive'. | FR5.3 |
+| | 4. Redirects the user to the subscription payment screen (initiating UC2). | FR5.4 |
 
 ##### Scenario 3.4: (Exception) Incorrect 2FA Code
 
@@ -353,9 +352,9 @@ Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| | 1. (From Scenario 3.1) System has validated credentials and prompts for 2FA. | NFR5 |
-| 2. Enters an incorrect or expired 2FA code. | 3. Validates the 2FA code (it fails). | NFR5 |
-| | 4. Displays an "Incorrect code, please try again" error message. | |
+| | 1. (From Scenario 3.1) System has validated credentials and prompts for 2FA. | NFR5.1 |
+| 2. Enters an incorrect or expired 2FA code. | 3. Fails to validate the 2FA code. | NFR5.1 |
+| | 4. Displays an error message. | |
 | | 5. User remains on the 2FA screen. | |
 
 ---
