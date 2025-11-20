@@ -10,6 +10,8 @@ The first time the end user opens EZShop he will be prompted to login with his a
 
 ![registration prompt](media/user-interface/auth/registration.jpg)
 
+![login email already in use](media/user-interface/auth/login-email-already-in-use.jpg)
+
 Whenever the end user succesfully fills in the credentials of his account, he will be redirected to the 2 factor authentication process, where a temporary code will be sent to the email address used in the account registration:
 
 ![2fa screen](media/user-interface/auth/2fa.jpg)
