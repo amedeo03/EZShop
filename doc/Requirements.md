@@ -400,32 +400,30 @@ Steps
 
 | Scenario 5.1 | Manual product registration |
 | :---: | :--- |
-| Precondition | User is logged in and in the "Inventory" or "Products" section. |
-| Post condition | A new Product record is saved to the database. |
+| Precondition | User is logged in and in the "Inventory" section. |
+| Post condition | A new Product record is saved to the inventory table. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Clicks "Add New Product". | 2. Displays the new product form (name, barcode, current_quantity, price, low_stock_threshold). | FR2.1 |
-| 3. Fills in the product details and clicks "Save". | 4. Validates the data. | |
+| 1. Clicks "Add New Product". | 2. Displays the new product form. | FR2.1 |
+| 3. Fills in the product details and clicks "Add New Product". | 4. Validates the data. | |
 | | 5. Saves the new Product record to the database. | FR2.1 |
-| | 6. Displays a "Product Saved" success message. | |
-
 
 ##### Scenario 5.2: (Exception) Barcode Already Exists
 
 | Scenario 5.2 | Barcode already exists |
 | :---: | :--- |
-| Precondition | User is in the "Add New Product" form (Scenario 6.1). |
+| Precondition | End User is in the "Add New Product" form (Scenario 6.1). |
 | Post condition | The new product is not saved. |
 
 Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Fills in product details, including a barcode that already exists. Clicks "Save". | 2. Validates the data and finds the barcode is not unique. | FR2.1 |
-| | 3. Displays an error message: "This barcode is already in use by another product." | |
+| 1. Fills in product detailsfor a product that already exists. Clicks "Add New Product". | 2. Validates the data and finds the product already exists in the inventory table. | FR2.1 |
+| | 3. Displays an error message. | |
 | | 4. User remains on the product form. | |
 
 ##### Scenario 5.3: (Exception) Invalid Data
@@ -439,8 +437,8 @@ Steps
 
 | Actor's action | System action | FR needed |
 | :--- | :--- | :---: |
-| 1. Fills in product details but omits the name. Clicks "Save". | 2. Validates the data and finds the 'name' field is required. | FR2.1 |
-| | 3. Displays an error message: "Product name is required." | |
+| 1. Fills in product details but omits one or more needed input fields. Clicks "Add New Product". | 2. Fails to validate the data. | FR2.1 |
+| | 3. Displays an error message. | |
 | | 4. User remains on the product form. | |
 
 ---
