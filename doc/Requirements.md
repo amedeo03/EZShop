@@ -314,7 +314,6 @@ EzShop system is composed of:
 - EzShop Backend
 - EzShop Frontend
 - MySQL Database
-- Account Management Server
 
 
 # Hardware Software architecture
