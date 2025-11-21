@@ -130,8 +130,6 @@ Shop Owners or Accounting Managers who want a practical tool without technical c
 | Payment service        | used **only**  to pay the monthly fee                                                            |
 | Accounting software    | possible other software present in the business with whom EZShop will need to interact           |
 
-#TODO is differentiating shop owner and end user actually useful in the case od a small shop?
-
 
 # Context Diagram and interfaces
 
@@ -145,7 +143,7 @@ Shop Owners or Accounting Managers who want a practical tool without technical c
 |   Actor   | Logical Interface | Physical Interface |
 | :-------: | :---------------: | :----------------: |
 | End user               |        EZShop GUI      | laptop or desktop computer (display, keyboard, mouse)   |
-| Cash register software (Sqaure POS) | RESTful API (or similar, e.g., GraphQL) exchanging JSON | internet connection (WAN) |
+| Cash register software (Square POS) | RESTful API exchanging JSON | internet connection (LAN) |
 | Payment service        | Payment gateway's API or a secure, hosted payment webpage | internet connection (HTTPS) |
 | Accounting software    | file-based export/import (e.g., CSV or XML format). | internet connection |
 # Functional and non functional requirements
@@ -161,23 +159,23 @@ Shop Owners or Accounting Managers who want a practical tool without technical c
 |FR1: Manage sales               | 1.1 Insert, read, update, delete sales records |
 |                                | 1.2 Refund a product |
 |FR2: Manage inventory           | 2.1 Insert, read, update, delete inventory records |
-|                                | 2.2 Notification when stock is low |
+|                                | 2.2 Notificate when stock is low |
 |FR3: Manage orders to suppliers | 3.1 Insert, read, update, delete suppliers contacts |
-|                                | 3.2 Create a new purchase order from a given supplier, specifying products and amounts |
-|                                | 3.3 EZShop is able to send email to a supplier after the creation of a new order |
-|                                | 3.4 Automatically insert a record in Order table for an order when email is sent |
-|                                | 3.5 Function to mark an order as completed and adding received products to inventory table |
-|FR4: Data visualization         | 4.1 Display charts overview about stored data |
-|                                | 4.2 Filtering by category, time range, etc |
+|                                | 3.2 Create a new purchase order from a given supplier |
+|                                | 3.3 Send email to a supplier after the creation of a new order |
+|                                | 3.4 Insert a record in Order table |
+|                                | 3.5 Mark an order as completed and add received products in inventory table |
+|FR4: Visualize data                | 4.1 Display charts overview about stored data |
+|                                | 4.2 Filter data |
 |                                | 4.3 Computes profits, expenses, taxes |
-|                                | 4.4 Real time sync between database tables and frontend |
-|FR5: Authentication and autorization process| 5.1 Login with email, password and 2FA using email |
+|                                | 4.4 Synchronize with database tables and frontend |
+|FR5: Manage Authentication                  | 5.1 Login  |
 |                                            | 5.2 Logout |
-|                                            | 5.3 Check if a subscription is active |
-|                                            | 5.4 Prompt to pay the subscription if it is not active |
+|                                            | 5.3 Check subscription status |
+|                                            | 5.4 Prompt to pay the subscription |
 |                                            | 5.5 Create a new account for a shop |
-|FR6: Exchange data | 6.1 Connect to the internet (via HTTPS) to exchange data with external cloud-based services (e.g., POS system, payment services) |
-|                                | 6.2 Usage of an already established format to exchange standardized product data between software components |
+|FR6: Exchange data | 6.1 Connect to the local internet to exchange data with the cash register software |
+|                                | 6.2 Use of an already established format to exchange standardized product data between software components |
 
 ## Non Functional Requirements
 
