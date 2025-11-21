@@ -316,4 +316,5 @@ Steps
 
 # Hardware Software architecture
 
-\<describe here the hardware software architecture using UML deployment diagram >
+## Deployement Diagram
+![Deployement Diagram](media/deployment_diagram.png)
