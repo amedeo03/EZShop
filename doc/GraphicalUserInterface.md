@@ -1,14 +1,10 @@
 # Graphical User Interface Prototype
 
 
-Date: 24/10/2025
+Date:
 
-Version: 1.0.0
+Version:
 
-![Login](images/Login.png)
-![Register](images/Register.png)
-![Cashier](images/Cashier.png)
-![Manager1](images/Manager1.png)
-![Manager2](images/Manager2.png)
-![Manager3](images/Manager3.png)
-![Order](images/Order.png)
+\<Report here the GUI that you propose for EZShop as described in your Requirement document 
+ You are free to organize it as you prefer. A suggested presentation matches the Use cases and scenarios defined in the Requirement document.
+  The GUI can be shown as a sequence of graphical files (jpg, png) and as an animated prototype (mp4 or html)>
