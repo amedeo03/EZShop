@@ -53,3 +53,16 @@ class ProductsRepository:
                 lambda _: True,
                 f"Product with id '{product_id}' not found"
             )
+
+    async def get_product_by_barcode(self, barcode: str) -> ProductDAO | None:
+        """
+        Get product by barcode or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(select(ProductDAO).filter(ProductDAO.productCode == barcode))
+            product = result.scalars().all()
+            return find_or_throw_not_found(
+                product,
+                lambda _: True,
+                f"Product with barcode '{barcode}' not found"
+            )

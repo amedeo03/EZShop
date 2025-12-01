@@ -65,3 +65,24 @@ async def get_product(product_id: int):
     if not product:
         raise NotFoundError("Product not found")
     return product
+
+@router.get("/barcode/{barcode}", response_model=ProductTypeDTO, dependencies=[Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))])
+async def get_product_by_barcode(barcode: str):
+    """
+    Retrieve a single product by barcode.
+
+    - Permissions: Administrator, ShopManager
+    - Path parameter: barcode (str)
+    - Returns: ProductDTO for the requested product
+    - Raises:
+      - NotFoundError: when the product id doesn't exist
+      - InvalidFormatError: when barcode format is invalid
+    - Status code: 200 OK
+    """
+    if len(barcode) < 12 or len(barcode) > 14:
+        raise BadRequestError('barcode must be a string of 12-14 digits')
+
+    product = await controller.get_product_by_barcode(barcode)
+    if not product:
+        raise NotFoundError("Product not found")
+    return product
