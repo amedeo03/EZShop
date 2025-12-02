@@ -30,7 +30,7 @@ class ProductsController:
         """Get product by id - throws NotFoundError if not found"""
         dao = await self.repo.get_product(product_id)
         return productdao_to_product_type_dto(dao) if dao else None
-    
+
     async def get_product_by_barcode(self, barcode: str) -> Optional[ProductTypeDTO]:
         """Get product by barcode.
         - Throws: NotFoundError if not found of InvaliFormatError if GTIN verification fails
@@ -41,3 +41,9 @@ class ProductsController:
 
         dao = await self.repo.get_product_by_barcode(barcode)
         return productdao_to_product_type_dto(dao) if dao else None
+
+    async def get_product_by_description(self, description: str) -> Optional[ProductTypeDTO]:
+        """Get product by description.
+        """
+        daos = await self.repo.get_product_by_description(description)
+        return [productdao_to_product_type_dto(dao) for dao in daos]

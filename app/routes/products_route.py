@@ -49,6 +49,22 @@ async def list_products():
     """
     return await controller.list_products()
 
+
+@router.get("/search", response_model=List[ProductTypeDTO], dependencies=[Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))])
+async def get_product_by_description(query: str):
+    """
+    Retrieve a single product by description.
+    - Permissions: Administrator, ShopManager
+    - Query parameter: query (str)
+    - Returns: ProductDTO for the requested product
+    - Status code: 200 OK
+    """
+    product = await controller.get_product_by_description(query)
+    if not product:
+        raise NotFoundError("Product not found")
+    return product
+
+
 @router.get("/{product_id}", response_model=ProductTypeDTO, dependencies=[Depends(authenticate_user([UserType.Administrator, UserType.ShopManager, UserType.Cashier]))])
 async def get_product(product_id: int):
     """
@@ -86,3 +102,5 @@ async def get_product_by_barcode(barcode: str):
     if not product:
         raise NotFoundError("Product not found")
     return product
+
+

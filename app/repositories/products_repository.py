@@ -62,7 +62,15 @@ class ProductsRepository:
             result = await session.execute(select(ProductDAO).filter(ProductDAO.productCode == barcode))
             product = result.scalars().all()
             return find_or_throw_not_found(
-                product,
+                [product] if product else [],
                 lambda _: True,
                 f"Product with barcode '{barcode}' not found"
             )
+
+    async def get_product_by_description(self, description: str) -> list[ProductDAO]:
+        """
+        Get product by description or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(select(ProductDAO).filter(ProductDAO.description.ilike(f"%{description}%")))
+            return result.scalars().all()
