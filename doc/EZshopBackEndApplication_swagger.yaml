@@ -242,8 +242,8 @@ components:
       properties:
         cardId:
           type: string
-          description: Unique ID of the customer card
-          example: "123"
+          description: Unique ID of the customer card. It must be a string of 10 digits.
+          example: "0000000123"
         points:
           type: integer
           description: Current points on the card
@@ -895,7 +895,9 @@ paths:
       operationId: updateProduct
       security:
         - bearerAuth: []
-      description: Update product type by ID. Requires **Administrator**, **ShopManager** role. 
+      description: |
+        Update product type by ID. Requires **Administrator**, **ShopManager** role.
+        A product type barcode can be updated only if there are no order, sales and returns associated with that products and it is not already assigned to another product type. 
       requestBody:
         required: true
         content:
@@ -910,8 +912,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/BooleanResponse'
         '400':
-          description: Invalid input data (barcode must be a string of 12-14 digits). 
+          description: |
+            Invalid input data (barcode must be a string of 12-14 digits). 
             Description and price per unit must be present. Product Id must be a valid product id ( > 0 ).
+            In case the product has associated orders, sales or returns, the barcode cannot be updated and error 400 is returned.
           content:
             application/json:
               schema:
