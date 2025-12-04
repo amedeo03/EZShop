@@ -897,9 +897,16 @@ paths:
         - bearerAuth: []
       description: |
         Update product type by ID. Requires **Administrator**, **ShopManager** role.
-        A product type barcode can be updated only if there are no order, sales and returns associated with that products and it is not already assigned to another product type. 
+        A product type barcode can be updated only if there are no order, sales and returns associated with that products and it is not already assigned to another product type.
+        Barcode can be updated only if: 
+          - The product has NO sales associated with it. 
+          - The product has NO orders associated with it.
+          - The product has NO returns associated with it.
+
+        In case the price is updated in product type, the eventual open sale will not be affected, as it will count the "old" price. 
+        Return amount will refer to the paid amount (so the one in the sale), not the current price of product type.
       requestBody:
-        required: true
+        requi1red: true
         content:
           application/json:
             schema:
@@ -963,7 +970,17 @@ paths:
               example:
                 code: 409
                 message: "Barcode already in use"
-                name: "Conflict error"
+                name: "ConflictError"
+        '420':
+          description: Invalid order/sale/return state prevents barcode update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 420
+                message: "Invalid sale state"
+                name: "InvalidStateError"
     delete:
       tags:
       - products
@@ -971,7 +988,11 @@ paths:
       operationId: deleteProductType
       security:
         - bearerAuth: []
-      description: Delete product type by ID. Requires **Administrator**, **ShopManager** role.
+      description: |
+        Delete product type by ID. Requires **Administrator**, **ShopManager** role.
+        A product in an active sale (OPEN or PENDING) cannot be deleted.
+        A product associated with an active orders (ISSUED or PAID) cannot be deleted.
+        A product for which an active return (OPEN or CLOSED) cannot be deleted.
       responses:
         '204':
           description: Deleted
@@ -1015,6 +1036,16 @@ paths:
                 code: 404
                 message: "Product not found"
                 name: "NotFoundError"
+        '420':
+          description: Invalid order/sale/return state prevents deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 420
+                message: "Invalid sale state"
+                name: "InvalidStateError"
   /products/barcode/{barcode}:
     parameters:
     - name: barcode
@@ -1494,7 +1525,7 @@ paths:
               example:
                 code: 420
                 message: "Order was not Issued"
-                name: "InvalidOrderStateError"
+                name: "InvalidStateError"
         '421':
           description: Insufficient balance
           content:
@@ -1597,7 +1628,7 @@ paths:
               example:
                 code: 420
                 message: "order is not paid"
-                name: "InvalidOrderStateError"
+                name: "InvalidStateError"
         '500':
           description: General Error
           content:
