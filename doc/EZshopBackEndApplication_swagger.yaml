@@ -183,10 +183,10 @@ components:
         description:
           type: string
           minLength: 1
-        productCode:
+        barcode:
           type: string
           minLength: 1          
-        pricePerUnit:
+        price_per_unit:
           type: number
         note:
           type: string
@@ -197,8 +197,8 @@ components:
           type: string
       required:
         - description
-        - productCode
-        - pricePerUnit
+        - barcode
+        - price_per_unit
     BooleanResponse:
       type: object
       properties:
@@ -213,21 +213,21 @@ components:
     Order:
       type: object
       required:
-        - productTypeBarcode
+        - product_barcode
         - quantity
-        - pricePerUnit
+        - price_per_unit
         - status
       properties:
         id:
           type: integer
           example: 1
-        productTypeBarcode:
+        product_barcode:
           type: string
           example: "0123456789012"
         quantity:
           type: integer
           example: 100
-        pricePerUnit:
+        price_per_unit:
           type: number
           format: float
           example: 10.5
@@ -240,7 +240,7 @@ components:
     CustomerCard:
       type: object
       properties:
-        cardId:
+        card_id:
           type: string
           description: Unique ID of the customer card. It must be a string of 10 digits.
           example: "0000000123"
@@ -270,10 +270,10 @@ components:
       type: object
       required:
         - sale_id
-        - productBarcode
+        - product_barcode
         - quantity
-        - pricePerUnit
-        - discountRate
+        - price_per_unit
+        - discount_rate
       properties:
         id:
           type: integer
@@ -281,17 +281,17 @@ components:
         sale_id:
           type: integer
           example: 10
-        productBarcode:
+        product_barcode:
           type: string
           example: "0123456789"
         quantity:
           type: integer
           example: 2
-        pricePerUnit:
+        price_per_unit:
           type: number
           format: float
           example: 5.5
-        discountRate:
+        discount_rate:
           type: number
           format: float
           example: 0.1
@@ -299,22 +299,22 @@ components:
       type: object
       required:
         - status
-        - discountRate
+        - discount_rate
       properties:
         id:
           type: integer
           example: 10
         status:
           $ref: '#/components/schemas/SaleStatus'
-        discountRate:
+        discount_rate:
           type: number
           format: float
           example: 0.05
-        createdAt:
+        created_at:
           type: string
           format: date-time
           example: "2025-10-30T12:34:56Z"
-        closedAt:
+        closed_at:
           type: string
           format: date-time
           nullable: true
@@ -331,9 +331,9 @@ components:
       type: object
       required:
         - return_id
-        - productBarcode
+        - product_barcode
         - quantity
-        - pricePerUnit
+        - price_per_unit
       properties:
         id:
           type: integer
@@ -341,13 +341,13 @@ components:
         return_id:
           type: integer
           example: 5
-        productBarcode:
+        product_barcode:
           type: string
           example: "0123456789012"
         quantity:
           type: integer
           example: 2
-        pricePerUnit:
+        price_per_unit:
           type: number
           format: float
           example: 9.99
@@ -365,11 +365,11 @@ components:
           example: 1
         status:
           $ref: '#/components/schemas/ReturnStatus'
-        createdAt:
+        created_at:
           type: string
           format: date-time
           example: "2025-11-03T12:30:00Z"
-        closedAt:
+        closed_at:
           type: string
           format: date-time
           nullable: true
@@ -567,6 +567,16 @@ paths:
                 id: 1
                 username: "admin_user"
                 type: "Administrator"
+        '400':
+          description: Invalid or missing id. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Bad request"
+                name: "BadRequestError"
         '401':
           description: Unauthenticated
           content:
@@ -754,8 +764,8 @@ paths:
               example:
                 id: 1
                 description: 'Chocolate Bar'
-                productCode: '0123456780'
-                pricePerUnit: 2.99
+                barcode: '0123456780'
+                price_per_unit: 2.99
                 note: 'Imported from Belgium'
                 quantity: 0
                 position: '1-A-3'
@@ -826,16 +836,6 @@ paths:
                 code: 401
                 message: "Authorization header missing"
                 name: "UnauthorizedError"
-        '403':
-          description: Unauthorized (insufficient role)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                code: 403
-                message: "Insufficient rights"
-                name: "ForbiddenError"
   /products/{id}:
     parameters:
     - name: id
@@ -858,6 +858,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductType'
+        '400':
+          description: |
+            Missing id or invalid id. ID must be a positive integer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Bad request"
+                name: "BadRequestError"
         '401':
           description: Unauthenticated
           content:
@@ -1029,7 +1040,7 @@ paths:
         '404':
           description: Product Type not found
           content:
-            application/json:
+            application/json:product code
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
@@ -1076,7 +1087,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
-                message: "Invalid product code"
+                message: "Invalid barccode"
                 name: "BadRequestError"
         '401':
           description: Unauthenticated
@@ -1808,7 +1819,7 @@ paths:
                 message: "Customer not found"
                 name: "NotFoundError"
         '409':
-          description: Conflict (e.g., duplicate customer name or card conflict)
+          description: Conflict (e.g. Card conflict)
           content:
             application/json:
               schema:
@@ -2104,6 +2115,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Sale'
+        '400':
+          description: Invalid or missing id. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Bad request"
+                name: "BadRequestError"
         '404':
           description: Sale not found
           content:
@@ -2320,7 +2341,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: discountRate
+        - name: discount_rate
           in: query
           required: true
           schema:
@@ -2394,7 +2415,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: discountRate
+        - name: discount_rate
           in: query
           required: true
           schema:
@@ -2764,6 +2785,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Return'
+        '400':
+          description: Invalid or missing id. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: "Bad request"
+                name: "BadRequestError"
         '401':
           description: Unauthenticated
           content:
@@ -2877,7 +2908,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Return'
         '400':
-          description: Bad Request
+          description: Invalid or missing id
           content:
             application/json:
               schema:
