@@ -155,3 +155,25 @@ async def update_product_position(
     - Status code: 200 OK
     """
     return await controller.update_product_position(product_id, position)
+
+
+@router.patch(
+    "/{product_id}/quantity",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def update_product_quantity(
+    product_id: int | str, quantity: int | str
+) -> BooleanResponseDTO:
+    """
+    Update an existing quantity of a product.
+    - Permissions: Administrator, ShopManager
+    - Path parameter: id (int)
+    - Query parameter: quantity (int)
+    - Returns: Result of the operation as BooleanResponseDTO
+    - Status code: 200 OK
+    """
+    return await controller.update_product_quantity(product_id, quantity)

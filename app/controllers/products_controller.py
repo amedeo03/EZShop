@@ -98,7 +98,9 @@ class ProductsController:
             raise NotFoundError("Products not found")
         return [productdao_to_product_type_dto(dao) for dao in products_daos]
 
-    async def update_product_position(self, product_id, position) -> BooleanResponseDTO:
+    async def update_product_position(
+        self, product_id: int | str, position: str
+    ) -> BooleanResponseDTO:
         """
         Update the position of a product.
         - Parameters: product_id (int), position (str)
@@ -114,6 +116,28 @@ class ProductsController:
         validate_product_position(position)
 
         updated_product = await self.repo.update_product_position(product_id, position)
+
+        if updated_product:
+            return BooleanResponseDTO(success=True)
+
+    async def update_product_quantity(
+        self, product_id: int | str, quantity: int | str
+    ) -> BooleanResponseDTO:
+        """
+        Update the quantity of a product.
+        - Parameters: product_id (int), quantity (int)
+        - Returns: Result of the operation as BooleanResponseDTO
+        - Throws:
+            - BadRequestError if product_id/quantity are negative or not they are not integers
+        """
+        try:
+            product_id = int(product_id)
+            quantity = int(quantity)
+        except ValueError:
+            raise BadRequestError("product_id or quantity fields must be integers.")
+        validate_field_is_positive(product_id, "product_id")
+
+        updated_product = await self.repo.update_product_quantity(product_id, quantity)
 
         if updated_product:
             return BooleanResponseDTO(success=True)

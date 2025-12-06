@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.product_dao import ProductDAO
+from app.models.errors.bad_request import BadRequestError
 from app.models.errors.conflict_error import ConflictError
 from app.models.errors.notfound_error import NotFoundError
 from app.utils import find_or_throw_not_found, throw_conflict_if_found
@@ -113,7 +114,9 @@ class ProductsRepository:
             )
             return result.scalars().all()
 
-    async def update_product_position(self, product_id, position: str) -> ProductDAO:
+    async def update_product_position(
+        self, product_id: int, position: str
+    ) -> ProductDAO:
         """
         Update the position of a product.
         - Parameters: product_id (int), position (str)
@@ -137,6 +140,32 @@ class ProductsRepository:
                 )
 
             product_db.position = position
+            await session.commit()
+            await session.refresh(product_db)
+            return product_db
+
+    async def update_product_quantity(
+        self, product_id: int, quantity: int
+    ) -> ProductDAO:
+        """
+        Update the quantity of a product.
+        - Parameters: product_id (int), quantity (int)
+        - Returns: Result of the operation as BooleanResponseDTO
+        - Throws:
+            - NotFoundError if the product id doesn't exist
+            - BadRequestError if quantity to subtract is insufficient
+        """
+        async with await self._get_session() as session:
+            product_db = await session.get(ProductDAO, product_id)
+            if not product_db:
+                raise NotFoundError(f"Product with id '{product_id}' not found")
+
+            if quantity < 0 and product_db.quantity < abs(quantity):
+                raise BadRequestError(
+                    f"Insufficient quantity: in stock {product_db.quantity}"
+                )
+
+            product_db.quantity += quantity
             await session.commit()
             await session.refresh(product_db)
             return product_db
