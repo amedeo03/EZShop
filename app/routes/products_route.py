@@ -84,7 +84,7 @@ async def get_product_by_description(query: str):
         )
     ],
 )
-async def get_product(product_id: int):
+async def get_product(product_id: int | str):
     """
     Retrieve a single product by ID.
 
