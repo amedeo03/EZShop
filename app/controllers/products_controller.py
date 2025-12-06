@@ -24,7 +24,9 @@ class ProductsController:
         Create a product.
 
         - Parameters: product_dto (ProductTypeDTO)
-        - Returns: ProductTypeDTO
+        - Returns: The created product as ProductTypeDTO
+        - Throws:
+            - BadRequestError if description/price_per_unit is not present, if barcode is invalid (GTIN) or not a string of 12-14 digits
         """
 
         validate_field_is_present(product_dto.description, "description")
@@ -95,6 +97,26 @@ class ProductsController:
         if not products_daos:
             raise NotFoundError("Products not found")
         return [productdao_to_product_type_dto(dao) for dao in products_daos]
+
+    async def update_product_position(self, product_id, position) -> BooleanResponseDTO:
+        """
+        Update the position of a product.
+        - Parameters: product_id (int), position (str)
+        - Returns: Result of the operation as BooleanResponseDTO
+        - Throws:
+            - BadRequestError if product_id is negative, not a string or position pattern is wrong
+        """
+        try:
+            product_id = int(product_id)
+        except ValueError:
+            raise BadRequestError("product_id must be an integer.")
+        validate_field_is_positive(product_id, "product_id")
+        validate_product_position(position)
+
+        updated_product = await self.repo.update_product_position(product_id, position)
+
+        if updated_product:
+            return BooleanResponseDTO(success=True)
 
     async def update_product(
         self, product_id: int, product_dto: ProductTypeDTO
