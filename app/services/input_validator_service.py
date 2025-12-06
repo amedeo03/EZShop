@@ -12,7 +12,7 @@ def validate_id(id: int):
 
 def validate_product_barcode(barcode: str) -> None:
     """
-    Validate product barcode.
+    Validate product barcode (String length + GTIN algorithm).
     - Parameters: barcode (str)
     - Throws:
         - BadRequestError if barcode is not a string of 12-14 digits
@@ -26,7 +26,7 @@ def validate_product_barcode(barcode: str) -> None:
 
 def validate_field_is_present(field: str, field_name: str) -> None:
     """
-    Validate a single field.
+    Checks if a filed is present (None or empty field).
     - Parameteres: field (str), field_name (str)
     - Throws:
         - BadRequestError if field is not present
@@ -36,6 +36,12 @@ def validate_field_is_present(field: str, field_name: str) -> None:
 
 
 def validate_field_is_positive(field: float, field_name: str) -> None:
+    """
+    Checks if 'field' is positive (>=0).
+    - Parameters: field (float), field_name (str)
+    - Throws:
+        - BadRequestError if field is negative.
+    """
     if field < 0:
         raise BadRequestError(f"'{field_name}' must be positive")
 

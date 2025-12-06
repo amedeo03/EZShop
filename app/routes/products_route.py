@@ -1,14 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
 from app.controllers.products_controller import ProductsController
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.product_dto import ProductTypeDTO
-from app.models.errors.bad_request import BadRequestError
-from app.models.errors.notfound_error import NotFoundError
 from app.models.user_type import UserType
 
 router = APIRouter(prefix=ROUTES["V1_PRODUCTS"], tags=["Products"])
@@ -69,13 +67,10 @@ async def get_product_by_description(query: str):
     Retrieve a single product by description.
     - Permissions: Administrator, ShopManager
     - Query parameter: query (str)
-    - Returns: ProductDTO for the requested product
+    - Returns: ProductDTO for the products with 'query' as substring in 'description'
     - Status code: 200 OK
     """
-    product = await controller.get_product_by_description(query)
-    if not product:
-        raise NotFoundError("Product not found")
-    return product
+    return await controller.get_product_by_description(query)
 
 
 @router.get(
@@ -96,14 +91,9 @@ async def get_product(product_id: int):
     - Permissions: Administrator, ShopManager, Cashier
     - Path parameter: product_id (int)
     - Returns: ProductDTO for the requested product
-    - Raises:
-      - NotFoundError: when the product id doesn't exist
     - Status code: 200 OK
     """
-    product = await controller.get_product(product_id)
-    if not product:
-        raise NotFoundError("Product not found")
-    return product
+    return await controller.get_product(product_id)
 
 
 @router.get(
@@ -120,18 +110,9 @@ async def get_product_by_barcode(barcode: str):
     - Permissions: Administrator, ShopManager
     - Path parameter: barcode (str)
     - Returns: ProductDTO for the requested product
-    - Raises:
-      - NotFoundError: when the product id doesn't exist
-      - InvalidFormatError: when barcode format is invalid
     - Status code: 200 OK
     """
-    if len(barcode) < 12 or len(barcode) > 14:
-        raise BadRequestError("barcode must be a string of 12-14 digits")
-
-    product = await controller.get_product_by_barcode(barcode)
-    if not product:
-        raise NotFoundError("Product not found")
-    return product
+    return await controller.get_product_by_barcode(barcode)
 
 
 @router.put(

@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List
 
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.product_dto import ProductTypeDTO
 from app.models.errors.bad_request import BadRequestError
-from app.models.errors.invalid_barcode_format_error import InvalidFormatError
+from app.models.errors.notfound_error import NotFoundError
 from app.repositories.products_repository import ProductsRepository
 from app.services.gtin_service import gtin
 from app.services.input_validator_service import (
@@ -44,32 +44,52 @@ class ProductsController:
         return productdao_to_product_type_dto(created_product)
 
     async def list_products(self) -> List[ProductTypeDTO]:
-        """Get all products"""
-        daos = await self.repo.list_products()
-        return [productdao_to_product_type_dto(dao) for dao in daos]
-
-    async def get_product(self, product_id: int) -> Optional[ProductTypeDTO]:
-        """Get product by id - throws NotFoundError if not found"""
-        dao = await self.repo.get_product(product_id)
-        return productdao_to_product_type_dto(dao) if dao else None
-
-    async def get_product_by_barcode(self, barcode: str) -> Optional[ProductTypeDTO]:
-        """Get product by barcode.
-        - Throws: NotFoundError if not found of InvaliFormatError if GTIN verification fails
+        """Get all products
+        - Parameters: product_dto (ProductTypeDTO)
+        - Returns: All products as List[ProductTypeDTO]
         """
-        gtin_result = gtin(barcode)
-        if not gtin_result:
-            raise InvalidFormatError("Wrong barcode format (GTIN)")
+        product_daos = await self.repo.list_products()
+        return [productdao_to_product_type_dto(dao) for dao in product_daos]
 
-        dao = await self.repo.get_product_by_barcode(barcode)
-        return productdao_to_product_type_dto(dao) if dao else None
+    async def get_product(self, product_id: int) -> ProductTypeDTO:
+        """Get product by id.
+        - Parameters: product_id (int)
+        - Returns Found product as ProductTypeDTO
+        - Throws:
+            - NotFoundError if product_id not found
+            - BadRequestError if product_id is negative
+        """
+        validate_field_is_positive(product_id, "product_id")
+
+        product_dao = await self.repo.get_product(product_id)
+        if not product_dao:
+            raise NotFoundError("Product not found")
+        return productdao_to_product_type_dto(product_dao)
+
+    async def get_product_by_barcode(self, barcode: str) -> ProductTypeDTO:
+        """Get product by barcode.
+        - Parameters: barcode (str)
+        - Returns: Found requested product as ProdocutTypeDTO
+        """
+        validate_product_barcode(barcode)
+
+        product_dao = await self.repo.get_product_by_barcode(barcode)
+
+        return productdao_to_product_type_dto(product_dao)
 
     async def get_product_by_description(
         self, description: str
-    ) -> Optional[ProductTypeDTO]:
-        """Get product by description."""
-        daos = await self.repo.get_product_by_description(description)
-        return [productdao_to_product_type_dto(dao) for dao in daos]
+    ) -> List[ProductTypeDTO]:
+        """Get product by description.
+        - Parameters: barcode (str)
+        - Returns: List[ProdocutTypeDTO] of products found
+        - Throws: NotFoundError if product with partial description not found
+        """
+        products_daos = await self.repo.get_product_by_description(description)
+
+        if not products_daos:
+            raise NotFoundError("Products not found")
+        return [productdao_to_product_type_dto(dao) for dao in products_daos]
 
     async def update_product(
         self, product_id: int, product_dto: ProductTypeDTO
