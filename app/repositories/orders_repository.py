@@ -6,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.order_dao import OrderDAO
+from app.models.DAO.system_dao import SystemInfoDAO
+from app.models.errors.notfound_error import NotFoundError
+from app.models.errors.balance_error import BalanceError
+from app.models.errors.app_error import AppError # For generic 400/420 errors
 
 class OrdersRepository:
 
@@ -45,3 +49,37 @@ class OrdersRepository:
         async with await self._get_session() as session:
             result = await session.execute(select(OrderDAO))
             return result.scalars().all()
+        
+    async def pay_order(self, order_id: int) -> bool:
+        async with await self._get_session() as session:
+            # Get the Order
+            order = await session.get(OrderDAO, order_id)
+            if not order:
+                raise NotFoundError(f"Order with id {order_id} not found")
+
+            # Check Status (Must be ISSUED)
+            if order.status != "ISSUED":
+                 # Using generic AppError or BadRequest for invalid state
+                raise AppError(420, "Order was not Issued", "InvalidStateError")
+
+            # Calculate Cost
+            cost = order.quantity * order.price_per_unit
+
+            # Get System Balance
+            result = await session.execute(select(SystemInfoDAO))
+            system_info = result.scalars().first()
+            
+            # If system info doesn't exist, we assume 0 balance or create it
+            if not system_info:
+                raise BalanceError("System balance information not found")
+
+            # Check Funds
+            if system_info.balance < cost:
+                raise BalanceError("Insufficient balance for the operation")
+
+            # Execute Payment
+            system_info.balance -= cost
+            order.status = "PAID"
+            
+            await session.commit()
+            return True

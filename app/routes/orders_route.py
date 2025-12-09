@@ -6,6 +6,7 @@ from app.config.config import ROUTES
 from app.controllers.orders_controller import OrdersController
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.order_dto import OrderDTO
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.user_type import UserType
 
 
@@ -40,3 +41,18 @@ async def list_orders():
     - Permissions: Administrator, ShopManager
     """
     return await controller.list_orders()
+
+
+@router.patch(
+    "/{order_id}/pay",
+    response_model=BooleanResponseDTO,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def pay_order(order_id: int):
+    """
+    Pay for an existing issued order.
+    - Permissions: Administrator, ShopManager
+    """
+    return await controller.pay_order(order_id)

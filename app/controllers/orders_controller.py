@@ -1,5 +1,6 @@
 from typing import List
 
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.order_dto import OrderDTO
 from app.repositories.orders_repository import OrdersRepository
 from app.services.input_validator_service import (
@@ -58,3 +59,13 @@ class OrdersController:
                 issue_date=dao.issue_date
             ) for dao in orders_daos
         ]
+    
+    async def pay_order(self, order_id: int) -> BooleanResponseDTO:
+        """
+        Pay for an order.
+        """
+        validate_field_is_positive(order_id, "order_id")
+        
+        result = await self.repo.pay_order(order_id)
+        
+        return BooleanResponseDTO(success=result)
