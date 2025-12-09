@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database.database import Base, engine
 from app.middleware.error_middleware import error_handler
 from app.models.errors.app_error import AppError
-from app.routes import auth_route, customer_route, products_route, user_route
+from app.routes import auth_route, customer_route, products_route, user_route, orders_route
 
 logger = getLogger(__name__)
 
@@ -39,6 +39,7 @@ app.include_router(auth_route.router)
 app.include_router(user_route.router)
 app.include_router(customer_route.router)
 app.include_router(products_route.router)
+app.include_router(orders_route.router)
 
 app.add_exception_handler(AppError, error_handler)
 app.add_exception_handler(Exception, error_handler)
