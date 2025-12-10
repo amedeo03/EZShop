@@ -12,6 +12,6 @@ class SaleDTO(BaseModel):
     id: Optional[int]
     status: str
     discount_rate: float = 0.0
-    created_at: Optional[datetime] = None
+    created_at: datetime
     closed_at: Optional[datetime] = None
     lines: List[SoldProductDTO] = []

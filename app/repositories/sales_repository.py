@@ -2,12 +2,12 @@ from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.sale_dao import SaleDAO
 from app.models.DAO.sold_product_dao import SoldProductDAO
-from app.models.errors.notfound_error import NotFoundError
-from app.utils import find_or_throw_not_found, throw_conflict_if_found
+from app.utils import find_or_throw_not_found
 
 
 class SalesRepository:
@@ -37,7 +37,9 @@ class SalesRepository:
         - Returns: List[SaleDAO]
         """
         async with await self._get_session() as session:
-            result = await session.execute(select(SaleDAO))
+            result = await session.execute(
+                select(SaleDAO).options(selectinload(SaleDAO.lines))
+            )
             sales = list(result.scalars())
             return find_or_throw_not_found(
                 [sales] if sales else [],
@@ -50,9 +52,14 @@ class SalesRepository:
         Get product by id or throw NotFoundError if not found
         """
         async with await self._get_session() as session:
-            sale = await session.get(SaleDAO, sale_id)
+            sales = await session.execute(
+                select(SaleDAO)
+                .filter(SaleDAO.id == sale_id)
+                .options(selectinload(SaleDAO.lines))
+            )
+            sales = sales.scalars().first()
             return find_or_throw_not_found(
-                [sale] if sale else [],
+                [sales] if sales else [],
                 lambda _: True,
                 f"Sale with id '{sale_id}' not found",
             )

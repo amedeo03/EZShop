@@ -1,15 +1,15 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
 from app.controllers.sales_controller import SalesController
 from app.middleware.auth_middleware import authenticate_user
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+from app.models.DTO.product_dto import ProductTypeDTO
 from app.models.DTO.sale_dto import SaleDTO
-from app.models.DTO.sold_product_dto import SoldProductDTO
-from app.models.errors.bad_request import BadRequestError
-from app.models.errors.notfound_error import NotFoundError
 from app.models.user_type import UserType
+from app.routes.products_route import get_product_by_barcode
 
 router = APIRouter(prefix=ROUTES["V1_SALES"], tags=["Sales"])
 controller = SalesController()
@@ -93,3 +93,32 @@ async def get_sale_by_id(sale_id: int):
     """
 
     return await controller.get_sale_by_id(sale_id)
+
+
+@router.post(
+    "/{sale_id}/items",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def attach_product(sale_id: int, barcode: str, amount: int):
+    """
+    Add a product specified by barcode to a specific OPEN sale
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: sale_id as int, barcode as str, amount as int
+    - Returns: BooleanResponseDTO
+    - Status code: 201 product added succesfully
+    - Status code: 400 invalid ID or insufficient stock
+    - Status code: 401 anauthenticated
+    - Status code: 404 sale or product not found
+    - Status code: 410 invalid sale status
+    """
+
+    return await controller.attach_product(sale_id, barcode, amount)
