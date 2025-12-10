@@ -28,6 +28,21 @@ async def issue_order(order: OrderDTO):
     """
     return await controller.create_order(order)
 
+@router.post(
+    "/payfor",
+    response_model=OrderDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def pay_order_for(order: OrderDTO):
+    """
+    Create and pay an order for a product immediately.
+    - Permissions: Administrator, ShopManager
+    """
+    return await controller.pay_order_for(order)
+
 @router.get(
     "/",
     response_model=List[OrderDTO],
@@ -56,3 +71,19 @@ async def pay_order(order_id: int):
     - Permissions: Administrator, ShopManager
     """
     return await controller.pay_order(order_id)
+
+
+@router.patch(
+    "/{order_id}/arrival",
+    response_model=BooleanResponseDTO,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def record_order_arrival(order_id: int):
+    """
+    Record the arrival of an order.
+    Marks as COMPLETED and updates inventory.
+    - Permissions: Administrator, ShopManager
+    """
+    return await controller.record_arrival(order_id)
