@@ -164,3 +164,46 @@ class SalesController:
         await self.repo.edit_sale_discount(sale_id, discount_rate)
 
         return BooleanResponseDTO(success=True)
+
+    async def edit_product_discount(
+        self, sale_id: int, product_barcode: str, discount_rate: float
+    ) -> BooleanResponseDTO:
+        validate_field_is_present(str(sale_id), "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
+        validate_field_is_present(product_barcode, "product_barcode")
+        validate_discount_rate(discount_rate)
+
+        product_to_edit: SoldProductDTO
+        sale: SaleDTO = await self.get_sale_by_id(sale_id)
+        if sale.status != "OPEN":
+            raise InvalidStateError("Selected sale status is not 'OPEN'")
+
+        for product in sale.lines:
+            if product.product_barcode == product_barcode:
+                product_to_edit = product
+
+        success: BooleanResponseDTO = (
+            await self.sold_product_controller.edit_sold_product_discount(
+                product_to_edit.id, sale.id, discount_rate
+            )
+        )
+
+        if success.success != True:
+            return BooleanResponseDTO(success=False)
+
+        return BooleanResponseDTO(success=True)
+
+    async def close_sale(self, sale_id: int) -> BooleanResponseDTO:
+        validate_field_is_present(str(sale_id), "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
+
+        sale: SaleDTO = await self.get_sale_by_id(sale_id)
+        if sale.status != "OPEN":
+            raise InvalidStateError("Selected sale status is not 'OPEN'")
+
+        if sale.lines.count == 0:
+            await self.delete_sale(sale_id)
+
+        await self.repo.edit_sale_status(sale_id, "PENDING")
+
+        return BooleanResponseDTO(success=True)

@@ -207,3 +207,64 @@ async def edit_sale_discount(sale_id: int, discount_rate: float) -> BooleanRespo
     - Status code: 420 invalid sale status
     """
     return await controller.edit_sale_discount(sale_id, discount_rate)
+
+
+@router.patch(
+    "/{sale_id}/items/{product_barcode}/discount",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def edit_product_discount(
+    sale_id: int, product_barcode: str, discount_rate: float
+) -> BooleanResponseDTO:
+    """
+    change discount_rate field of a product in an OPEN sale
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: sale_id as int, discount_rate as float, product barcode as str
+    - Returns: BooleanResponseDTO
+    - Status code: 200 product patched succesfully
+    - Status code: 400 invalid ID or discount_rate
+    - Status code: 401 anauthenticated
+    - Status code: 404 sale not found
+    - Status code: 420 invalid sale status
+    """
+    return await controller.edit_product_discount(
+        sale_id, product_barcode, discount_rate
+    )
+
+
+@router.patch(
+    "/{sale_id}/close",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def close_sale(sale_id: int) -> BooleanResponseDTO:
+    """
+    Turn an OPEN sale status to PENDING.
+    It will instead delete the sale if there are no products registered to the sale
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: sale_id as int
+    - Returns: BooleanResponseDTO
+    - Status code: 200 sale closed succesfully
+    - Status code: 400 invalid id
+    - Status code: 401 anauthenticated
+    - Status code: 404 sale not found
+    - Status code: 420 sale already closed
+    """
+    return await controller.close_sale(sale_id)

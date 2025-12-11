@@ -3,6 +3,7 @@ from app.models.DTO.sold_product_dto import SoldProductDTO
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.sold_products_repository import SoldProductsRepository
 from app.services.input_validator_service import (
+    validate_discount_rate,
     validate_field_is_positive,
     validate_field_is_present,
     validate_product_barcode,
@@ -95,6 +96,24 @@ class SoldProductsController:
 
         success: BooleanResponseDTO = await self.repo.edit_sold_product_quantity(
             id, sale_id, quantity
+        )
+
+        return (
+            BooleanResponseDTO(success=True)
+            if BooleanResponseDTO(success=True)
+            else BooleanResponseDTO(success=False)
+        )
+
+    async def edit_sold_product_discount(
+        self, id: int, sale_id: int, discount_rate: float
+    ) -> BooleanResponseDTO:
+        validate_field_is_present(str(id), "product_id")
+        validate_field_is_positive(id, "product_id")
+        validate_field_is_present(str(sale_id), "sale_id")
+        validate_discount_rate(discount_rate)
+
+        success: BooleanResponseDTO = await self.repo.edit_sold_product_discount(
+            id, sale_id, discount_rate
         )
 
         return (

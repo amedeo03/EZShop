@@ -67,7 +67,7 @@ class SalesRepository:
                 f"Sale with id '{sale_id}' not found",
             )
 
-    async def delete_sale(self, sale_id) -> BooleanResponseDTO:
+    async def delete_sale(self, sale_id: int) -> BooleanResponseDTO:
         async with await self._get_session() as session:
             sale = await session.execute(select(SaleDAO).filter(SaleDAO.id == sale_id))
 
@@ -80,7 +80,9 @@ class SalesRepository:
 
             return BooleanResponseDTO(success=True)
 
-    async def edit_sale_discount(self, sale_id, discount_rate) -> BooleanResponseDTO:
+    async def edit_sale_discount(
+        self, sale_id: int, discount_rate: float
+    ) -> BooleanResponseDTO:
         async with await self._get_session() as session:
             result = await session.execute(
                 select(SaleDAO).filter(SaleDAO.id == sale_id)
@@ -93,7 +95,28 @@ class SalesRepository:
             if sale.status != "OPEN":  # type: ignore
                 raise InvalidStateError("Sale is not 'OPEN'")
 
-            sale.discount_rate = discount_rate
+            sale.discount_rate = discount_rate  # type: ignore
+            await session.commit()
+            await session.refresh(sale)
+
+            return BooleanResponseDTO(success=True)
+
+    async def edit_sale_status(
+        self, sale_id: int, new_status: str
+    ) -> BooleanResponseDTO:
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(SaleDAO).filter(SaleDAO.id == sale_id)
+            )
+
+            sale = result.scalar()
+            if sale is None:
+                raise NotFoundError("Sale id {sale_id} not found")
+
+            if sale.status != "OPEN":  # type: ignore
+                raise InvalidStateError("Sale is not 'OPEN'")
+
+            sale.status = new_status  # type: ignore
             await session.commit()
             await session.refresh(sale)
 

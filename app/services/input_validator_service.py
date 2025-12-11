@@ -69,5 +69,5 @@ def validate_discount_rate(discount_rate: float) -> None:
     Validate a discount rate parameter, that needs to be comprised between 1 and 0
     """
 
-    if discount_rate < 0.0 or discount_rate > 1.0:
+    if discount_rate < 0.0 or discount_rate >= 1.0:
         raise BadRequestError("discount_rate parameter needs to be between 0.0 and 1.0")

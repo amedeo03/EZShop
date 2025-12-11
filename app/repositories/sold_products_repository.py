@@ -102,7 +102,7 @@ class SoldProductsRepository:
         self, id: int, sale_id: int, quantity: int
     ) -> BooleanResponseDTO:
         """
-        Edit a given sold product, delete it if the remaining quantity is zero
+        Edit a given sold product quantity, delete it if the remaining quantity is zero
         Throw NotFoundError if not found
         """
         async with await self._get_session() as session:
@@ -124,5 +124,30 @@ class SoldProductsRepository:
                 sold_product.quantity += quantity  # type: ignore
                 await session.commit()
                 await session.refresh(sold_product)
+
+        return BooleanResponseDTO(success=True)
+
+    async def edit_sold_product_discount(
+        self, id: int, sale_id: int, discount_rate: float
+    ) -> BooleanResponseDTO:
+        """
+        Edit a given sold product discount rate
+        Throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(SoldProductDAO).filter(
+                    (SoldProductDAO.id == id) & (SoldProductDAO.sale_id == sale_id)
+                )
+            )
+
+            sold_product: SoldProductDAO = result.scalar()
+
+            if sold_product is None:
+                raise NotFoundError("Sold product not found with the given IDs")
+
+            sold_product.discount_rate = discount_rate  # type: ignore
+            await session.commit()
+            await session.refresh(sold_product)
 
         return BooleanResponseDTO(success=True)
