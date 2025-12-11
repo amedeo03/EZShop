@@ -121,3 +121,31 @@ async def attach_product(sale_id: int, barcode: str, amount: int):
     """
 
     return await controller.attach_product(sale_id, barcode, amount)
+
+
+@router.delete(
+    "/{sale_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def delete_sale(sale_id: int) -> None:
+    """
+    Add a product specified by barcode to a specific OPEN sale
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: sale_id as int
+    - Returns: BooleanResponseDTO
+    - Status code: 204 sale deleted succesfully
+    - Status code: 400 invalid ID or sale cannot be deleted
+    - Status code: 401 anauthenticated
+    - Status code: 404 sale or product not found
+    """
+    await controller.delete_sale(sale_id)
+
+    return

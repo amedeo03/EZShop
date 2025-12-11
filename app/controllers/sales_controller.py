@@ -106,3 +106,22 @@ class SalesController:
             if sold_product
             else BooleanResponseDTO(success=False)
         )
+
+    async def delete_sale(self, sale_id: int) -> BooleanResponseDTO:
+
+        sale: SaleDTO = await self.get_sale_by_id(sale_id)
+        if sale.status == "PAID":
+            raise BadRequestError("Selected sale status is 'PAID'")
+
+        for product in sale.lines:
+            # TODO:Waiting for /products/{id}/quantity implementation
+            # self.product_controller.update_product_quantity(product.quantity, product.id)
+            success: BooleanResponseDTO = (
+                await self.sold_product_controller.delete_sold_product(
+                    product.id, sale.id
+                )
+            )
+            if success.success != True:
+                return BooleanResponseDTO(success=False)
+
+        return BooleanResponseDTO(success=True)

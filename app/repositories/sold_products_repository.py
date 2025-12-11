@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.sold_product_dao import SoldProductDAO
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.notfound_error import NotFoundError
 from app.utils import find_or_throw_not_found, throw_conflict_if_found
 
@@ -96,3 +97,22 @@ class SoldProductsRepository:
             result = await session.execute(
                 select(SoldProductDAO).filter(SoldProductDAO.product_barcode == barcode)
             )
+
+    async def delete_sold_product(self, id: int, sale_id: int) -> BooleanResponseDTO:
+        """
+        Delete a given sold product or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(SoldProductDAO).filter(
+                    SoldProductDAO.id == id and SoldProductDAO.sale_id == sale_id
+                )
+            )
+            if not result:
+                raise NotFoundError("sold product not found")
+
+            await session.delete(result.first())
+            await session.commit()
+            await session.refresh(result)
+
+        return BooleanResponseDTO(success=True)

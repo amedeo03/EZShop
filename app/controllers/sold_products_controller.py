@@ -1,3 +1,4 @@
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.sold_product_dto import SoldProductDTO
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.sold_products_repository import SoldProductsRepository
@@ -82,3 +83,17 @@ class SoldProductsController:
             raise NotFoundError("Product not found")
 
         return sold_product_dao_to_dto(sold_product_dao[0])
+
+    async def delete_sold_product(self, id: int, sale_id: int) -> BooleanResponseDTO:
+        validate_field_is_present(str(id), "product_id")
+        validate_field_is_positive(id, "product_id")
+        validate_field_is_present(str(sale_id), "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
+
+        success: BooleanResponseDTO = await self.repo.delete_sold_product(id, sale_id)
+
+        return (
+            BooleanResponseDTO(success=True)
+            if BooleanResponseDTO(success=True)
+            else BooleanResponseDTO(success=False)
+        )

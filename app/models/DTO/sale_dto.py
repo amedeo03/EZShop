@@ -9,7 +9,7 @@ from .sold_product_dto import SoldProductDTO
 class SaleDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: Optional[int]
+    id: int
     status: str
     discount_rate: float = 0.0
     created_at: datetime
