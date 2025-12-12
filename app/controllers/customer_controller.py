@@ -57,12 +57,8 @@ class CustomerController:
         return bool_to_response_dto(success)
     
     #card
-    card_id="0000000000"
     async def create_card(self) -> CardDTO: 
         """Create card"""
-        id=int(self.card_id)
-        id=id+1
-        self.card_id=str(id).zfill(10)
         created = await self.repo.create_card(self.card_id)
         return carddao_to_responsedto(created)
     
