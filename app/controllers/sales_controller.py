@@ -95,6 +95,8 @@ class SalesController:
             raise InsufficientStockError(
                 "Amount selected is greater than available stock"
             )
+        # TODO:Waiting for /products/{id}/quantity implementation
+        # self.product_controller.update_product_quantity(product.quantity, product.id)
 
         if product.id == None:
             raise BadRequestError("Invalid product")
