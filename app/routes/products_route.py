@@ -84,7 +84,7 @@ async def get_product_by_description(query: str):
         )
     ],
 )
-async def get_product(product_id: int):
+async def get_product(product_id: int | str):
     """
     Retrieve a single product by ID.
 
@@ -133,3 +133,47 @@ async def update_product(product_id: int, product: ProductTypeDTO):
     - Status code: 200 OK
     """
     return await controller.update_product(product_id, product)
+
+
+@router.patch(
+    "/{product_id}/position",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def update_product_position(
+    product_id: int | str, position: str
+) -> BooleanResponseDTO:
+    """
+    Update an existing position of a product.
+    - Permissions: Administrator, ShopManager
+    - Path parameter: id (int)
+    - Query parameter: position (str)
+    - Returns: Result of the operation as BooleanResponseDTO
+    - Status code: 201 Updated
+    """
+    return await controller.update_product_position(product_id, position)
+
+
+@router.patch(
+    "/{product_id}/quantity",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
+    ],
+)
+async def update_product_quantity(
+    product_id: int | str, quantity: int | str
+) -> BooleanResponseDTO:
+    """
+    Update an existing quantity of a product.
+    - Permissions: Administrator, ShopManager
+    - Path parameter: id (int)
+    - Query parameter: quantity (int)
+    - Returns: Result of the operation as BooleanResponseDTO
+    - Status code: 200 OK
+    """
+    return await controller.update_product_quantity(product_id, quantity)

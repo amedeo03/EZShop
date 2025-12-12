@@ -1,7 +1,6 @@
 import re
 
 from app.models.errors.bad_request import BadRequestError
-from app.models.errors.invalid_barcode_format_error import InvalidFormatError
 from app.services.gtin_service import gtin
 
 
@@ -15,13 +14,12 @@ def validate_product_barcode(barcode: str) -> None:
     Validate product barcode (String length + GTIN algorithm).
     - Parameters: barcode (str)
     - Throws:
-        - BadRequestError if barcode is not a string of 12-14 digits
-        - InvalidFormatError if GTIN check fails
+        - BadRequestError if barcode is not a string of 12-14 digits or GTIN check fails (invalid barcode)
     """
     if len(barcode) < 12 or len(barcode) > 14:
         raise BadRequestError("productCode must be a string of 12-14 digits")
     elif not gtin(barcode):
-        raise InvalidFormatError("Wrong barcode format (GTIN)")
+        raise BadRequestError("Invalid barcode (GTIN)")
 
 
 def validate_field_is_present(field: str, field_name: str) -> None:
