@@ -8,6 +8,8 @@ from app.models.DTO.error_dto import ErrorDTO
 from app.models.DTO.product_dto import ProductTypeDTO
 from app.models.DTO.token_dto import TokenDTO
 from app.models.DTO.user_dto import UserDTO
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+
 
 
 def create_error_dto(code: int, message: str, name: str) -> ErrorDTO:
@@ -56,3 +58,5 @@ def productdao_to_product_type_dto(product_dao: ProductDAO) -> ProductTypeDTO:
         quantity=product_dao.quantity,
         position=product_dao.position,
     )
+def bool_to_response_dto(b=bool):
+    return BooleanResponseDTO(success=b)

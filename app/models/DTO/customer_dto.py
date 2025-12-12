@@ -15,5 +15,5 @@ class CustomerResponseDTO(BaseModel):
 
 class CustomerCreateDTO(BaseModel):
     id: Optional[int] = None
-    name: str 
+    name: Optional[str]=None 
     card: Optional[CardDTO] = None

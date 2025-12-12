@@ -21,16 +21,25 @@ class CustomerRepository:
     async def _get_session(self) -> AsyncSession:
         return self._session or AsyncSessionLocal()
 
-    async def create_customer(self, name: str,cardId: str) -> CustomerDAO:
+    async def create_customer(self, name: str,cardId: str, points: int) -> CustomerDAO:
         """
         Create customer
         """
         
         async with await self._get_session() as session:
-            customer = CustomerDAO(name=name, cardId=cardId)
+            card=await self.get_card_by_id(cardId)
+            print(card)
+            if   card is None:
+                customer = CustomerDAO(name=name, cardId=None)
+            else:
+                
+                customer = CustomerDAO(name=name, cardId=cardId)
+                card=  await session.get(CardDAO, cardId)
+                if(card.points!=points):
+                    card.points= points 
             session.add(customer)
             await session.commit()
-            await session.refresh(customer)
+            await session.refresh(customer,attribute_names=["card"])
             return customer
         
     async def list_customer(self) -> list[CustomerDAO]:
@@ -116,13 +125,13 @@ class CustomerRepository:
             await session.commit()
             return True
 #card
-    async def create_card(self, cardId: str,points: int) -> CardDAO:
+    async def create_card(self, cardId: str) -> CardDAO:
         """
         Create card
         """
         
         async with await self._get_session() as session:
-            card= CardDAO(cardId=cardId,points=points)
+            card= CardDAO(cardId=cardId,points=0)
             session.add(card)
             await session.commit()
             await session.refresh(card)
@@ -159,10 +168,10 @@ class CustomerRepository:
             await session.refresh(card)
             return card
 
-    async def get_card_by_id(self, cardId:str, points:int)->CardDAO:
+    async def get_card_by_id(self, cardId:str)->CardDAO|None:
         """get card by id"""
         async with await self._get_session() as session:
             card= await session.get(CardDAO,cardId)
-            if card is None:
-                card= CardDAO(cardId=cardId,points=points)
+            if card is None or cardId is None:
+                return None
             return card
