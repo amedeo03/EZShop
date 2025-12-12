@@ -136,7 +136,8 @@ class SalesController:
         self, sale_id: int, barcode: str, amount: int
     ) -> BooleanResponseDTO:
 
-        product_to_edit: SoldProductDTO
+        product_to_edit: Optional[SoldProductDTO] = None
+
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status != "OPEN":
             raise InvalidStateError("Selected sale status is not 'OPEN'")
@@ -145,13 +146,20 @@ class SalesController:
             if product.product_barcode == barcode:
                 product_to_edit = product
 
-            # TODO:Waiting for /products/{id}/quantity implementation
-            # self.product_controller.update_product_quantity(product.quantity, product.id)
-        success: BooleanResponseDTO = (
-            await self.sold_product_controller.edit_sold_product_quantity(
-                product_to_edit.id, sale.id, -amount
+        if product_to_edit is None:
+            raise NotFoundError(
+                "product barcode '{barcode}' not found in sale {sale_id}"
             )
-        )
+        else:
+            # TODO:Waiting for /products/{id}/quantity implementation
+            # self.product_controller.update_product_quantity(
+            #    product.id, product.quantity
+            # )
+            success: BooleanResponseDTO = (
+                await self.sold_product_controller.edit_sold_product_quantity(
+                    product_to_edit.id, sale.id, -amount
+                )
+            )
         if success.success != True:
             return BooleanResponseDTO(success=False)
 
@@ -174,6 +182,7 @@ class SalesController:
         validate_field_is_present(str(sale_id), "sale_id")
         validate_field_is_positive(sale_id, "sale_id")
         validate_field_is_present(product_barcode, "product_barcode")
+        validate_product_barcode(product_barcode)
         validate_discount_rate(discount_rate)
 
         product_to_edit: SoldProductDTO
@@ -206,8 +215,8 @@ class SalesController:
 
         if len(sale.lines) == 0:
             await self.delete_sale(sale_id)
-
-        await self.repo.edit_sale_status(sale_id, "PENDING")
+        else:
+            await self.repo.edit_sale_status(sale_id, "PENDING")
 
         return BooleanResponseDTO(success=True)
 

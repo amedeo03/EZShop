@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.sold_product_dao import SoldProductDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+from app.models.errors.bad_request import BadRequestError
 from app.models.errors.conflict_error import ConflictError
 from app.models.errors.notfound_error import NotFoundError
 from app.utils import find_or_throw_not_found, throw_conflict_if_found
@@ -111,9 +112,10 @@ class SoldProductsRepository:
             if sold_product is None:
                 raise NotFoundError("Sold product not found with the given IDs")
 
-            if sold_product.quantity + quantity <= 0:  # type: ignore
-                await session.delete(sold_product)
-                await session.commit()
+            if sold_product.quantity + quantity < 0:  # type: ignore
+                raise BadRequestError(
+                    "Quantity to be removed is higher than the one in the sale"
+                )
             else:
                 sold_product.quantity += quantity  # type: ignore
                 await session.commit()
