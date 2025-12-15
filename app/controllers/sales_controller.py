@@ -1,6 +1,7 @@
 from math import floor
 from typing import List, Optional
 
+from app.controllers.accounting_controller import AccountingController
 from app.controllers.products_controller import ProductsController
 from app.controllers.sold_products_controller import SoldProductsController
 from app.models.DAO.sale_dao import SaleDAO
@@ -29,6 +30,7 @@ class SalesController:
         self.repo = SalesRepository()
         self.sold_product_controller = SoldProductsController()
         self.product_controller = ProductsController()
+        self.accounting_controller = AccountingController()
 
     async def create_sale(self) -> SaleDTO:
         """
@@ -212,6 +214,7 @@ class SalesController:
         validate_field_is_positive(cash_amount, "cash_amount")
 
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
+        current_balance: float = 0.0
         if sale.status != "PENDING":
             raise InvalidStateError("Selected sale status is not 'PENDING'")
 
@@ -219,6 +222,11 @@ class SalesController:
         change: float = cash_amount - amount_needed
         if change > 0:
             await self.repo.edit_sale_status(sale_id, "PAID")
+            current_balance = await self.accounting_controller.get_balance()
+            await self.accounting_controller.set_balance(
+                current_balance + amount_needed
+            )
+
         else:
             raise BadRequestError("amount is not enough to pay the sale")
 

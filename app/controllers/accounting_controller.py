@@ -1,10 +1,12 @@
-from app.repositories.accounting_repository import AccountingRepository
 from fastapi import HTTPException
+
+from app.repositories.accounting_repository import AccountingRepository
+
 
 class AccountingController:
 
-    def __init__(self, repository: AccountingRepository):
-        self.repo = repository
+    def __init__(self):
+        self.repo = AccountingRepository()
 
     async def get_balance(self) -> float:
         """
