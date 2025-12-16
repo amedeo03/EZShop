@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.return_transaction_dao import ReturnTransactionDAO
-from app.models.DAO.returned_item_dao import ReturnedItemDAO
+from app.models.DAO.returned_product_dao import ReturnedProductDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
@@ -92,3 +92,45 @@ class ReturnRepository:
             await session.commit()
 
             return BooleanResponseDTO(success=True)
+        
+    async def list_returns_for_sale_id(self, sale_id: int) -> list[ReturnTransactionDAO]:
+        """
+        List all Return Transactions for a given sale ID.
+        - Returns: list of ReturnTransactionDAO
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(ReturnTransactionDAO)
+                .filter(ReturnTransactionDAO.sale_id == sale_id)
+                .options(selectinload(ReturnTransactionDAO.lines))
+            )
+            returns = list(result.scalars())
+            return find_or_throw_not_found(
+                [returns] if returns else [],
+                lambda _: True,
+                f"There is no return present in the database for sale id '{sale_id}'",
+            )
+            
+    async def attach_product_to_return_transaction(
+        self,
+        return_id: int,
+        barcode: str,
+        amount: int
+    ) -> ReturnedProductDAO:
+        """
+        Attach a product to a return transaction.
+        - Throws:
+            - ConflictError ?
+        """
+        async with await self._get_session() as session:
+            
+            returned_item = ReturnedProductDAO(
+                return_id = return_id,
+                barcode = barcode,
+                amount = amount
+            )
+
+            session.add(returned_item)
+            await session.commit()
+            await session.refresh(returned_item)
+            return returned_item

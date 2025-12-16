@@ -16,7 +16,7 @@ class ReturnTransactionDAO(Base):
     )
     closed_at = Column(DateTime, nullable=True, unique=False)
     lines = relationship(
-        "ReturnedItemDAO",
+        "ReturnedProductDAO",
         back_populates="returns",
         cascade="all, delete-orphan",
         lazy="selectin",

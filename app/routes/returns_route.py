@@ -59,6 +59,9 @@ async def list_returns() -> List[ReturnTransactionDTO]:
     - Permissions: Administrator, ShopManager, Cashier
     - Request body: no body required
     - Returns: list of ReturnTransactionDTO
+    
+    ToDO
+    
     - Status code: 200 returns retrieved succesfully
     - Status code: 401 unauthenticated
     """
@@ -117,10 +120,69 @@ async def delete_return(return_id: int) -> None:
     TODO:
     
     - Status code: 204 return deleted succesfully
-    - Status code: 400 invalid ID or return cannot be deleted
+    - Status code: 400 Bad Request
     - Status code: 401 unauthenticated
     - Status code: 404 return or sale not found
+    - Status code: 420 Cannot delete a Reimbursed return
     """
     await controller.delete_return(return_id)
 
     return
+
+@router.get(
+    "/sale/{sale_id}",
+    response_model=List[ReturnTransactionDTO],
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def list_returns_for_sale_id(sale_id: int) -> List[ReturnTransactionDTO]:
+    """
+    Retrieves all return transactions associated with a sale.
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: sale_id as int
+    - Returns: List[ReturnTransactionDTO]
+    
+    TODO:
+    
+    - Status code: 200 return retrieved succesfully
+    - Status code: 400 missing or invalid ID
+    - Status code: 401 unauthenticated
+    """
+
+    return await controller.list_returns_for_sale_id(sale_id)
+
+@router.post(
+    "/{return_id}/items",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def attach_product_to_return_transaction(return_id: int, barcode: str, amount: int) -> BooleanResponseDTO:
+    """
+    Add a product specified by barcode to a specific OPEN return transaction
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: return_id as int, barcode as str, amount as int
+    - Returns: BooleanResponseDTO
+    
+    - Status code: 201 product added succesfully
+    - Status code: 400 invalid ID or insufficient stock
+    - Status code: 401 unauthenticated
+    - Status code: 404 sale or product not found
+    - Status code: 420 Invalid sale state for return
+    """
+
+    return await controller.attach_product_to_return_transaction(return_id, barcode, amount)
