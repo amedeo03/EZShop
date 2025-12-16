@@ -5,7 +5,7 @@ test-all:
   stage: test
   image: python:3.13
   tags:
-    - ezshop
+    - geocontrol
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
