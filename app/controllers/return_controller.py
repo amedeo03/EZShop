@@ -17,6 +17,8 @@ from app.models.DTO.sale_dto import SaleDTO
 from app.models.DTO.sold_product_dto import SoldProductDTO
 from app.models.DTO.returned_product_dto import ReturnedProductDTO
 from app.repositories.returned_products_repository import ReturnedProductsRepository
+from app.controllers.accounting_controller import AccountingController
+from app.routes.accounting_route import get_current_balance, set_balance
 
 from app.services.gtin_service import gtin
 from app.services.input_validator_service import (
@@ -33,6 +35,7 @@ class ReturnController:
         self.returnedProductRepository = ReturnedProductsRepository()
         self.product_controller = ProductsController()
         self.sales_controller = SalesController()
+        self.accounting_controller = AccountingController()
         
 
     async def create_return_transaction(self, sale_id: int) -> ReturnTransactionDTO:
@@ -42,11 +45,13 @@ class ReturnController:
         - Parameters: return_transaction (ReturnDTO)
         - Returns: ReturnDTO
         """
+        validate_field_is_present(sale_id, "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
         sale: SaleDTO = await self.sales_controller.get_sale_by_id(
             sale_id
         )
         if sale.status != "PAID":
-            raise InvalidStateError("Selected sale status is not 'PAID'")
+            raise InvalidStateError("Return allowed only on paid sales")
 
         new_return_transaction: ReturnTransactionDAO = await self.repo.create_return_transaction(
             sale_id=sale_id
@@ -79,7 +84,8 @@ class ReturnController:
         - Parameters: return_id as int
         - Returns: ReturnTransactionDTO
         """
-        #validate_field_is_positive(sale_id, "product_id")
+        validate_field_is_present(return_id, "return_id")
+        validate_field_is_positive(return_id, "return_id")
         return_transaction: ReturnTransactionDAO = await self.repo.get_return_by_id(return_id)
         return return_transaction_dao_to_return_transaction_dto(return_transaction)
     
@@ -99,7 +105,8 @@ class ReturnController:
         - Parameters: sale_id as int
         - Returns: List of ReturnTransactionDTO
         """
-
+        validate_field_is_present(sale_id, "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
         return_transactions_dao: List[ReturnTransactionDAO] = await self.repo.list_returns_for_sale_id(sale_id)
         return [
             return_transaction_dao_to_return_transaction_dto(rt)
@@ -122,7 +129,7 @@ class ReturnController:
 
         return_transaction: ReturnTransactionDTO = await self.get_return_by_id(return_id)
         if return_transaction.status != "OPEN":
-            raise InvalidStateError("Selected return status is not 'OPEN'")
+            raise InvalidStateError("Cannot modify a closed or reimbursed return")
 
         product: ProductTypeDTO = await self.product_controller.get_product_by_barcode(
             barcode
@@ -177,7 +184,7 @@ class ReturnController:
 
         return_transaction: ReturnTransactionDTO = await self.get_return_by_id(return_id)
         if return_transaction.status != "OPEN":
-            raise InvalidStateError("Selected return status is not 'OPEN'")
+            raise InvalidStateError("Cannot remove items from a closed return")
 
         returned_product: ReturnedProductDTO = await self.returnedProductRepository.edit_quantity_of_returned_product(
             return_id, barcode, amount
@@ -188,8 +195,6 @@ class ReturnController:
             if returned_product
             else BooleanResponseDTO(success=False)
         )
-        
-        
         
     async def close_return_transaction(self, return_id: int) -> BooleanResponseDTO:
         """
@@ -223,4 +228,34 @@ class ReturnController:
 
         return response
       
+    async def reimburse_return_transaction(self, return_id: int) -> BooleanResponseDTO:
+        """
+        Close a return transaction.
+
+        - Parameters: return_id as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
         
+        return_transaction = await self.get_return_by_id(return_id)
+        if return_transaction.status != "CLOSED":
+            raise InvalidStateError("Selected return transaction is not 'CLOSED'")
+
+
+        response: BooleanResponseDTO = await self.repo.reimburse_return_transaction(return_id)
+        
+        """
+        update balance:
+        decrease balance by the total amount of the return transaction
+        """
+        
+        current_balance = await self.accounting_controller.get_balance()
+        if current_balance is None:
+            raise BadRequestError("Invalid balance")
+        total_return_amount = sum(
+            line.price_per_unit * line.quantity for line in return_transaction.lines
+        )
+        new_balance = current_balance - total_return_amount
+        await self.accounting_controller.set_balance(new_balance)
+        
+        return response

@@ -9,13 +9,6 @@ from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.return_transaction_dto import ReturnTransactionDTO
 from app.models.user_type import UserType
 
-'''
-ToDo:
-1. Define DTO
-2. Define DAO
-3. Implement controller
-4. Implement routes
-'''
 
 router = APIRouter(prefix=ROUTES["V1_RETURNS"], tags=["Returns"])
 controller = ReturnController()
@@ -245,3 +238,30 @@ async def close_return_transaction(return_id: int) -> BooleanResponseDTO:
     - Status code: 420 return already closed
     """
     return await controller.close_return_transaction(return_id)
+
+@router.patch(
+    "/{return_id}/reimburse",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager]
+            )
+        )
+    ],
+)
+async def reimburse_return_transaction(return_id: int) -> BooleanResponseDTO:
+    """
+    Turn a CLOSED return transaction to REIMBURSED.
+
+    - Permissions: Administrator, ShopManager
+    - Request body: return_id as int
+    - Returns: BooleanResponseDTO
+    - Status code: 200 return closed succesfully
+    - Status code: 400 invalid id
+    - Status code: 401 unauthenticated
+    - Status code: 404 return not found
+    - Status code: 420 return already closed
+    """
+    return await controller.reimburse_return_transaction(return_id)

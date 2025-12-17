@@ -169,3 +169,33 @@ class ReturnRepository:
             await session.refresh(return_transaction)
 
             return BooleanResponseDTO(success=True)
+        
+    async def reimburse_return_transaction(
+        self,
+        return_id: int
+    ) -> BooleanResponseDTO:
+        """
+        Reimburse a return transaction.
+        - Throws:
+            - InvalidStateError if the return is not in CLOSED status
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(ReturnTransactionDAO).filter(
+                    ReturnTransactionDAO.id == return_id
+                )
+            )
+
+            return_transaction: ReturnTransactionDAO = result.scalar_one_or_none()
+
+            if return_transaction is None:
+                raise NotFoundError(f"Return transaction with id '{return_id}' not found")
+
+            if return_transaction.status != ReturnStatus.CLOSED:
+                raise InvalidStateError("Only return transactions with status 'CLOSED' can be reimbursed")
+
+            return_transaction.status = ReturnStatus.REIMBURSED
+            await session.commit()
+            await session.refresh(return_transaction)
+
+            return BooleanResponseDTO(success=True)
