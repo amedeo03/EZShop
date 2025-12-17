@@ -10,7 +10,7 @@ test-all:
     - pip install --upgrade pip
     - pip install -r requirements.txt
   script:
-    - pytest tests/ --junitxml=reports/junit/pytest-results.xml --cov --cov-report=term --cov-report=xml
+    - pytest tests/ --cov --cov-report=term --cov-report=xml
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
