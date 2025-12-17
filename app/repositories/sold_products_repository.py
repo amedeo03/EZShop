@@ -116,9 +116,6 @@ class SoldProductsRepository:
                 raise BadRequestError(
                     "Quantity to be removed is higher than the one in the sale"
                 )
-            elif sold_product.quantity + quantity == 0:  # type: ignore
-                await session.delete(sold_product)
-                await session.commit()
             else:
                 sold_product.quantity += quantity  # type: ignore
                 await session.commit()

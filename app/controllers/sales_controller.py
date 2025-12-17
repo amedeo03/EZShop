@@ -1,7 +1,6 @@
 from math import floor
 from typing import List, Optional
 
-from app.controllers.accounting_controller import AccountingController
 from app.controllers.products_controller import ProductsController
 from app.controllers.sold_products_controller import SoldProductsController
 from app.models.DAO.sale_dao import SaleDAO
@@ -30,7 +29,6 @@ class SalesController:
         self.repo = SalesRepository()
         self.sold_product_controller = SoldProductsController()
         self.product_controller = ProductsController()
-        self.accounting_controller = AccountingController()
 
     async def create_sale(self) -> SaleDTO:
         """
@@ -97,6 +95,8 @@ class SalesController:
             raise InsufficientStockError(
                 "Amount selected is greater than available stock"
             )
+        # TODO:Waiting for /products/{id}/quantity implementation
+        # self.product_controller.update_product_quantity(product.quantity, product.id)
 
         if product.id == None:
             raise BadRequestError("Invalid product")
@@ -106,9 +106,12 @@ class SalesController:
                 product.id, sale_id, product.barcode, amount, product.price_per_unit
             )
         )
-        await self.product_controller.update_product_quantity(product.id, -amount)
 
-        return BooleanResponseDTO(success=True)
+        return (
+            BooleanResponseDTO(success=True)
+            if sold_product
+            else BooleanResponseDTO(success=False)
+        )
 
     async def delete_sale(self, sale_id: int) -> BooleanResponseDTO:
 
@@ -117,11 +120,17 @@ class SalesController:
             raise BadRequestError("Selected sale status is 'PAID'")
 
         for sold_product in sale.lines:
-            await self.edit_sold_product_quantity(
-                sale.id, sold_product.product_barcode, -sold_product.quantity
+            # TODO:Waiting for /products/{id}/quantity implementation
+            # self.product_controller.update_product_quantity(product.quantity, product.id)
+            success_prod: BooleanResponseDTO = (
+                await self.sold_product_controller.edit_sold_product_quantity(
+                    sold_product.id, sale.id, -sold_product.quantity
+                )
             )
+            if success_prod.success != True:
+                return BooleanResponseDTO(success=False)
 
-        await self.repo.delete_sale(sale_id)
+        success_sale: BooleanResponseDTO = await self.repo.delete_sale(sale_id)
 
         return BooleanResponseDTO(success=True)
 
@@ -144,12 +153,17 @@ class SalesController:
                 "product barcode '{barcode}' not found in sale {sale_id}"
             )
         else:
-            await self.sold_product_controller.edit_sold_product_quantity(
-                product_to_edit.id, sale.id, amount
+            # TODO:Waiting for /products/{id}/quantity implementation
+            # self.product_controller.update_product_quantity(
+            #    product.id, product.quantity
+            # )
+            success: BooleanResponseDTO = (
+                await self.sold_product_controller.edit_sold_product_quantity(
+                    product_to_edit.id, sale.id, -amount
+                )
             )
-            await self.product_controller.update_product_quantity(
-                product_to_edit.id, -amount
-            )
+        if success.success != True:
+            return BooleanResponseDTO(success=False)
 
         return BooleanResponseDTO(success=True)
 
@@ -214,7 +228,6 @@ class SalesController:
         validate_field_is_positive(cash_amount, "cash_amount")
 
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
-        current_balance: float = 0.0
         if sale.status != "PENDING":
             raise InvalidStateError("Selected sale status is not 'PENDING'")
 
@@ -222,11 +235,6 @@ class SalesController:
         change: float = cash_amount - amount_needed
         if change > 0:
             await self.repo.edit_sale_status(sale_id, "PAID")
-            current_balance = await self.accounting_controller.get_balance()
-            await self.accounting_controller.set_balance(
-                current_balance + amount_needed
-            )
-
         else:
             raise BadRequestError("amount is not enough to pay the sale")
 

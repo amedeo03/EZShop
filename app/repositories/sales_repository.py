@@ -1,4 +1,3 @@
-import datetime
 from typing import List, Optional
 
 from sqlalchemy import select
@@ -7,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.sale_dao import SaleDAO
+from app.models.DAO.sold_product_dao import SoldProductDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
@@ -116,9 +116,6 @@ class SalesRepository:
             if new_status == "PENDING":
                 if sale.status != "OPEN":  # type: ignore
                     raise InvalidStateError("Sale is not 'OPEN'")
-                sale.closed_at = datetime.datetime.now(datetime.timezone.utc).replace(  # type: ignore
-                    microsecond=0
-                )
 
             if new_status == "PAID":
                 if sale.status != "PENDING":  # type: ignore
