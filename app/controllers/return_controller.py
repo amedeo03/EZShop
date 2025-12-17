@@ -16,8 +16,8 @@ from app.controllers.sales_controller import SalesController
 from app.models.DTO.sale_dto import SaleDTO
 from app.models.DTO.sold_product_dto import SoldProductDTO
 from app.models.DTO.returned_product_dto import ReturnedProductDTO
-from app.repositories.returned_products_repository import ReturnedProductsRepository
 from app.controllers.accounting_controller import AccountingController
+from app.controllers.returned_product_controller import ReturnedProductController
 from app.routes.accounting_route import get_current_balance, set_balance
 
 from app.services.gtin_service import gtin
@@ -32,7 +32,7 @@ from app.services.mapper_service import return_transaction_dao_to_return_transac
 class ReturnController:
     def __init__(self):
         self.repo = ReturnRepository()
-        self.returnedProductRepository = ReturnedProductsRepository()
+        self.returnedProductController = ReturnedProductController()
         self.product_controller = ProductsController()
         self.sales_controller = SalesController()
         self.accounting_controller = AccountingController()
@@ -156,7 +156,7 @@ class ReturnController:
             raise BadRequestError("Invalid product")
 
         returned_product: ReturnedProductDTO = (
-            await self.returnedProductRepository.create_returned_product(
+            await self.returnedProductController.create_returned_product(
                 product.id, return_id, product.barcode, amount, product.price_per_unit
             )
         )
@@ -259,3 +259,5 @@ class ReturnController:
         await self.accounting_controller.set_balance(new_balance)
         
         return response
+
+  

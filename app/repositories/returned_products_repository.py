@@ -98,3 +98,37 @@ class ReturnedProductsRepository:
                     await session.commit()
 
         return returned_product
+
+
+    async def get_returned_products_by_id(self, product_id: int) -> list[ReturnedProductDAO]:
+        """
+        Get product(s) by id or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(ReturnedProductDAO).filter(ReturnedProductDAO.id == product_id)
+            )
+            products = result.scalar()
+
+            if products is None:
+                raise NotFoundError("No products with id '{product_id}' returned")
+            else:
+                return products
+            
+    async def get_returned_product_by_barcode(self, barcode: str) -> list[ReturnedProductDAO]:
+        """
+        Get product(s) by barcode or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(ReturnedProductDAO).filter(ReturnedProductDAO.product_barcode == barcode)
+            )
+            products = result.scalar()
+
+            if products is None:
+                raise NotFoundError("No products with barcode '{barcode}' returned")
+            else:
+                return products
+            
+            
+            
