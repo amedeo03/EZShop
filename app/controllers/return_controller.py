@@ -148,7 +148,7 @@ class ReturnController:
         if product.id == None:
             raise BadRequestError("Invalid product")
 
-        returned_item: ReturnedProductDTO = (
+        returned_product: ReturnedProductDTO = (
             await self.returnedProductRepository.create_returned_product(
                 product.id, return_id, product.barcode, amount, product.price_per_unit
             )
@@ -156,6 +156,35 @@ class ReturnController:
 
         return (
             BooleanResponseDTO(success=True)
-            if returned_item
+            if returned_product
+            else BooleanResponseDTO(success=False)
+        )
+        
+        
+    async def edit_quantity_of_returned_product(
+        self, return_id: int, barcode: str, amount: int
+    ) -> BooleanResponseDTO:
+        """
+        Update the quantity of a product from a given return transaction.
+        Delete the returned product if the remaining quantity is zero.
+
+        - Parameters: return_id as int, barcode as str, amount as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
+        validate_field_is_present(barcode, "barcode")
+        validate_product_barcode(barcode)
+
+        return_transaction: ReturnTransactionDTO = await self.get_return_by_id(return_id)
+        if return_transaction.status != "OPEN":
+            raise InvalidStateError("Selected return status is not 'OPEN'")
+
+        returned_product: ReturnedProductDTO = await self.returnedProductRepository.edit_quantity_of_returned_product(
+            return_id, barcode, amount
+        )
+
+        return (
+            BooleanResponseDTO(success=True)
+            if returned_product
             else BooleanResponseDTO(success=False)
         )

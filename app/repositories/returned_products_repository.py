@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
+from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.DAO.returned_product_dao import ReturnedProductDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.bad_request import BadRequestError
@@ -60,3 +61,40 @@ class ReturnedProductsRepository:
             await session.commit()
             await session.refresh(returned_product)
             return returned_product
+
+    async def edit_quantity_of_returned_product(
+        self, return_id: int, barcode: str, amount: int
+    ) -> ReturnedProductDAO:
+        """
+        Edit a given returned product quantity, delete it if the remaining quantity is zero
+        Throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(ReturnedProductDAO).filter(
+                    (ReturnedProductDAO.return_id == return_id) & 
+                    (ReturnedProductDAO.product_barcode == barcode)
+                )
+            )
+
+            returned_product: ReturnedProductDAO = result.scalar_one_or_none()
+
+            if returned_product is None:
+                raise NotFoundError(
+                    f"Returned product with barcode '{barcode}' not found in return transaction '{return_id}'"
+                )
+                
+            if returned_product.quantity < amount:
+                raise InvalidStateError(
+                    f"Cannot delete {amount} items as only {returned_product.quantity} are present in return transaction '{return_id}'"
+                )
+            else:
+                returned_product.quantity -= amount
+                await session.commit()
+                await session.refresh(returned_product)
+                
+                if returned_product.quantity == 0:
+                    await session.delete(returned_product)
+                    await session.commit()
+
+        return returned_product

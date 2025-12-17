@@ -186,3 +186,35 @@ async def attach_product_to_return_transaction(return_id: int, barcode: str, amo
     """
 
     return await controller.attach_product_to_return_transaction(return_id, barcode, amount)
+
+
+@router.delete(
+    "/{return_id}/items",
+    response_model=BooleanResponseDTO,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
+            )
+        )
+    ],
+)
+async def delete_product_from_return(return_id: int, barcode: str, amount: int) -> BooleanResponseDTO:
+    """
+    Decreases or removes a product line from a return transaction. 
+
+    - Permissions: Administrator, ShopManager, Cashier
+    - Request body: return_id as int, barcode as str, amount as int
+    - Returns: BooleanResponseDTO
+    
+    TODO:
+    
+    - Status code: 400 Bad Request
+    - Status code: 401 unauthenticated
+    - Status code: 404 return or sale not found
+    - Status code: 420 Cannot delete a Reimbursed return
+    """
+    return await controller.edit_quantity_of_returned_product(return_id, barcode, amount)
+
+    
