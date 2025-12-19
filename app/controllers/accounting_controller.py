@@ -1,13 +1,15 @@
 from fastapi import HTTPException
 
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.balance_error import BalanceError
 from app.repositories.accounting_repository import AccountingRepository
+from app.services.input_validator_service import validate_field_is_positive
 
 
 class AccountingController:
 
-    def __init__(self, repository: AccountingRepository):
-        self.repo = repository
+    def __init__(self):
+        self.repo = AccountingRepository()
 
     async def get_balance(self) -> float:
         """
@@ -22,10 +24,11 @@ class AccountingController:
         if amount < 0:
             raise BalanceError("Balance cannot be negative.")
 
-        return await self.repo.set_balance(amount)
+        if await self.repo.set_balance(amount):
+            return BooleanResponseDTO(success=True)
 
-    async def reset_balance(self) -> float:
+    async def reset_balance(self) -> None:
         """
-        Reset the system balance to zero.
+        Reset the system balance to 0
         """
-        return await self.repo.set_balance(0.0)
+        await self.repo.reset_balance()

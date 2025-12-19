@@ -1,9 +1,11 @@
 from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.accounting_dao import AccountingDAO
+
 
 class AccountingRepository:
 
@@ -15,42 +17,46 @@ class AccountingRepository:
 
     async def get_balance(self) -> float:
         """
-        Retrieve the current system balance.
+        Retrieve the current balance.
         Returns 0.0 if the register has not been initialized.
         """
         async with await self._get_session() as session:
-            # Get System Info
-            # We assume the first row in 'system_info' is the shop's balance
-            result = await session.execute(select(AccountingDAO))
-            system_info = result.scalars().first()
+            balance_db = await session.execute(select(AccountingDAO))
+            balance_db = balance_db.scalars().first()
 
-            # If system info doesn't exist, we assume 0 balance
-            if not system_info:
+            if not balance_db:
                 return 0.0
-            
-            return system_info.balance
 
-    async def set_balance(self, new_balance: float) -> float:
+            return balance_db.balance
+
+    async def set_balance(self, new_balance: float) -> bool:
         """
         Set the system balance to a specific amount.
         Creates the record if it does not exist.
         """
         async with await self._get_session() as session:
-            # Get System Info
-            result = await session.execute(select(AccountingDAO))
-            system_info = result.scalars().first()
+            balance_db = await session.execute(select(AccountingDAO))
+            balance_db = balance_db.scalars().first()
 
-            if system_info:
-                # Update existing record
-                system_info.balance = new_balance
+            if balance_db:
+                balance_db.balance = new_balance
             else:
-                # Create the missing record (Lazy Initialization)
-                # This prevents "System balance information not found" errors
-                system_info = AccountingDAO(balance=new_balance)
-                session.add(system_info)
+                balance_db = AccountingDAO(balance=new_balance)
+                session.add(balance_db)
 
-            # Commit changes and refresh object
             await session.commit()
-            await session.refresh(system_info)
-            
-            return system_info.balance
+            await session.refresh(balance_db)
+            return True
+
+    async def reset_balance(self) -> None:
+        """
+        Reset the balance to 0.
+        """
+        async with await self._get_session() as session:
+            balance_db = await session.execute(select(AccountingDAO))
+            balance_db = balance_db.scalars().first()
+
+            balance_db.balance = 0.0
+
+            await session.commit()
+            await session.refresh(balance_db)
