@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select ,func
+from sqlalchemy import select ,func, desc
 from app.models.DAO.customer_dao import CustomerDAO
 from app.models.DAO.card_dao import CardDAO
 from app.models.errors.bad_request import BadRequestError
@@ -21,16 +21,28 @@ class CustomerRepository:
     async def _get_session(self) -> AsyncSession:
         return self._session or AsyncSessionLocal()
 
-    async def create_customer(self, name: str,cardId: str) -> CustomerDAO:
+    async def create_customer(self, name: str,cardId: str, points: int) -> CustomerDAO:
         """
         Create customer
         """
         
         async with await self._get_session() as session:
-            customer = CustomerDAO(name=name, cardId=cardId)
+            card=await self.get_card_by_id(cardId)
+            if   card is None:
+                customer = CustomerDAO(name=name, cardId=None)
+            else:
+                result_conflict = await session.execute(select(CustomerDAO).filter(CustomerDAO.cardId == cardId))
+                result_conflict=result_conflict.scalars().first()
+                if result_conflict is None:
+                    customer = CustomerDAO(name=name, cardId=cardId)
+                    card=  await session.get(CardDAO, cardId)
+                    if(card.points!=points):
+                        card.points= points
+                else:
+                    customer = CustomerDAO(name=name, cardId=None)
             session.add(customer)
             await session.commit()
-            await session.refresh(customer)
+            await session.refresh(customer,attribute_names=["card"])
             return customer
         
     async def list_customer(self) -> list[CustomerDAO]:
@@ -90,10 +102,11 @@ class CustomerRepository:
                     raise NotFoundError("Card not found")
                 result_conflict = await session.execute(select(CustomerDAO).filter(CustomerDAO.cardId == updated_cardId))
                 result_conflict=result_conflict.scalars().first()
-                if not(result_conflict is None or result_conflict.id==customer_id):
+                if result_conflict is not None and result_conflict.id!=db_customer.id : #if there is a conflict and the customer id are same
                     raise ConflictError("Card with id "+updated_cardId+" is already attached to a customer")
                 db_customer.cardId=updated_cardId
-                db_card.points=updated_points
+                if updated_points>0:
+                    db_card.points=updated_points
 
             await session.commit()
             await session.refresh(db_customer,attribute_names=["card"])
@@ -116,13 +129,21 @@ class CustomerRepository:
             await session.commit()
             return True
 #card
-    async def create_card(self, cardId: str,points: int) -> CardDAO:
+    async def create_card(self) -> CardDAO:
         """
         Create card
         """
         
         async with await self._get_session() as session:
-            card= CardDAO(cardId=cardId,points=points)
+            id_db= await session.execute(select(CardDAO).order_by(desc(CardDAO.cardId)))
+            id_db= id_db.scalars().first()
+            if id_db is None:
+                id=-1
+            else:
+                id=int(id_db.cardId)
+            id=id+1
+            id=str(id).zfill(10)
+            card= CardDAO(cardId=id,points=0)
             session.add(card)
             await session.commit()
             await session.refresh(card)
@@ -139,7 +160,6 @@ class CustomerRepository:
             if card is None or customer is None:
                 return None
             if result_conflict is not None:
-                print(result_conflict)
                 raise ConflictError("Card with id "+card_id+" is already attached to a customer")
             customer.cardId=card_id
             await session.commit()
@@ -159,10 +179,10 @@ class CustomerRepository:
             await session.refresh(card)
             return card
 
-    async def get_card_by_id(self, cardId:str, points:int)->CardDAO:
+    async def get_card_by_id(self, cardId:str)->CardDAO|None:
         """get card by id"""
         async with await self._get_session() as session:
             card= await session.get(CardDAO,cardId)
-            if card is None:
-                card= CardDAO(cardId=cardId,points=points)
+            if card is None or cardId is None:
+                return None
             return card

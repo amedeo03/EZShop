@@ -1,65 +1,99 @@
 from typing import List, Optional
-from app.repositories.customer_repository import CustomerRepository
-from app.models.DTO.customer_dto import CustomerDTO
+
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.card_dto import CardDTO
-from app.services.mapper_service import customerdao_to_responsedto,carddao_to_responsedto
+from app.models.DTO.customer_dto import CustomerDTO, CustomerUpdateDTO
+from app.repositories.customer_repository import CustomerRepository
+from app.services.input_validator_service import control_id, customer_input, len_control
+from app.services.mapper_service import (
+    carddao_to_responsedto,
+    customerdao_to_responsedto,
+)
 
 
 class CustomerController:
     def __init__(self):
         self.repo = CustomerRepository()
 
-    async def create_customer(self, customer_dto: CustomerDTO) -> CustomerDTO: 
+    async def create_customer(self, customer_dto: CustomerDTO) -> CustomerDTO:
         """Create customer"""
-        if(customer_dto.card.cardId is None and customer_dto.card.points==0):
-            created = await self.repo.create_customer(customer_dto.name,None)
-            card=None
+        customer_input(customer_dto)
+        card = None
+        if customer_dto.card is not None and customer_dto.card.card_id is not None:
+            customer_dto.card.card_id = customer_dto.card.card_id.zfill(10)
+            created = await self.repo.create_customer(
+                customer_dto.name, customer_dto.card.card_id, customer_dto.card.points
+            )
+            if created.cardId is not None:
+                card = await self.repo.get_card_by_id(customer_dto.card.card_id)
         else:
-            created = await self.repo.create_customer(customer_dto.name,customer_dto.card.cardId)
-            card=await self.repo.get_card_by_id(customer_dto.card.cardId,customer_dto.card.points)
-        return customerdao_to_responsedto(created,card)
-    
+            created = await self.repo.create_customer(customer_dto.name, None, 0)
+        return customerdao_to_responsedto(created, card)
+
     async def list_customer(self) -> List[CustomerDTO]:
         """Get all customer"""
         daos = await self.repo.list_customer()
-        return [customerdao_to_responsedto(dao,dao.card) for dao in daos]
-    
-    async def get_customer(self, customer_id: int) -> Optional[CustomerDTO]:
-        """Get customer by id - throws NotFoundError if not found"""
-        dao = await self.repo.get_customer(customer_id)
-        return customerdao_to_responsedto(dao,dao.card) if dao else None
+        return [customerdao_to_responsedto(dao, dao.card) for dao in daos]
 
-    async def update_customer(self, customer_id: int, customer_dto: CustomerDTO) -> Optional[CustomerDTO]:
-        """Update customer - throws NotFoundError if customer doesn't exist, ConflictError if id card is attached an other customer """
-        card=None
+    async def get_customer(self, customer_id: str) -> Optional[CustomerDTO]:
+        """Get customer by id - throws NotFoundError if not found"""
+        control_id([customer_id])
+        customer_id = int(customer_id)
+        dao = await self.repo.get_customer(customer_id)
+        return customerdao_to_responsedto(dao, dao.card) if dao else None
+
+    async def update_customer(
+        self, customer_id: int, customer_dto: CustomerUpdateDTO
+    ) -> Optional[CustomerDTO]:
+        """Update customer - throws NotFoundError if customer doesn't exist, ConflictError if id card is attached an other customer"""
+        control_id([customer_id])
+        customer_input(customer_dto)
+        card = None
         if customer_dto.card is None:
-            updated = await self.repo.update_customer_only_name(customer_id, customer_dto.name)
-        elif customer_dto.card.points ==0 and customer_dto.card.cardId is None:
-            updated = await self.repo.update_customer(customer_id, customer_dto.name, "", -1)
+            updated = await self.repo.update_customer_only_name(
+                customer_id, customer_dto.name
+            )
+        elif customer_dto.card.card_id == "":
+            updated = await self.repo.update_customer(
+                customer_id, customer_dto.name, "", -1
+            )
         else:
-            updated =await self.repo.update_customer(customer_id, customer_dto.name, customer_dto.card.cardId, customer_dto.card.points)
-        if updated.cardId is not None:
-            card=await self.repo.get_card_by_id(updated.cardId,0)
-        return customerdao_to_responsedto(updated,card) if updated else None  
-    
-    async def delete_customer(self, customer_id: int) -> bool:
+            customer_dto.card.card_id = customer_dto.card.card_id.zfill(10)
+            updated = await self.repo.update_customer(
+                customer_id,
+                customer_dto.name,
+                customer_dto.card.card_id,
+                customer_dto.card.points,
+            )
+        if updated is not None and updated.cardId is not None:
+            card = await self.repo.get_card_by_id(updated.cardId)
+        return customerdao_to_responsedto(updated, card) if updated else None
+
+    async def delete_customer(self, customer_id: str) -> BooleanResponseDTO:
         """Delete customer - throws NotFoundError if not found"""
-        return await self.repo.delete_customer(customer_id)
-    
-    #card
-    async def create_card(self, card_dto: CardDTO) -> CardDTO: 
+        control_id([customer_id])
+        await self.repo.delete_customer(int(customer_id))
+        return BooleanResponseDTO(success=True)
+
+    # card
+    async def create_card(self) -> CardDTO:
         """Create card"""
-        created = await self.repo.create_card(card_dto.cardId,card_dto.points)
+        created = await self.repo.create_card()
         return carddao_to_responsedto(created)
-    
-    async def attach_card(self,customer_id:str, card_id:str)->CustomerDTO:
+
+    async def attach_card(self, customer_id: str, card_id: str) -> CustomerDTO:
         """
         Attach a card to customer
         """
-        updated = await self.repo.attach_card(customer_id,card_id)
-        return customerdao_to_responsedto(updated,updated.card) if updated else None
-     
-    async def modify_point(self, card_id: str,points:int) -> CardDTO:
+        control_id([customer_id, card_id])
+        len_control(card_id, 10)
+        card_id = card_id.zfill(10)
+        updated = await self.repo.attach_card(customer_id, card_id)
+        return customerdao_to_responsedto(updated, updated.card) if updated else None
+
+    async def modify_point(self, card_id: str, points: int) -> CardDTO:
         """modify points"""
-        updated= await self.repo.modify_point(card_id,points)
+        control_id([card_id])
+        len_control(card_id, 10)
+        updated = await self.repo.modify_point(card_id.zfill(10), points)
         return carddao_to_responsedto(updated) if updated else None

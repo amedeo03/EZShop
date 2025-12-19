@@ -1,7 +1,3 @@
-from typing import List
-
-from sqlalchemy import Column
-
 from app.models.DAO.card_dao import CardDAO
 from app.models.DAO.customer_dao import CustomerDAO
 from app.models.DAO.product_dao import ProductDAO
@@ -51,7 +47,7 @@ def customerdao_to_responsedto(
 
 
 def carddao_to_responsedto(card_dao: CardDAO) -> CardDTO:
-    return CardDTO(cardId=card_dao.cardId, points=card_dao.points)
+    return CardDTO(card_id=card_dao.cardId, points=card_dao.points)
 
 
 def productdao_to_product_type_dto(product_dao: ProductDAO) -> ProductTypeDTO:

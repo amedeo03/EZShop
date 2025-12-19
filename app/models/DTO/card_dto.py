@@ -2,14 +2,18 @@ from pydantic import BaseModel
 from typing import Optional
 
 class CardDTO(BaseModel):
-    cardId: Optional[str] =None
+    card_id: Optional[str] =None
     points: Optional[int]=0
 
 
 class CardResponseDTO(BaseModel):
-    cardId: str
+    card_id: str
     points: Optional[int]=0
 
 class CardCreateDTO(BaseModel):
-    cardId: str
+    card_id: str
     points: Optional[int]=0
+
+class CardUpdateDTO(BaseModel):
+    card_id: Optional[str] =""
+    points: Optional[int]=-1

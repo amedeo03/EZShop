@@ -1,5 +1,10 @@
 import re
 
+from app.models.DTO.customer_dto import (
+    CustomerCreateDTO,
+    CustomerDTO,
+    CustomerUpdateDTO,
+)
 from app.models.errors.bad_request import BadRequestError
 from app.services.gtin_service import gtin
 
@@ -69,3 +74,21 @@ def validate_discount_rate(discount_rate: float) -> None:
 
     if discount_rate < 0.0 or discount_rate >= 1.0:
         raise BadRequestError("discount_rate parameter needs to be between 0.0 and 1.0")
+
+
+def customer_input(
+    customer: CustomerCreateDTO | CustomerUpdateDTO | CustomerDTO,
+) -> None:
+    if not customer.name:
+        raise BadRequestError("Customer name is required")
+
+
+def control_id(id: list[str]):
+    for i in id:
+        if not (i.isdigit()):
+            raise BadRequestError("Invalid ID")
+
+
+def len_control(id: str, l: int):
+    if len(id) > l:
+        raise BadRequestError("Invalid card ID")

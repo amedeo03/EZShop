@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
-from app.models.DTO.customer_dto import CustomerDTO, CustomerResponseDTO, CustomerCreateDTO
+from app.models.DTO.customer_dto import CustomerResponseDTO, CustomerCreateDTO, CustomerUpdateDTO
 from app.models.user_type import UserType
 from app.controllers.customer_controller import CustomerController
 from app.config.config import ROUTES
@@ -27,8 +27,6 @@ async def create_customer(customer: CustomerCreateDTO):
     - Returns: Created Customer as CustomerResponseDTO
     - Status code: 201 Created
     """
-    if customer.name =="":
-            raise BadRequestError("Customer name is required")
     return await controller.create_customer(customer)
 
 @router.get("/", response_model=List[CustomerResponseDTO],
@@ -45,7 +43,7 @@ async def list_customer():
 
 @router.get("/{customer_id}", response_model=CustomerResponseDTO,
             dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
-async def get_customer(customer_id: int):
+async def get_customer(customer_id:str):
     """
     Retrieve a single customer by ID.
 
@@ -57,9 +55,6 @@ async def get_customer(customer_id: int):
       -BadRequestError: when customer_id format is not valid
     - Status code: 200 OK
     """
-    if not(isinstance(customer_id, int)):
-            raise BadRequestError("Invalid customer ID")
-    print(customer_id)
     customer = await controller.get_customer(customer_id)
     if not customer:
         raise NotFoundError("Customer not found")
@@ -68,13 +63,13 @@ async def get_customer(customer_id: int):
 @router.put("/{customer_id}", response_model=CustomerResponseDTO, 
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
-async def update_customer(customer_id: int, customer: CustomerDTO):
+async def update_customer(customer_id: str, customer: CustomerUpdateDTO):
     """
     Update an existing customer.
 
     - Permissions: all
     - Path parameter: customer_id (int)
-    - Request body: CurstomerDTO (fields to update)
+    - Request body: CustomerUpdateDTO (fields to update)
     - Returns: Updated customer as CustomerResponseDTO
     - Raises:
       - NotFoundError: when the customer to update does not exist
@@ -89,7 +84,7 @@ async def update_customer(customer_id: int, customer: CustomerDTO):
 @router.delete("/{customer_id}", 
                status_code=status.HTTP_204_NO_CONTENT, 
                dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
-async def delete_customer(customer_id: int):
+async def delete_customer(customer_id: str):
     """
     Delete a customer by ID.
 
@@ -101,16 +96,14 @@ async def delete_customer(customer_id: int):
     - Status code: 204 No Content
     """
     success = await controller.delete_customer(customer_id)
-    if not success:
-        raise NotFoundError("customer not found")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return success
 
 #card
 @router.post("/cards", 
     response_model=CardResponseDTO, 
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
-async def create_card(card: CardCreateDTO):
+async def create_card():
     """
     Create a new custormer.
 
@@ -119,7 +112,7 @@ async def create_card(card: CardCreateDTO):
     - Returns: Created Customer as CustomerResponseDTO
     - Status code: 201 Created
     """
-    return await controller.create_card(card)
+    return await controller.create_card()
 
 @router.patch("/{customer_id}/attach-card/{card_id}",
             status_code=status.HTTP_201_CREATED,
@@ -137,8 +130,6 @@ async def attach_card(customer_id: str, card_id: str):
       - BadRequestError: when card_id isn't integer string
     - Status code: 201 Created
     """
-    if not card_id.isdigit():
-        raise BadRequestError("Card ID must be an integer string")
     updated = await controller.attach_card(customer_id, card_id)
     if not updated:
         raise NotFoundError("Customer or Card not found")
