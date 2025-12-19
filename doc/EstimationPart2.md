@@ -16,8 +16,8 @@ As a result of cloc collect the *code* value (rightmost column of the result tab
         
 
 Compute two separate values of size  
--LOC of production code     `cloc <EzShop\src> --include-lang=Python`  
--LOC of test code      `cloc <EzShop\test> --include-lang=Python`  
+-LOC of production code     `cloc <EzShop\app> --include-lang=Python`  
+-LOC of test code      `cloc <EzShop\tests> --include-lang=Python`  
 
 
 ## Computation of effort 
@@ -39,4 +39,4 @@ productivity = ((LOC of production code)+ (LOC of test code)) / effort
 | productivity  | 10 loc / hour ||
 
 
-Report, as estimate of effort, the value obtained via activity decomposition technique.
+Report, as estimate of effort, the value obtained via activity decomposition technique.  The comparison is meaningful for productivity, since the stimates for size and effort were not based on the Official requirements.
