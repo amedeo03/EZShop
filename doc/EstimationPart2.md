@@ -6,18 +6,24 @@ Goal of this document is to compare actual effort and size of the project, vs th
 
 ## Computation of size
 
+
+
+Goal of this document is to compare actual effort and size of the project, vs the estimates made in task1.
+
+## Computation of size
+
 To compute the lines of code use cloc    
 To install cloc:  
            `npm install -g cloc`   
 On Windows, also a perl interpreter needs to be installed. You find it here https://strawberryperl.com/  
 To run cloc  
-           `cloc <directory containing ts files> --include-lang=TypeScript`  
+           `cloc <directory containing py files> --include-lang=Python`  
 As a result of cloc collect the *code* value (rightmost column of the result table)  
         
 
 Compute two separate values of size  
--LOC of production code     `cloc <Geocontrol\src> --include-lang=TypeScript`  
--LOC of test code      `cloc <GeoControl\test> --include-lang=TypeScript`  
+-LOC of production code     `cloc <EzShop\src> --include-lang=Python`  
+-LOC of test code      `cloc <EzShop\test> --include-lang=Python`  
 
 
 ## Computation of effort 
