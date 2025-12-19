@@ -9,16 +9,16 @@ from app.repositories.products_repository import ProductsRepository
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.order_dao import OrderDAO
 from app.models.DAO.product_dao import ProductDAO
-from app.models.DAO.system_dao import SystemInfoDAO
+from app.models.DAO.accounting_dao import AccountingDAO
 from app.models.errors.notfound_error import NotFoundError
 from app.models.errors.balance_error import BalanceError
 from app.models.errors.app_error import AppError
 
 class OrdersRepository:
 
-    def __init__(self, session: Optional[AsyncSession] = None, product_repo: Optional[ProductsRepository] = None):
+    def __init__(self, session: Optional[AsyncSession] = None):
         self._session = session
-        self.product_repo = product_repo or ProductsRepository(session=session)
+        self.product_repo = ProductsRepository()
 
     async def _get_session(self) -> AsyncSession:
         return self._session or AsyncSessionLocal()
@@ -62,7 +62,7 @@ class OrdersRepository:
 
             cost = order.quantity * order.price_per_unit
 
-            result = await session.execute(select(SystemInfoDAO))
+            result = await session.execute(select(AccountingDAO))
             system_info = result.scalars().first()
             
             if not system_info:
@@ -126,12 +126,12 @@ class OrdersRepository:
             cost = order_dao.quantity * order_dao.price_per_unit
             
             # Get System Balance
-            result = await session.execute(select(SystemInfoDAO))
+            result = await session.execute(select(AccountingDAO))
             system_info = result.scalars().first()
             
             # Lazy Init if missing (Safety check)
             if not system_info:
-                 system_info = SystemInfoDAO(balance=0.0)
+                 system_info = AccountingDAO(balance=0.0)
                  session.add(system_info)
 
             # Check Funds
