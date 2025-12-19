@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
-from app.models.DAO.system_dao import SystemInfoDAO
+from app.models.DAO.accounting_dao import AccountingDAO
 
 class AccountingRepository:
 
@@ -21,7 +21,7 @@ class AccountingRepository:
         async with await self._get_session() as session:
             # Get System Info
             # We assume the first row in 'system_info' is the shop's balance
-            result = await session.execute(select(SystemInfoDAO))
+            result = await session.execute(select(AccountingDAO))
             system_info = result.scalars().first()
 
             # If system info doesn't exist, we assume 0 balance
@@ -37,7 +37,7 @@ class AccountingRepository:
         """
         async with await self._get_session() as session:
             # Get System Info
-            result = await session.execute(select(SystemInfoDAO))
+            result = await session.execute(select(AccountingDAO))
             system_info = result.scalars().first()
 
             if system_info:
@@ -46,7 +46,7 @@ class AccountingRepository:
             else:
                 # Create the missing record (Lazy Initialization)
                 # This prevents "System balance information not found" errors
-                system_info = SystemInfoDAO(balance=new_balance)
+                system_info = AccountingDAO(balance=new_balance)
                 session.add(system_info)
 
             # Commit changes and refresh object
