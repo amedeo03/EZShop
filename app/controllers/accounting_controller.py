@@ -1,5 +1,6 @@
-from app.repositories.accounting_repository import AccountingRepository
 from app.models.errors.balance_error import BalanceError
+from app.repositories.accounting_repository import AccountingRepository
+
 
 class AccountingController:
 

@@ -11,14 +11,9 @@ from app.models.DTO.points_response_dto import PointsResponseDTO
 from app.models.DTO.sale_dto import SaleDTO
 from app.models.user_type import UserType
 
-router = APIRouter(prefix=ROUTES["V1_SALES"], tags=["Sales"])
-controller = SalesController()
-
-
-@router.post(
-    "/",
-    response_model=SaleDTO,
-    status_code=status.HTTP_201_CREATED,
+router = APIRouter(
+    prefix=ROUTES["V1_SALES"],
+    tags=["Sales"],
     dependencies=[
         Depends(
             authenticate_user(
@@ -27,6 +22,10 @@ controller = SalesController()
         )
     ],
 )
+controller = SalesController()
+
+
+@router.post("/", response_model=SaleDTO, status_code=status.HTTP_201_CREATED)
 async def create_sale() -> SaleDTO:
     """
     Create a new empty sale.
@@ -41,18 +40,7 @@ async def create_sale() -> SaleDTO:
     return await controller.create_sale()
 
 
-@router.get(
-    "/",
-    response_model=List[SaleDTO],
-    status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
-)
+@router.get("/", response_model=List[SaleDTO], status_code=status.HTTP_200_OK)
 async def list_sales() -> List[SaleDTO]:
     """
     List present sales.
@@ -67,18 +55,7 @@ async def list_sales() -> List[SaleDTO]:
     return await controller.list_sales()
 
 
-@router.get(
-    "/{sale_id}",
-    response_model=SaleDTO,
-    status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
-)
+@router.get("/{sale_id}", response_model=SaleDTO, status_code=status.HTTP_200_OK)
 async def get_sale_by_id(sale_id: int) -> SaleDTO:
     """
     return a sale given its ID.
@@ -99,13 +76,6 @@ async def get_sale_by_id(sale_id: int) -> SaleDTO:
     "/{sale_id}/items",
     response_model=BooleanResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def attach_product(sale_id: int, barcode: str, amount: int) -> BooleanResponseDTO:
     """
@@ -124,17 +94,7 @@ async def attach_product(sale_id: int, barcode: str, amount: int) -> BooleanResp
     return await controller.attach_product(sale_id, barcode, amount)
 
 
-@router.delete(
-    "/{sale_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
-)
+@router.delete("/{sale_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_sale(sale_id: int) -> None:
     """
     delete an existing not PAID sale
@@ -149,20 +109,11 @@ async def delete_sale(sale_id: int) -> None:
     """
     await controller.delete_sale(sale_id)
 
-    return
-
 
 @router.delete(
     "/{sale_id}/items",
     status_code=status.HTTP_202_ACCEPTED,
     response_model=BooleanResponseDTO,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def edit_product_quantity(
     sale_id: int, barcode: str, amount: int
@@ -172,7 +123,7 @@ async def edit_product_quantity(
 
     - Permissions: Administrator, ShopManager, Cashier
     - Request body: sale_id as int
-    - Returns: None
+    - Returns: BooleanResponseDTO
     - Status code: 202 product removed succesfully
     - Status code: 400 invalid ID or quantity
     - Status code: 401 unauthenticated
@@ -187,13 +138,6 @@ async def edit_product_quantity(
     "/{sale_id}/discount",
     response_model=BooleanResponseDTO,
     status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def edit_sale_discount(sale_id: int, discount_rate: float) -> BooleanResponseDTO:
     """
@@ -215,13 +159,6 @@ async def edit_sale_discount(sale_id: int, discount_rate: float) -> BooleanRespo
     "/{sale_id}/items/{product_barcode}/discount",
     response_model=BooleanResponseDTO,
     status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def edit_product_discount(
     sale_id: int, product_barcode: str, discount_rate: float
@@ -247,13 +184,6 @@ async def edit_product_discount(
     "/{sale_id}/close",
     response_model=BooleanResponseDTO,
     status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def close_sale(sale_id: int) -> BooleanResponseDTO:
     """
@@ -273,16 +203,7 @@ async def close_sale(sale_id: int) -> BooleanResponseDTO:
 
 
 @router.patch(
-    "/{sale_id}/pay",
-    response_model=ChangeResponseDTO,
-    status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
+    "/{sale_id}/pay", response_model=ChangeResponseDTO, status_code=status.HTTP_200_OK
 )
 async def pay_sale(sale_id: int, cash_amount: float) -> ChangeResponseDTO:
     """
@@ -304,13 +225,6 @@ async def pay_sale(sale_id: int, cash_amount: float) -> ChangeResponseDTO:
     "/{sale_id}/points",
     response_model=PointsResponseDTO,
     status_code=status.HTTP_200_OK,
-    dependencies=[
-        Depends(
-            authenticate_user(
-                [UserType.Administrator, UserType.ShopManager, UserType.Cashier]
-            )
-        )
-    ],
 )
 async def get_sale_points(sale_id: int) -> PointsResponseDTO:
     """

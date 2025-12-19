@@ -98,11 +98,7 @@ class SoldProductsController:
             id, sale_id, quantity
         )
 
-        return (
-            BooleanResponseDTO(success=True)
-            if BooleanResponseDTO(success=True)
-            else BooleanResponseDTO(success=False)
-        )
+        return BooleanResponseDTO(success=True)
 
     async def edit_sold_product_discount(
         self, id: int, sale_id: int, discount_rate: float
