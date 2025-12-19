@@ -21,4 +21,4 @@ class CustomerCreateDTO(BaseModel):
 class CustomerUpdateDTO(BaseModel):
     id: Optional[int] = None
     name: str 
-    card: Optional[CardUpdateDTO]
+    card: Optional[CardUpdateDTO] =None

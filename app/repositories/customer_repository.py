@@ -137,7 +137,10 @@ class CustomerRepository:
         async with await self._get_session() as session:
             id_db= await session.execute(select(CardDAO).order_by(desc(CardDAO.cardId)))
             id_db= id_db.scalars().first()
-            id=int(id_db.cardId)
+            if id_db is None:
+                id=-1
+            else:
+                id=int(id_db.cardId)
             id=id+1
             id=str(id).zfill(10)
             card= CardDAO(cardId=id,points=0)

@@ -3,7 +3,7 @@ import re
 from app.models.errors.bad_request import BadRequestError
 from app.models.errors.invalid_barcode_format_error import InvalidFormatError
 from app.services.gtin_service import gtin
-from app.models.DTO.customer_dto import CustomerCreateDTO
+from app.models.DTO.customer_dto import CustomerCreateDTO,CustomerUpdateDTO,CustomerDTO
 
 
 def validate_id(id: int):
@@ -64,7 +64,7 @@ def validate_product_position(position: str) -> None:
             "'position' pattern must be 'aisle-shelf-level' or empty string to clear it."
         )
 
-def custumer_input(customer: CustomerCreateDTO) ->None:
+def customer_input(customer: CustomerCreateDTO|CustomerUpdateDTO|CustomerDTO) ->None:
     if not customer.name:
         raise BadRequestError("Customer name is required")
     

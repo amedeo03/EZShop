@@ -3,7 +3,7 @@ from app.repositories.customer_repository import CustomerRepository
 from app.models.DTO.customer_dto import CustomerDTO,CustomerUpdateDTO
 from app.models.DTO.card_dto import CardDTO
 from app.services.mapper_service import bool_to_response_dto,customerdao_to_responsedto,carddao_to_responsedto
-from app.services.input_validator_service import custumer_input,control_id,len_control
+from app.services.input_validator_service import customer_input,control_id,len_control
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 
 class CustomerController:
@@ -12,9 +12,9 @@ class CustomerController:
 
     async def create_customer(self, customer_dto: CustomerDTO) -> CustomerDTO: 
         """Create customer"""
-        custumer_input(customer_dto)
+        customer_input(customer_dto)
         card=None
-        if customer_dto.card is not None:
+        if customer_dto.card is not None and customer_dto.card.card_id is not None:
             customer_dto.card.card_id=customer_dto.card.card_id.zfill(10)
             created=await self.repo.create_customer(customer_dto.name,customer_dto.card.card_id,customer_dto.card.points)
             if created.cardId is not None: 
@@ -38,6 +38,7 @@ class CustomerController:
     async def update_customer(self, customer_id: int, customer_dto: CustomerUpdateDTO) -> Optional[CustomerDTO]:
         """Update customer - throws NotFoundError if customer doesn't exist, ConflictError if id card is attached an other customer """
         control_id([customer_id])
+        customer_input(customer_dto)
         card=None
         if customer_dto.card is None:
             updated = await self.repo.update_customer_only_name(customer_id, customer_dto.name)
