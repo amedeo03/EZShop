@@ -1,7 +1,6 @@
 from math import floor
 from typing import List, Optional
 
-from app.controllers.sold_products_controller import SoldProductsController
 from app.models.DAO.sale_dao import SaleDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.change_response_dto import ChangeResponseDTO
@@ -26,7 +25,6 @@ from app.services.mapper_service import sale_dao_to_dto
 class SalesController:
     def __init__(self):
         self.repo = SalesRepository()
-        self.sold_product_controller = SoldProductsController()
 
     async def create_sale(self) -> SaleDTO:
         """
@@ -68,7 +66,12 @@ class SalesController:
         return sale_dao_to_dto(sale)
 
     async def attach_product(
-        self, sale_id: int, barcode: str, amount: int, products_controller
+        self,
+        sale_id: int,
+        barcode: str,
+        amount: int,
+        products_controller,
+        sold_products_controller,
     ) -> BooleanResponseDTO:
         """
         Attach a product to a given sale
@@ -100,7 +103,7 @@ class SalesController:
             raise BadRequestError("Invalid product")
 
         sold_product: SoldProductDTO = (
-            await self.sold_product_controller.create_sold_product(
+            await sold_products_controller.create_sold_product(
                 product.id, sale_id, product.barcode, amount, product.price_per_unit
             )
         )
@@ -111,7 +114,9 @@ class SalesController:
             else BooleanResponseDTO(success=False)
         )
 
-    async def delete_sale(self, sale_id: int) -> BooleanResponseDTO:
+    async def delete_sale(
+        self, sale_id: int, sold_products_controller
+    ) -> BooleanResponseDTO:
 
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status == "PAID":
@@ -121,7 +126,7 @@ class SalesController:
             # TODO:Waiting for /products/{id}/quantity implementation
             # self.product_controller.update_product_quantity(product.quantity, product.id)
             success_prod: BooleanResponseDTO = (
-                await self.sold_product_controller.edit_sold_product_quantity(
+                await sold_products_controller.edit_sold_product_quantity(
                     sold_product.id, sale.id, -sold_product.quantity
                 )
             )
@@ -133,7 +138,7 @@ class SalesController:
         return BooleanResponseDTO(success=True)
 
     async def edit_sold_product_quantity(
-        self, sale_id: int, barcode: str, amount: int
+        self, sale_id: int, barcode: str, amount: int, sold_products_controller
     ) -> BooleanResponseDTO:
 
         product_to_edit: Optional[SoldProductDTO] = None
@@ -156,7 +161,7 @@ class SalesController:
             #    product.id, product.quantity
             # )
             success: BooleanResponseDTO = (
-                await self.sold_product_controller.edit_sold_product_quantity(
+                await sold_products_controller.edit_sold_product_quantity(
                     product_to_edit.id, sale.id, -amount
                 )
             )
@@ -177,7 +182,11 @@ class SalesController:
         return BooleanResponseDTO(success=True)
 
     async def edit_product_discount(
-        self, sale_id: int, product_barcode: str, discount_rate: float
+        self,
+        sale_id: int,
+        product_barcode: str,
+        discount_rate: float,
+        sold_products_controller,
     ) -> BooleanResponseDTO:
         validate_field_is_present(str(sale_id), "sale_id")
         validate_field_is_positive(sale_id, "sale_id")
@@ -195,7 +204,7 @@ class SalesController:
                 product_to_edit = product
 
         success: BooleanResponseDTO = (
-            await self.sold_product_controller.edit_sold_product_discount(
+            await sold_products_controller.edit_sold_product_discount(
                 product_to_edit.id, sale.id, discount_rate
             )
         )
