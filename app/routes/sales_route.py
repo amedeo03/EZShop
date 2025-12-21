@@ -3,8 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
-from app.controllers import sold_products_controller
-from app.controllers_instances import products_controller, sales_controller
+from app.controllers_instances import (
+    products_controller,
+    sales_controller,
+    sold_products_controller,
+)
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.change_response_dto import ChangeResponseDTO
