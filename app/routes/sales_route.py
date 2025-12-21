@@ -3,7 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
-from app.controllers.sales_controller import SalesController
+from app.controllers import sold_products_controller
+from app.controllers_instances import products_controller, sales_controller
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.change_response_dto import ChangeResponseDTO
@@ -12,7 +13,7 @@ from app.models.DTO.sale_dto import SaleDTO
 from app.models.user_type import UserType
 
 router = APIRouter(prefix=ROUTES["V1_SALES"], tags=["Sales"])
-controller = SalesController()
+controller = sales_controller
 
 
 @router.post(
@@ -121,7 +122,13 @@ async def attach_product(sale_id: int, barcode: str, amount: int) -> BooleanResp
     - Status code: 410 invalid sale status
     """
 
-    return await controller.attach_product(sale_id, barcode, amount)
+    return await controller.attach_product(
+        sale_id,
+        barcode,
+        amount,
+        products_controller=products_controller,
+        sold_products_controller=sold_products_controller,
+    )
 
 
 @router.delete(
@@ -147,7 +154,9 @@ async def delete_sale(sale_id: int) -> None:
     - Status code: 401 unauthenticated
     - Status code: 404 sale or product not found
     """
-    await controller.delete_sale(sale_id)
+    await controller.delete_sale(
+        sale_id, sold_products_controller=sold_products_controller
+    )
 
 
 @router.delete(
@@ -178,7 +187,9 @@ async def edit_product_quantity(
     - Status code: 420 invalid sale status
     """
 
-    return await controller.edit_sold_product_quantity(sale_id, barcode, amount)
+    return await controller.edit_sold_product_quantity(
+        sale_id, barcode, amount, sold_products_controller=sold_products_controller
+    )
 
 
 @router.patch(
@@ -237,7 +248,10 @@ async def edit_product_discount(
     - Status code: 420 invalid sale status
     """
     return await controller.edit_product_discount(
-        sale_id, product_barcode, discount_rate
+        sale_id,
+        product_barcode,
+        discount_rate,
+        sold_products_controller=sold_products_controller,
     )
 
 

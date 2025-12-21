@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, Response, status
 
 from app.config.config import ROUTES
-from app.controllers.accounting_controller import AccountingController
+from app.controllers_instances import accounting_controller
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.user_type import UserType
 
 router = APIRouter(prefix=ROUTES["V1_ACCOUNTING"], tags=["Accounting"])
 
-controller = AccountingController()
+controller = accounting_controller
 
 
 @router.get(

@@ -3,14 +3,15 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
-from app.controllers.products_controller import ProductsController
+from app.controllers import sales_controller
+from app.controllers_instances import products_controller
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.product_dto import ProductTypeDTO
 from app.models.user_type import UserType
 
 router = APIRouter(prefix=ROUTES["V1_PRODUCTS"], tags=["Products"])
-controller = ProductsController()
+controller = products_controller
 
 
 @router.post(
@@ -132,7 +133,9 @@ async def update_product(product_id: int, product: ProductTypeDTO):
     - Returns: Updated user as ProductTypeDTO
     - Status code: 200 OK
     """
-    return await controller.update_product(product_id, product)
+    return await controller.update_product(
+        product_id, product, sales_controller=sales_controller
+    )
 
 
 @router.patch(

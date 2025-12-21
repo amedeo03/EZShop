@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.controllers_instances import *
 from app.database.database import Base, engine
 from app.middleware.error_middleware import error_handler
 from app.models.errors.app_error import AppError
@@ -17,9 +18,9 @@ from app.routes import (
     customer_route,
     orders_route,
     products_route,
+    returns_route,
     sales_route,
     user_route,
-    returns_route
 )
 
 logger = getLogger(__name__)

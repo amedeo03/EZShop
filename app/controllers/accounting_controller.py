@@ -1,9 +1,6 @@
-from fastapi import HTTPException
-
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.balance_error import BalanceError
 from app.repositories.accounting_repository import AccountingRepository
-from app.services.input_validator_service import validate_field_is_positive
 
 
 class AccountingController:

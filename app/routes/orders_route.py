@@ -3,15 +3,15 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
-from app.controllers.orders_controller import OrdersController
+from app.controllers_instances import orders_controller
 from app.middleware.auth_middleware import authenticate_user
-from app.models.DTO.order_dto import OrderDTO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+from app.models.DTO.order_dto import OrderDTO
 from app.models.user_type import UserType
 
-
 router = APIRouter(prefix=ROUTES["V1_ORDERS"], tags=["orders"])
-controller = OrdersController()
+controller = orders_controller
+
 
 @router.post(
     "/",
@@ -28,6 +28,7 @@ async def issue_order(order: OrderDTO):
     """
     return await controller.create_order(order)
 
+
 @router.post(
     "/payfor",
     response_model=OrderDTO,
@@ -42,6 +43,7 @@ async def pay_order_for(order: OrderDTO):
     - Permissions: Administrator, ShopManager
     """
     return await controller.pay_order_for(order)
+
 
 @router.get(
     "/",

@@ -1,23 +1,36 @@
-from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
-from app.models.DTO.customer_dto import CustomerResponseDTO, CustomerCreateDTO, CustomerUpdateDTO
-from app.models.user_type import UserType
-from app.controllers.customer_controller import CustomerController
+
+from fastapi import APIRouter, Depends, status
+
 from app.config.config import ROUTES
-from fastapi import Response
-from app.models.errors.notfound_error import NotFoundError
-from app.models.errors.bad_request import BadRequestError
+from app.controllers_instances import customer_controller
 from app.middleware.auth_middleware import authenticate_user
-from app.models.DTO.card_dto import CardDTO, CardResponseDTO, CardCreateDTO
-from typing import Optional
+from app.models.DTO.card_dto import CardResponseDTO
+from app.models.DTO.customer_dto import (
+    CustomerCreateDTO,
+    CustomerResponseDTO,
+    CustomerUpdateDTO,
+)
+from app.models.errors.bad_request import BadRequestError
+from app.models.errors.notfound_error import NotFoundError
+from app.models.user_type import UserType
 
-router = APIRouter(prefix=ROUTES['V1_CUSTOMERS'], tags=["Customers"])
-controller = CustomerController()
+router = APIRouter(prefix=ROUTES["V1_CUSTOMERS"], tags=["Customers"])
+controller = customer_controller
 
-@router.post("/", 
-    response_model=CustomerResponseDTO, 
+
+@router.post(
+    "/",
+    response_model=CustomerResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
 async def create_customer(customer: CustomerCreateDTO):
     """
     Create a new custormer.
@@ -29,8 +42,18 @@ async def create_customer(customer: CustomerCreateDTO):
     """
     return await controller.create_customer(customer)
 
-@router.get("/", response_model=List[CustomerResponseDTO],
-            dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
+
+@router.get(
+    "/",
+    response_model=List[CustomerResponseDTO],
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
 async def list_customer():
     """
     List all customer.
@@ -41,9 +64,19 @@ async def list_customer():
     """
     return await controller.list_customer()
 
-@router.get("/{customer_id}", response_model=CustomerResponseDTO,
-            dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
-async def get_customer(customer_id:str):
+
+@router.get(
+    "/{customer_id}",
+    response_model=CustomerResponseDTO,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
+async def get_customer(customer_id: str):
     """
     Retrieve a single customer by ID.
 
@@ -60,9 +93,19 @@ async def get_customer(customer_id:str):
         raise NotFoundError("Customer not found")
     return customer
 
-@router.put("/{customer_id}", response_model=CustomerResponseDTO, 
+
+@router.put(
+    "/{customer_id}",
+    response_model=CustomerResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
 async def update_customer(customer_id: str, customer: CustomerUpdateDTO):
     """
     Update an existing customer.
@@ -81,9 +124,18 @@ async def update_customer(customer_id: str, customer: CustomerUpdateDTO):
         raise NotFoundError("Customer not found")
     return updated
 
-@router.delete("/{customer_id}", 
-               status_code=status.HTTP_204_NO_CONTENT, 
-               dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
+
+@router.delete(
+    "/{customer_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
 async def delete_customer(customer_id: str):
     """
     Delete a customer by ID.
@@ -98,11 +150,20 @@ async def delete_customer(customer_id: str):
     success = await controller.delete_customer(customer_id)
     return success
 
-#card
-@router.post("/cards", 
-    response_model=CardResponseDTO, 
+
+# card
+@router.post(
+    "/cards",
+    response_model=CardResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))])
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
+)
 async def create_card():
     """
     Create a new custormer.
@@ -114,9 +175,17 @@ async def create_card():
     """
     return await controller.create_card()
 
-@router.patch("/{customer_id}/attach-card/{card_id}",
-            status_code=status.HTTP_201_CREATED,
-            dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))]
+
+@router.patch(
+    "/{customer_id}/attach-card/{card_id}",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
 )
 async def attach_card(customer_id: str, card_id: str):
     """
@@ -135,12 +204,20 @@ async def attach_card(customer_id: str, card_id: str):
         raise NotFoundError("Customer or Card not found")
     return updated
 
-@router.patch("/cards/{card_id}",
-            status_code=status.HTTP_201_CREATED,
-            dependencies=[Depends(authenticate_user([UserType.Administrator,UserType.Cashier,UserType.ShopManager]))]
+
+@router.patch(
+    "/cards/{card_id}",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(
+            authenticate_user(
+                [UserType.Administrator, UserType.Cashier, UserType.ShopManager]
+            )
+        )
+    ],
 )
-async def modify_point(card_id: str,points:int):
-    """ 
+async def modify_point(card_id: str, points: int):
+    """
     update point an existing card.
 
     - Permissions: all
@@ -153,9 +230,7 @@ async def modify_point(card_id: str,points:int):
     """
     if not card_id.isdigit():
         raise BadRequestError("Card ID must be an integer string")
-    updated = await controller.modify_point(card_id,points)
+    updated = await controller.modify_point(card_id, points)
     if not updated:
         raise NotFoundError("Card not found")
     return updated
-
-
