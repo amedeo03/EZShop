@@ -15,9 +15,9 @@ These figures will not be used to evaluate neither the project nor the team, the
 |  Nov 10 - 16   |          6              |        |        |              |                     |                    |                  |            |
 |  Nov 17 - 23   |          33             |        |        |              |                     |                    |                  |            |
 |  Nov 24 - 30   |                         |        |        |              |                     |                    |                  |    8.5     |
-|  Dec 1 - 7     |                         |        |   44   |              |                     |                    |                  |            |
-|  Dec 8 - 14    |                         |        |        |              |                     |                    |                  |            |
-|  Dec 15 - 21   |                         |        |        |              |                     |                    |                  |            |
+|  Dec 1 - 7     |                         |        |   42   |              |                     |                    |                  |     2      |
+|  Dec 8 - 14    |                         |        |   36   |              |                     |                    |                  |     2      |
+|  Dec 15 - 21   |                         |        |   40   |              |                     |                    |                  |     2      |
 |  Dec 22 - 28   |                         |        |        |              |                     |                    |                  |            |
 | Dec 29 - Jan 4 |                         |        |        |              |                     |                    |                  |            |
 |   Jan 5 - 11   |                         |        |        |              |                     |                    |                  |            |
