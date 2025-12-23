@@ -71,8 +71,8 @@ class SoldProductsRepository:
             result = await session.execute(
                 select(SoldProductDAO).filter(SoldProductDAO.id == product_id)
             )
-            products = result.scalar()
-
+            # products = result.scalar()
+            products = list(result.scalars().all())
             if products is None:
                 raise NotFoundError("No products with id '{product_id}' sold")
             else:

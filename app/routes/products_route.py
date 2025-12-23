@@ -3,11 +3,13 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.config.config import ROUTES
-from app.controllers import sales_controller
-from app.controllers_instances import products_controller
+from app.controllers_instances import (  # orders_controller,; returns_controller,
+    products_controller,
+    sold_products_controller,
+)
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
-from app.models.DTO.product_dto import ProductTypeDTO
+from app.models.DTO.product_dto import ProductTypeDTO, ProductUpdateDTO
 from app.models.user_type import UserType
 
 router = APIRouter(prefix=ROUTES["V1_PRODUCTS"], tags=["Products"])
@@ -124,7 +126,7 @@ async def get_product_by_barcode(barcode: str):
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
 )
-async def update_product(product_id: int, product: ProductTypeDTO):
+async def update_product(product_id: int, product: ProductUpdateDTO):
     """
     Update an existing product.
     - Permissions: Administrator, ShopManager
@@ -134,7 +136,10 @@ async def update_product(product_id: int, product: ProductTypeDTO):
     - Status code: 200 OK
     """
     return await controller.update_product(
-        product_id, product, sales_controller=sales_controller
+        product_id,
+        product,
+        sold_products_controller=sold_products_controller,
+        # orders_controller=orders_controller,
     )
 
 
@@ -146,9 +151,7 @@ async def update_product(product_id: int, product: ProductTypeDTO):
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
 )
-async def update_product_position(
-    product_id: int | str, position: str
-) -> BooleanResponseDTO:
+async def update_product_position(product_id: int, position: str) -> BooleanResponseDTO:
     """
     Update an existing position of a product.
     - Permissions: Administrator, ShopManager
@@ -168,9 +171,7 @@ async def update_product_position(
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
 )
-async def update_product_quantity(
-    product_id: int | str, quantity: int | str
-) -> BooleanResponseDTO:
+async def update_product_quantity(product_id: int, quantity: int) -> BooleanResponseDTO:
     """
     Update an existing quantity of a product.
     - Permissions: Administrator, ShopManager

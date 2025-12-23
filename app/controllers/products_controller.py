@@ -1,11 +1,10 @@
 from typing import List
 
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
-from app.models.DTO.product_dto import ProductTypeDTO
-from app.models.errors.bad_request import BadRequestError
+from app.models.DTO.product_dto import ProductTypeDTO, ProductUpdateDTO
+from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.products_repository import ProductsRepository
-from app.services.gtin_service import gtin
 from app.services.input_validator_service import (
     validate_field_is_positive,
     validate_field_is_present,
@@ -61,10 +60,10 @@ class ProductsController:
             - NotFoundError if product_id not found
             - BadRequestError if product_id is negative
         """
-        try:
-            product_id = int(product_id)
-        except ValueError:
-            raise BadRequestError("product_id must be an integer.")
+        # try:
+        #     product_id = int(product_id)
+        # except ValueError:
+        #     raise BadRequestError("product_id must be an integer.")
 
         validate_field_is_positive(product_id, "product_id")
 
@@ -99,7 +98,7 @@ class ProductsController:
         return [productdao_to_product_type_dto(dao) for dao in products_daos]
 
     async def update_product_position(
-        self, product_id: int | str, position: str
+        self, product_id: int, position: str
     ) -> BooleanResponseDTO:
         """
         Update the position of a product.
@@ -108,10 +107,7 @@ class ProductsController:
         - Throws:
             - BadRequestError if product_id is negative, not a string or position pattern is wrong
         """
-        try:
-            product_id = int(product_id)
-        except ValueError:
-            raise BadRequestError("product_id must be an integer.")
+
         validate_field_is_positive(product_id, "product_id")
         validate_product_position(position)
 
@@ -121,7 +117,7 @@ class ProductsController:
             return BooleanResponseDTO(success=True)
 
     async def update_product_quantity(
-        self, product_id: int | str, quantity: int | str
+        self, product_id: int, quantity: int
     ) -> BooleanResponseDTO:
         """
         Update the quantity of a product.
@@ -130,11 +126,6 @@ class ProductsController:
         - Throws:
             - BadRequestError if product_id/quantity are negative or not they are not integers
         """
-        try:
-            product_id = int(product_id)
-            quantity = int(quantity)
-        except ValueError:
-            raise BadRequestError("product_id or quantity fields must be integers.")
         validate_field_is_positive(product_id, "product_id")
 
         updated_product = await self.repo.update_product_quantity(product_id, quantity)
@@ -143,40 +134,47 @@ class ProductsController:
             return BooleanResponseDTO(success=True)
 
     async def update_product(
-        self, product_id: int, product_dto: ProductTypeDTO
+        self,
+        product_id: int,
+        product_dto: ProductUpdateDTO,
+        sold_products_controller,
+        # orders_controller,
+        # returns_controller,
     ) -> BooleanResponseDTO:
-        """Update existing product.
-        - Returns: BooleanResponseDTO
-        - Raises:
-            - BadRequestError: if product_id < 0 or fields are invalid (description, pricePerUnit, barcode).
-            - NotFoundError: if product_id not found.
-            - ConflictError: if new barcode already exists
         """
-        if len(product_dto.productCode) < 12 or len(product_dto.productCode) > 14:
-            raise BadRequestError("productCode must be a string of 12-14 digits")
-        gtin_result = gtin(product_dto.productCode)
-        if product_id < 0 or product_id is None:
-            raise BadRequestError("product_id must be positive")
-        if not gtin_result:
-            raise BadRequestError("Wrong barcode format (GTIN)")
-        if product_dto.description is None or product_dto.description == "":
-            raise BadRequestError("description is a mandatory field")
-        if product_dto.pricePerUnit is None or product_dto.pricePerUnit == "":
-            raise BadRequestError("pricePerUnit type is a mandatory field")
-        # TODO: barcode can be updated ONLY IF there aren't returns, oreders or sales associated with it!
-        # TODO:
+        Update existing product.
+        - Returns: BooleanResponseDTO
+        - Throws:
+            - BadRequestError: if product_id < 0 or fields are invalid (description, price_per_unit, barcode).
+        """
 
-        updated = await self.repo.update_product(
-            product_dto.description,
-            product_dto.productCode,
-            product_dto.pricePerUnit,
-            product_dto.note,
-            product_dto.quantity,
-            product_dto.position,
-            product_id,
-        )
-        return (
-            BooleanResponseDTO(success=True)
-            if updated
-            else BooleanResponseDTO(success=False)
-        )
+        validate_field_is_positive(product_id, "product_id")
+        validate_field_is_present(product_dto.barcode, "barcode")
+        validate_product_barcode(product_dto.barcode)
+
+        if product_dto.price_per_unit is not None:
+            validate_field_is_positive(product_dto.price_per_unit, "price_per_unit")
+
+        if product_dto.quantity is not None:
+            validate_field_is_positive(product_dto.quantity, "quantity")
+
+        # The product has NO sales associated with it.
+        try:
+            await sold_products_controller.get_sold_product_by_id(product_id)
+            print(f"Product with {product_id} is associated with a sale")
+            raise InvalidStateError(
+                f"There is an existing sale for 'product_id' '{product_id}'"
+            )
+            # TODO: The product has NO orders associated with it.
+
+            # TODO: The product has NO returns associated with it.
+
+        except (
+            NotFoundError
+        ):  # no sales found with product_id associated with, catched "raise NotFound"
+            await self.repo.update_product(
+                product_id=product_id, product_update_dto=product_dto
+            )
+            print(f"Updated, no sales associated with {product_id}")
+
+        return BooleanResponseDTO(success=True)

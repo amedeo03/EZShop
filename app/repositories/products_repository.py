@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.database import AsyncSessionLocal
 from app.models.DAO.product_dao import ProductDAO
+from app.models.DTO.product_dto import ProductUpdateDTO
 from app.models.errors.bad_request import BadRequestError
 from app.models.errors.conflict_error import ConflictError
 from app.models.errors.notfound_error import NotFoundError
@@ -172,40 +173,38 @@ class ProductsRepository:
 
     async def update_product(
         self,
-        description: str,
-        productCode: str,
-        pricePerUnit: float,
-        note: str,
-        quantity: int,
-        position: str,
-        product_id: int,
+        product_update_dto: ProductUpdateDTO,
+        product_id: int = None,
     ) -> ProductDAO:
         """
         Update product information.
         - Raises:
-            - NotFoundError if not found or ConflictError if the new productCode exists
+            - NotFoundError if not found or ConflictError if the new barcode exists
             - ConflictError if barcode already exists
         """
+
+        if product_update_dto.position is not None:
+            await self.update_product_position(product_id, product_update_dto.position)
+
         async with await self._get_session() as session:
             db_product = await session.get(ProductDAO, product_id)
             if not db_product:
                 raise NotFoundError(f"Product with {product_id} not found.")
 
-            result_conflict = await session.execute(
-                select(ProductDAO).filter(ProductDAO.productCode == productCode)
-            )
-            conflicting_barcode = result_conflict.scalars().all()
-            throw_conflict_if_found(
-                conflicting_barcode,
-                lambda _: True,
-                f"Barcode '{productCode}' already in use.",
-            )
+            product_to_update = product_update_dto.model_dump(exclude_unset=True)
 
-            db_product.description = description
-            db_product.pricePerUnit = pricePerUnit
-            db_product.note = note
-            db_product.quantity = quantity
-            db_product.position = position
+            result_conflict = await session.execute(
+                select(ProductDAO).filter(
+                    ProductDAO.barcode == product_to_update["barcode"]
+                )
+            )
+            if result_conflict.scalars().first():
+                raise ConflictError(
+                    f"Barcode '{product_to_update['barcode']}' already in use."
+                )
+
+            for key, value in product_to_update.items():
+                setattr(db_product, key, value)
 
             await session.commit()
             await session.refresh(db_product)
