@@ -116,6 +116,9 @@ class SalesRepository:
             if new_status == "PENDING":
                 if sale.status != "OPEN":  # type: ignore
                     raise InvalidStateError("Sale is not 'OPEN'")
+                sale.closed_at = datetime.datetime.now(datetime.timezone.utc).replace(  # type: ignore
+                    microsecond=0
+                )
 
             if new_status == "PAID":
                 if sale.status != "PENDING":  # type: ignore
