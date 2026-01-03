@@ -181,7 +181,7 @@ class ProductsController:
                 )
         except NotFoundError:
             pass
-
+  
         try:
             # The product has NO orders associated with it.
             product_db = await self.get_product(product_id)

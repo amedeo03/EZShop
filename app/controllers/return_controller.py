@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from app.controllers.returned_product_controller import ReturnedProductController
+
 from app.models.DAO.return_transaction_dao import ReturnTransactionDAO
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.product_dto import ProductTypeDTO
@@ -26,8 +26,7 @@ from app.services.mapper_service import return_transaction_dao_to_return_transac
 class ReturnController:
     def __init__(self):
         self.repo = ReturnRepository()
-        self.returnedProductController = ReturnedProductController()
-        # self.accounting_controller = AccountingController()
+
 
     async def create_return_transaction(
         self, sale_id: int, sales_controller
@@ -124,6 +123,7 @@ class ReturnController:
         amount: int,
         products_controller,
         sales_controller,
+        returned_products_controller
     ) -> BooleanResponseDTO:
         """
         Attach a product to a given return transaction.
@@ -168,7 +168,7 @@ class ReturnController:
             raise BadRequestError("Invalid product")
 
         returned_product: ReturnedProductDTO = (
-            await self.returnedProductController.create_returned_product(
+            await returned_products_controller.create_returned_product(
                 product.id, return_id, product.barcode, amount, product.price_per_unit
             )
         )
@@ -180,7 +180,11 @@ class ReturnController:
         )
 
     async def edit_quantity_of_returned_product(
-        self, return_id: int, barcode: str, amount: int
+        self, 
+        return_id: int, 
+        barcode: str, 
+        amount: int,
+        returned_products_controller
     ) -> BooleanResponseDTO:
         """
         Update the quantity of a product from a given return transaction.
@@ -200,7 +204,7 @@ class ReturnController:
             raise InvalidStateError("Cannot remove items from a closed return")
 
         returned_product: ReturnedProductDTO = (
-            await self.returnedProductController.edit_quantity_of_returned_product(
+            await returned_products_controller.edit_quantity_of_returned_product(
                 return_id, barcode, amount
             )
         )
@@ -248,7 +252,7 @@ class ReturnController:
 
         return response
 
-    async def reimburse_return_transaction(self, return_id: int) -> BooleanResponseDTO:
+    async def reimburse_return_transaction(self, return_id: int, accounting_controller) -> BooleanResponseDTO:
         """
         Close a return transaction.
 
@@ -270,13 +274,13 @@ class ReturnController:
         decrease balance by the total amount of the return transaction
         """
 
-        current_balance = await self.accounting_controller.get_balance()
+        current_balance = await accounting_controller.get_balance()
         if current_balance is None:
             raise BadRequestError("Invalid balance")
         total_return_amount = sum(
             line.price_per_unit * line.quantity for line in return_transaction.lines
         )
         new_balance = current_balance - total_return_amount
-        await self.accounting_controller.set_balance(new_balance)
+        await accounting_controller.set_balance(new_balance)
 
         return response

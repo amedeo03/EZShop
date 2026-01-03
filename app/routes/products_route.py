@@ -6,7 +6,7 @@ from app.config.config import ROUTES
 from app.controllers_instances import (
     orders_controller,
     products_controller,
-    returns_controller,
+    returned_products_controller,
     sold_products_controller,
 )
 from app.middleware.auth_middleware import authenticate_user
@@ -146,7 +146,7 @@ async def update_product(product_id: int, product: ProductUpdateDTO):
         product_dto=product,
         sold_products_controller=sold_products_controller,
         orders_controller=orders_controller,
-        returned_products_controller=returns_controller.returnedProductController,
+        returned_products_controller=returned_products_controller,
     )
 
 
@@ -170,7 +170,7 @@ async def delete_product(product_id: int) -> None:
         product_id=product_id,
         sold_products_controller=sold_products_controller,
         orders_controller=orders_controller,
-        returned_products_controller=returns_controller.returnedProductController,
+        returned_products_controller=returned_products_controller,
     )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

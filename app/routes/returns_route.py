@@ -7,6 +7,8 @@ from app.controllers_instances import (
     products_controller,
     returns_controller,
     sales_controller,
+    returned_products_controller,
+    accounting_controller
 )
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
@@ -199,6 +201,7 @@ async def attach_product_to_return_transaction(
         amount,
         products_controller=products_controller,
         sales_controller=sales_controller,
+        returned_products_controller=returned_products_controller
     )
 
 
@@ -232,7 +235,7 @@ async def delete_product_from_return(
     - Status code: 420 Cannot delete a Reimbursed return
     """
     return await controller.edit_quantity_of_returned_product(
-        return_id, barcode, amount
+        return_id, barcode, amount, returned_products_controller=returned_products_controller
     )
 
 
@@ -286,4 +289,4 @@ async def reimburse_return_transaction(return_id: int) -> BooleanResponseDTO:
     - Status code: 404 return not found
     - Status code: 420 return already closed
     """
-    return await controller.reimburse_return_transaction(return_id)
+    return await controller.reimburse_return_transaction(return_id, accounting_controller=accounting_controller)
