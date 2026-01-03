@@ -28,18 +28,17 @@ class OrdersRepository:
         product_barcode: str,
         quantity: int,
         price_per_unit: float,
-        status: str,
-        product_repo,
+        products_controller,
     ) -> OrderDAO:
         # Check that the product exists (will raise NotFoundError if not found)
-        await product_repo.get_product_by_barcode(product_barcode)
+        await products_controller.get_product_by_barcode(product_barcode)
 
         async with await self._get_session() as session:
             new_order = OrderDAO(
                 product_barcode=product_barcode,
                 quantity=quantity,
                 price_per_unit=price_per_unit,
-                status=status,
+                status="ISSUED",
                 issue_date=datetime.now(),
             )
             session.add(new_order)

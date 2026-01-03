@@ -17,7 +17,7 @@ class OrdersController:
     def __init__(self):
         self.repo = OrdersRepository()
 
-    async def create_order(self, order_dto: OrderDTO, product_repo) -> OrderDTO:
+    async def create_order(self, order_dto: OrderDTO, products_controller) -> OrderDTO:
         validate_product_barcode(order_dto.product_barcode)
         validate_field_is_positive(order_dto.quantity, "quantity")
         validate_field_is_positive(order_dto.price_per_unit, "price_per_unit")
@@ -26,8 +26,7 @@ class OrdersController:
             product_barcode=order_dto.product_barcode,
             quantity=order_dto.quantity,
             price_per_unit=order_dto.price_per_unit,
-            status=order_dto.status,
-            product_repo=product_repo,
+            products_controller=products_controller,
         )
 
         return OrderDTO(

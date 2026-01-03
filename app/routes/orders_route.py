@@ -26,7 +26,7 @@ async def issue_order(order: OrderDTO):
     Issue a new order.
     - Permissions: Administrator, ShopManager
     """
-    return await controller.create_order(order, products_controller.repo)
+    return await controller.create_order(order, products_controller)
 
 
 @router.post(
