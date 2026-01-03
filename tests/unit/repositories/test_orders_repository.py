@@ -106,7 +106,7 @@ class TestOrdersRepository:
                 AccountingDAO(balance=100.0),
                 None,
                 None,
-                None,
+                201,
             ),
             # order status isn't issued
             (
@@ -122,7 +122,7 @@ class TestOrdersRepository:
                 AccountingDAO(balance=100.0),
                 BalanceError,
                 "Insufficient balance for the operation",
-                None,
+                421,
             ),
             # order not found
             (
@@ -130,7 +130,7 @@ class TestOrdersRepository:
                 AccountingDAO(balance=100.0),
                 NotFoundError,
                 "Order with id 1 not found",
-                None,
+                404,
             ),
             # AccountingDAO not found
             (
@@ -138,7 +138,7 @@ class TestOrdersRepository:
                 None,
                 BalanceError,
                 "System balance information not found",
-                None,
+                421,
             ),
         ],
     )

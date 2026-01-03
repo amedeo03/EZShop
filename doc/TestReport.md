@@ -31,9 +31,29 @@
 
 <in the table below list the test cases defined For each test report the object tested, the test level (API, integration, unit) and the technique used to define the test case (BB/ eq partitioning, BB/ boundary, WB/ statement coverage, etc)> <split the table if needed>
 
-| Test case name | Object(s) tested | Test level | Technique used |
-| :------------: | :--------------: | :--------: | :------------: |
-|                |                  |            |                |
+## Unit Testing
+| Test case name               | Object(s) tested                       | Test level | Technique used                                           |
+|:-----------------------------|:-------------------------------------- |:----------:|:---------------------------------------------------------|
+| test_create_order            | OrdersRepository.create_order          |  Unit       | WB / Statement Coverage                                 |
+| test_list_orders             | OrdersRepository.list_orders           |  Unit       | WB / Boundary                                           |
+| test_get_order               | OrdersRepository.get_order             |  Unit       | WB / Boundary                                           |
+| test_pay_order               | OrdersRepository.pay_order             |  Unit       | WB / Decision Coverage                                  |
+| test_record_arrival          | OrdersRepository.record_arrival        |  Unit       | WB / Decision Coverage                                  |
+| test_create_and_pay_order     | OrdersRepository.create_and_pay_order |  Unit       | WB / Statement Coverage                                 |
+| test_get_orders_by_barcode    | OrdersRepository.get_orders_by_barcode|  Unit       | WB / Statement Coverage                                 |
+
+
+## Integration Testing
+| Test case name               | Object(s) tested                      | Test level | Technique used                                          |
+|:-----------------------------|:--------------------------------------|:----------:|:--------------------------------------------------------|
+|                              |                                       |            |                                                         |
+
+
+
+## End to end Testing
+| Test case name               | Object(s) tested                      | Test level | Technique used                                          |
+|:-----------------------------|:--------------------------------------|:----------:|:--------------------------------------------------------|
+|                              |                                       |            |                                                         |
 
 # Coverage
 
