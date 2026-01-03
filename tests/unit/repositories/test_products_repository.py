@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 
+from app.models.errors.bad_request import BadRequestError
 from app.models.errors.conflict_error import ConflictError
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.products_repository import ProductDAO, ProductsRepository
@@ -206,3 +207,31 @@ class TestProductsRepository:
         not_updated_product = await repo.get_product(product.id)
 
         assert not_updated_product.position == product.position
+
+    @pytest.mark.asyncio
+    async def test_update_product_quantity(self, repo):
+        new_quantity: int = 150
+        product: ProductDAO = self.created_products[0]
+        old_quantity: int = product.quantity  # type: ignore
+        updated_product: ProductDAO
+
+        await repo.update_product_quantity(product.id, new_quantity)
+        updated_product = await repo.get_product(product.id)
+
+        assert updated_product.quantity == old_quantity + new_quantity  # type: ignore
+
+    @pytest.mark.asyncio
+    async def test_update_product_quantity_nonexistent_product(self, repo):
+        new_quantity: int = 150
+        nonexistent_id: int = 12345
+
+        with pytest.raises(NotFoundError):
+            await repo.update_product_quantity(nonexistent_id, new_quantity)
+
+    @pytest.mark.asyncio
+    async def test_update_product_quantity_invalid_quantity(self, repo):
+        invalid_quantity: int = -200000
+        product: ProductDAO = self.created_products[0]
+
+        with pytest.raises(BadRequestError):
+            await repo.update_product_quantity(product.id, invalid_quantity)
