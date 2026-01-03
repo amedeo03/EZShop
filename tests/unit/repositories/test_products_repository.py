@@ -76,6 +76,11 @@ class TestProductsRepository:
         return
 
     @pytest.mark.asyncio
+    async def test_list_products(self, repo):
+        product_count: int = len(await repo.list_products())
+        assert product_count == len(self.expected_products)
+
+    @pytest.mark.asyncio
     async def test_create_new_product(self, repo):
         product: ProductDAO = ProductDAO(
             description="apple",
@@ -135,3 +140,37 @@ class TestProductsRepository:
                 product_position_duplicate.quantity,
                 product_position_duplicate.position,
             )
+
+    @pytest.mark.asyncio
+    async def test_get_product_by_id(self, repo):
+        expected_product: ProductDAO = self.created_products[0]
+        db_product: ProductDAO = await repo.get_product(expected_product.id)
+
+        assert db_product.barcode == expected_product.barcode  # type: ignore
+        assert db_product.price_per_unit == expected_product.price_per_unit  # type: ignore
+        assert db_product.quantity == expected_product.quantity  # type: ignore
+        assert db_product.description == expected_product.description  # type: ignore
+
+    @pytest.mark.asyncio
+    async def test_get_product_by_barcode(self, repo):
+        expected_product: ProductDAO = self.created_products[0]
+        db_product: ProductDAO = await repo.get_product_by_barcode(
+            expected_product.barcode
+        )
+
+        assert db_product.barcode == expected_product.barcode  # type: ignore
+        assert db_product.price_per_unit == expected_product.price_per_unit  # type: ignore
+        assert db_product.quantity == expected_product.quantity  # type: ignore
+        assert db_product.description == expected_product.description  # type: ignore
+
+    @pytest.mark.asyncio
+    async def test_get_product_by_name(self, repo):
+        expected_product: ProductDAO = self.created_products[0]
+        db_product: ProductDAO = (
+            await repo.get_product_by_description(expected_product.description)
+        )[0]
+
+        assert db_product.barcode == expected_product.barcode  # type: ignore
+        assert db_product.price_per_unit == expected_product.price_per_unit  # type: ignore
+        assert db_product.quantity == expected_product.quantity  # type: ignore
+        assert db_product.description == expected_product.description  # type: ignore
