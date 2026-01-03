@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 
+from app.models.DTO.product_dto import ProductUpdateDTO
 from app.models.errors.bad_request import BadRequestError
 from app.models.errors.conflict_error import ConflictError
 from app.models.errors.notfound_error import NotFoundError
@@ -235,3 +236,55 @@ class TestProductsRepository:
 
         with pytest.raises(BadRequestError):
             await repo.update_product_quantity(product.id, invalid_quantity)
+
+    @pytest.mark.asyncio
+    async def test_update_product(self, repo):
+        old_product: ProductDAO = self.created_products[0]
+        new_product: ProductUpdateDTO = ProductUpdateDTO(
+            description="banana",
+            barcode="8501234567892",
+            price_per_unit=5,
+            quantity=20,
+            position="Z-1-1",
+            note="",
+        )
+
+        await repo.update_product(new_product, old_product.id)
+
+        updated_product: ProductDAO = await repo.get_product(old_product.id)
+
+        assert updated_product.barcode == new_product.barcode  # type: ignore
+        assert updated_product.price_per_unit == new_product.price_per_unit  # type: ignore
+        assert updated_product.quantity == new_product.quantity  # type: ignore
+        assert updated_product.description == new_product.description  # type: ignore
+
+    @pytest.mark.asyncio
+    async def test_update_product_nonexistent_id(self, repo):
+        nonexistent_id: int = 12345
+        new_product: ProductUpdateDTO = ProductUpdateDTO(
+            description="banana",
+            barcode="8501234567892",
+            price_per_unit=5,
+            quantity=20,
+            position="Z-1-1",
+            note="",
+        )
+
+        with pytest.raises(NotFoundError):
+            await repo.update_product(new_product, nonexistent_id)
+
+    @pytest.mark.asyncio
+    async def test_update_product_duplicate_barcode(self, repo):
+        old_product: ProductDAO = self.created_products[0]
+        duplicated_barcode: str = self.created_products[1].barcode
+        new_product: ProductUpdateDTO = ProductUpdateDTO(
+            description="banana",
+            barcode=duplicated_barcode,
+            price_per_unit=5,
+            quantity=20,
+            position="Z-1-1",
+            note="",
+        )
+
+        with pytest.raises(ConflictError):
+            await repo.update_product(new_product, old_product.id)
