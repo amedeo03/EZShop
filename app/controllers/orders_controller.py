@@ -111,11 +111,6 @@ class OrdersController:
 
         orders_dao = await self.repo.get_orders_by_barcode(product_barcode)
 
-        if not orders_dao:
-            raise NotFoundError(
-                f"No orders found for product barcode: {product_barcode}"
-            )
-
         return OrderDTO(
             id=orders_dao.id,
             product_barcode=orders_dao.product_barcode,
