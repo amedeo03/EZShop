@@ -48,6 +48,7 @@ async def pay_order_for(order: OrderDTO):
 @router.get(
     "/",
     response_model=List[OrderDTO],
+    status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
@@ -63,6 +64,7 @@ async def list_orders():
 @router.patch(
     "/{order_id}/pay",
     response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
     dependencies=[
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
@@ -78,10 +80,10 @@ async def pay_order(order_id: int):
 @router.patch(
     "/{order_id}/arrival",
     response_model=BooleanResponseDTO,
+    status_code=status.HTTP_201_CREATED,
     dependencies=[
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
-    status_code=status.HTTP_201_CREATED,
 )
 async def record_order_arrival(order_id: int):
     """
