@@ -127,7 +127,7 @@ async def get_product_by_barcode(barcode: str):
 @router.put(
     "/{product_id}",
     response_model=BooleanResponseDTO,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     dependencies=[
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
@@ -139,7 +139,7 @@ async def update_product(product_id: int, product: ProductUpdateDTO):
     - Path parameter: id (int)
     - Request body: ProductTypeDTO (fields to update)
     - Returns: Updated user as ProductTypeDTO
-    - Status code: 200 OK
+    - Status code: 201 CREATED
     """
     return await controller.update_product(
         product_id=product_id,
