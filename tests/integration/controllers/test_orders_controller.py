@@ -107,7 +107,6 @@ class TestOrdersController:
         controller = OrdersController()
         controller.repo = repo
 
-        # Prepariamo dati reali nel DB
         order1 = OrderDAO(
             product_barcode="1502234567865",
             quantity=5,
@@ -123,10 +122,8 @@ class TestOrdersController:
         db_session.add_all([order1, order2])
         await db_session.commit()
 
-        # Esecuzione
         orders = await controller.list_orders()
 
-        # Asserzioni
         assert len(orders) == 2
         assert isinstance(orders[0], OrderDTO)
         assert orders[0].product_barcode == "1502234567865"
