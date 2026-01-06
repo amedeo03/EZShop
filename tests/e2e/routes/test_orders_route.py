@@ -603,9 +603,6 @@ class TestOrdersRouter:
             product_on_db = product_on_db_result.json()[0]
 
             assert product_on_db["quantity"] == TEST_PRODUCT_ON_DB["quantity"] + test_product["quantity"] # fmt: skip
-            print(
-                f"DEBUG: {product_on_db['quantity']=}, {TEST_PRODUCT_ON_DB['quantity']=}, {test_product['quantity']=}"
-            )
             assert result_json["success"] == True
             assert new_balance == balance_on_db - (
                 test_product["price_per_unit"] * test_product["quantity"]
