@@ -97,8 +97,8 @@ class SalesController:
             raise InsufficientStockError(
                 "Amount selected is greater than available stock"
             )
-        # TODO:Waiting for /products/{id}/quantity implementation
-        # self.product_controller.update_product_quantity(product.quantity, product.id)
+
+        products_controller.update_product_quantity(product.quantity, product.id)
 
         if product.id == None:
             raise BadRequestError("Invalid product")
@@ -118,6 +118,7 @@ class SalesController:
     async def delete_sale(
         self, sale_id: int, sold_products_controller, products_controller
     ) -> None:
+        validate_field_is_positive(sale_id, "product_id")
 
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status == "PAID":
@@ -140,6 +141,9 @@ class SalesController:
         sold_products_controller,
         products_controller,
     ) -> BooleanResponseDTO:
+        validate_field_is_positive(sale_id, "product_id")
+        validate_field_is_present(barcode, "barcode")
+        validate_product_barcode(barcode)
 
         product_to_edit: Optional[SoldProductDTO] = None
 
