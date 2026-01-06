@@ -58,20 +58,22 @@
 
 
 ## End to end Testing
-| Test case name                   | Object(s) tested                       | Test level | Technique used                                          |
-|:---------------------------------|:---------------------------------------|:----------:|:--------------------------------------------------------|
-| test_get_current_balance         | AccountingRouter.get_current_balance   | End to End | BB / Equivalence Partitioning                           |
-| test_set_balance_authentication  | AccountingRouter.set_balance (auth)    | End to End | BB / Equivalence Partitioning                           |
-| test_set_balance_authenticated   | AccountingRouter.set_balance           | End to End | BB / Boundary                                           |
-| test_reset_balance_authentication| AccountingRouter.reset_balance (auth)  | End to End | BB / Equivalence Partitioning                           |
-| test_reset_balance_authenticated | AccountingRouter.reset_balance         | End to End | BB / State-based                                        |
-| test_issue_order_authentication  | OrdersRouter.issue_order (auth)        | End to End | BB / Equivalence Partitioning                           |
-| test_issue_order                 | OrdersRouter.issue_order               | End to End | BB / Equivalence Partitioning                           |
-| test_pay_order_for_authentication| OrdersRouter.pay_order_for (auth)      | End to End | BB / Equivalence Partitioning                           |
-| test_pay_order_for               | OrdersRouter.pay_order_for             | End to End | BB / Equivalence Partitioning                           |
-| test_list_orders                 | OrdersRouter.list_orders               | End to End | BB / Equivalence Partitioning                           |
-| test_pay_order_authentication    | OrdersRouter.pay_order                 | End to End | BB / Equivalence Partitioning                           |
-| test_pay_order                   | OrdersRouter.pay_order (auth)          | End to End | BB / Equivalence Partitioning                           |
+| Test case name                     | Object(s) tested                       | Test level | Technique used                                          |
+|:-----------------------------------|:---------------------------------------|:----------:|:--------------------------------------------------------|
+| test_get_current_balance           | AccountingRouter.get_current_balance   | End to End | BB / Equivalence Partitioning                           |
+| test_set_balance_authentication    | AccountingRouter.set_balance (auth)    | End to End | BB / Equivalence Partitioning                           |
+| test_set_balance_authenticated     | AccountingRouter.set_balance           | End to End | BB / Boundary                                           |
+| test_reset_balance_authentication  | AccountingRouter.reset_balance (auth)  | End to End | BB / Equivalence Partitioning                           |
+| test_reset_balance_authenticated   | AccountingRouter.reset_balance         | End to End | BB / State-based                                        |
+| test_issue_order_authentication    | OrdersRouter.issue_order (auth)        | End to End | BB / Equivalence Partitioning                           |
+| test_issue_order                   | OrdersRouter.issue_order               | End to End | BB / Equivalence Partitioning                           |
+| test_pay_order_for_authentication  | OrdersRouter.pay_order_for (auth)      | End to End | BB / Equivalence Partitioning                           |
+| test_pay_order_for                 | OrdersRouter.pay_order_for             | End to End | BB / Equivalence Partitioning                           |
+| test_list_orders                   | OrdersRouter.list_orders               | End to End | BB / Equivalence Partitioning                           |
+| test_pay_order_authentication      | OrdersRouter.pay_order                 | End to End | BB / Equivalence Partitioning                           |
+| test_pay_order                     | OrdersRouter.pay_order (auth)          | End to End | BB / Equivalence Partitioning                           |
+| test_record_arrival_authentication | OrdersRouter.record_arrival (auth)     | End to End | BB / Equivalence Partitioning                           |
+| test_record_arrival                | OrdersRouter.record_arrival            | End to End | BB / Equivalence Partitioning                           |
 
 
 # Coverage

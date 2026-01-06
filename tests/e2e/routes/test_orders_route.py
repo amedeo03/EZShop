@@ -319,32 +319,34 @@ class TestOrdersRouter:
         balance,
         expected_status_code,
     ):
-        headers = auth_header(auth_tokens, "admin")
+        admin_header = auth_header(auth_tokens, "admin")
 
         # product creation
-        client.post(f"{BASE_URL}/products", json=TEST_PRODUCT_ON_DB, headers=headers)
+        client.post(
+            f"{BASE_URL}/products", json=TEST_PRODUCT_ON_DB, headers=admin_header
+        )
         # balance set
-        client.post(f"{BASE_URL}/balance/set?amount={balance}", headers=headers)
+        client.post(f"{BASE_URL}/balance/set?amount={balance}", headers=admin_header)
 
         result = client.post(
             f"{BASE_URL}/orders/payfor",
             json=product_of_the_order,
-            headers=headers,
+            headers=admin_header,
         )
 
         if expected_status_code == 201:
             created_order = result.json()
-            assert created_order["id"] == 1
-            assert (
-                created_order["product_barcode"]
-                == product_of_the_order["product_barcode"]
+            updated_balance_result = client.get(
+                f"{BASE_URL}/balance", headers=admin_header
             )
+            new_balance = updated_balance_result.json()["balance"]
+            assert new_balance == balance - product_of_the_order["price_per_unit"]* product_of_the_order["quantity"] # fmt: skip
+            assert created_order["id"] == 1
+            assert created_order["product_barcode"] == product_of_the_order["product_barcode"] # fmt: skip
+
             assert created_order["quantity"] == product_of_the_order["quantity"]
             assert created_order["status"] == "PAID"
-            assert (
-                created_order["price_per_unit"]
-                == product_of_the_order["price_per_unit"]
-            )
+            assert created_order["price_per_unit"] == product_of_the_order["price_per_unit"] # fmt: skip
         else:
             assert result.status_code in (expected_status_code, 422)
 
@@ -408,8 +410,6 @@ class TestOrdersRouter:
             headers=admin_header,
         )
 
-        actual_balance = client.get(f"{BASE_URL}/balance/", headers=headers)
-        print(actual_balance.json())
         # order creation
         client.post(
             f"{BASE_URL}/orders",
@@ -430,7 +430,6 @@ class TestOrdersRouter:
             (None, 500, 1, 201),  # success
             (None, 5, 1, 421),  # insufficient balance
             ("PAID", 500, 1, 420),  # invalid status
-            # ("COMPLETED", 500, 1, 420),  # invalid status
             (None, 500, 50, 404),  # order not found
             (None, 500, -100, 400),  # invalid id
             (None, 500, "abc", 400),  # invalid id
@@ -481,7 +480,134 @@ class TestOrdersRouter:
             headers=admin_header,
         )
 
-        assert result.status_code in (expected_status_code, 422)
         if expected_status_code == 201:
             result_json = result.json()
+            balance_result = client.get(f"{BASE_URL}/balance", headers=admin_header)
+            new_balance = balance_result.json()["balance"]
+
+            all_orders_result = client.get(f"{BASE_URL}/orders", headers=admin_header)
+            first_order = all_orders_result.json()[0]
+            assert first_order["status"] == "PAID"
             assert result_json["success"] == True
+            assert new_balance == balance_on_db - (
+                test_product["price_per_unit"] * test_product["quantity"]
+            )
+
+    @pytest.mark.parametrize(
+        "role, expected_status_code",
+        [
+            ("admin", 201),  # success
+            ("shop_manager", 201),  # success
+            ("cashier", 403),  # unauthorized - insuff. rights
+            (None, 401),  # unauthenticated
+        ],
+    )
+    def test_record_arrival_authentication(
+        self, client, auth_tokens, role, expected_status_code
+    ):
+        test_product = {
+            "product_barcode": "1502234567865",
+            "quantity": 10,
+            "price_per_unit": 2.5,
+        }
+        admin_header = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
+        # product creation
+        client.post(
+            f"{BASE_URL}/products", json=TEST_PRODUCT_ON_DB, headers=admin_header
+        )
+
+        # balance set
+        client.post(
+            f"{BASE_URL}/balance/set?amount=500",
+            headers=admin_header,
+        )
+
+        # order creation + pay
+        client.post(
+            f"{BASE_URL}/orders/payfor",
+            json=test_product,
+            headers=admin_header,
+        )
+
+        result = client.patch(
+            f"{BASE_URL}/orders/1/arrival",
+            headers=headers,
+        )
+
+        assert result.status_code == expected_status_code
+
+    @pytest.mark.parametrize(
+        "order_status_on_db, balance_on_db, order_id, expected_status_code",
+        [
+            (None, 500, 1, 201),  # success
+            (None, 5, 1, 421),  # insufficient balance
+            ("ISSUED", 500, 1, 420),  # invalid status
+            (None, 500, 50, 404),  # order not found
+            (None, 500, -100, 400),  # invalid id
+            (None, 500, "abc", 400),  # invalid id
+        ],
+    )
+    def test_record_arrival(
+        self,
+        client,
+        auth_tokens,
+        order_status_on_db,
+        balance_on_db,
+        order_id,
+        expected_status_code,
+    ):
+        test_product = {
+            "product_barcode": "1502234567865",
+            "quantity": 10,
+            "price_per_unit": 2.5,
+        }
+        admin_header = auth_header(auth_tokens, "admin")
+        # product creation
+        client.post(
+            f"{BASE_URL}/products", json=TEST_PRODUCT_ON_DB, headers=admin_header
+        )
+
+        # balance set
+        client.post(
+            f"{BASE_URL}/balance/set?amount={balance_on_db}",
+            headers=admin_header,
+        )
+
+        # order creation
+        if order_status_on_db == "ISSUED":
+            client.post(
+                f"{BASE_URL}/orders/",
+                json=test_product,
+                headers=admin_header,
+            )
+        else:
+            client.post(
+                f"{BASE_URL}/orders/payfor",
+                json=test_product,
+                headers=admin_header,
+            )
+
+        result = client.patch(
+            f"{BASE_URL}/orders/{order_id}/arrival",
+            headers=admin_header,
+        )
+        balance_result = client.get(f"{BASE_URL}/balance", headers=admin_header)
+        new_balance = balance_result.json()["balance"]
+
+        if expected_status_code == 201:
+            result_json = result.json()
+            all_orders_result = client.get(f"{BASE_URL}/orders", headers=admin_header)
+            first_order = all_orders_result.json()[0]
+            product_on_db_result = client.get(f"{BASE_URL}/products", headers=admin_header) # fmt: skip
+            product_on_db = product_on_db_result.json()[0]
+
+            assert product_on_db["quantity"] == TEST_PRODUCT_ON_DB["quantity"] + test_product["quantity"] # fmt: skip
+            print(
+                f"DEBUG: {product_on_db['quantity']=}, {TEST_PRODUCT_ON_DB['quantity']=}, {test_product['quantity']=}"
+            )
+            assert result_json["success"] == True
+            assert new_balance == balance_on_db - (
+                test_product["price_per_unit"] * test_product["quantity"]
+            )
+            assert first_order["status"] == "COMPLETED"
