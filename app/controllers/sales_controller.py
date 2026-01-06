@@ -156,16 +156,10 @@ class SalesController:
                 "product barcode '{barcode}' not found in sale {sale_id}"
             )
         else:
-            products_controller.update_product_quantity(
-                product_to_edit.id, product_to_edit.quantity
+            await sold_products_controller.edit_sold_product_quantity(
+                product_to_edit.id, sale.id, -amount
             )
-            success: BooleanResponseDTO = (
-                await sold_products_controller.edit_sold_product_quantity(
-                    product_to_edit.id, sale.id, -amount
-                )
-            )
-        if success.success != True:
-            return BooleanResponseDTO(success=False)
+            products_controller.update_product_quantity(product_to_edit.id, amount)
 
         return BooleanResponseDTO(success=True)
 
