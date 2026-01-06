@@ -1,184 +1,212 @@
-import asyncio
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from app.models.DAO.return_transaction_dao import ReturnTransactionDAO
-from app.models.DAO.sale_dao import SaleDAO
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
 from app.models.return_status_type import ReturnStatus
 from app.repositories.return_repository import ReturnRepository
-from init_db import init_db, reset
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+@pytest.fixture
+def mock_session():
+    """Async context manager for mocked session"""
+    session = AsyncMock()
+    session.__aenter__.return_value = session
+    return session
 
 
-@pytest.fixture(scope="session", autouse=True)
-def reset_db(event_loop):
-    event_loop.run_until_complete(reset())
-    event_loop.run_until_complete(init_db())
+@pytest.fixture
+def repo(mock_session):
+    """Injected Return repository with mocked session"""
+    return ReturnRepository(session=mock_session)
 
 
+@pytest.mark.asyncio
 class TestReturnRepository:
-    created_returns: list[ReturnTransactionDAO] = []
 
-    @pytest.fixture(scope="session")
-    def repo(self):
-        return ReturnRepository()
-
-    @pytest.fixture(scope="session", autouse=True)
-    async def setup_test_data(self, repo):
-        """Create test sales for returns"""
-        # Sales are created by init_db, we'll use sale_id=1 which should exist
-        # Create some test returns
-        return_1 = await repo.create_return_transaction(sale_id=1)
-        self.created_returns.append(return_1)
-        return
-
-    @pytest.mark.asyncio
-    async def test_create_return_transaction(self, repo):
+    async def test_create_return_transaction(self, repo, mock_session):
         """Test creating a return transaction"""
-        # Assuming sale_id=1 exists from init_db
-        new_return = await repo.create_return_transaction(sale_id=1)
+        # Arrange
+        sale_id = 1
 
-        assert new_return is not None
-        assert new_return.id is not None
-        assert new_return.sale_id == 1
-        assert new_return.status == ReturnStatus.OPEN
-        assert new_return.created_at is not None
-        assert new_return.lines == []
+        # Act
+        await repo.create_return_transaction(sale_id=sale_id)
 
-    @pytest.mark.asyncio
-    async def test_list_returns(self, repo):
-        """Test listing all returns"""
+        # Assert
+        mock_session.add.assert_called_once()
+        added_obj = mock_session.add.call_args[0][0]
+        assert isinstance(added_obj, ReturnTransactionDAO)
+        assert added_obj.sale_id == sale_id
+        assert added_obj.status == ReturnStatus.OPEN
+        mock_session.commit.assert_called_once()
+        mock_session.refresh.assert_called_once()
+
+    async def test_list_returns_with_results(self, repo, mock_session):
+        """Test listing all returns when returns exist"""
+        # Arrange
+        mock_return_1 = ReturnTransactionDAO(
+            id=1, sale_id=1, status=ReturnStatus.OPEN, lines=[]
+        )
+        mock_return_2 = ReturnTransactionDAO(
+            id=2, sale_id=2, status=ReturnStatus.CLOSED, lines=[]
+        )
+
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalars.return_value = [mock_return_1, mock_return_2]
+
+        # Act
         returns = await repo.list_returns()
 
-        assert returns is not None
-        assert isinstance(returns, list)
-        assert len(returns) >= len(self.created_returns)
+        # Assert
+        assert len(returns) == 2
+        assert returns[0].id == 1
+        assert returns[1].id == 2
+        mock_session.execute.assert_called_once()
 
-    @pytest.mark.asyncio
-    async def test_list_returns_empty(self, repo):
-        """Test listing returns when database might be empty"""
-        # This test depends on setup, should have at least one return
-        returns = await repo.list_returns()
-        assert len(returns) > 0
+    async def test_list_returns_empty_raises_not_found(self, repo, mock_session):
+        """Test listing returns when database is empty"""
+        # Arrange
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalars.return_value = []
 
-    @pytest.mark.asyncio
-    async def test_get_return_by_id_success(self, repo):
+        # Act & Assert
+        with pytest.raises(NotFoundError) as exc_info:
+            await repo.list_returns()
+
+        assert "no return present" in str(exc_info.value).lower()
+
+    async def test_get_return_by_id_success(self, repo, mock_session):
         """Test getting a return by valid ID"""
-        # Create a return to ensure it exists
-        new_return = await repo.create_return_transaction(sale_id=1)
+        # Arrange
+        return_id = 1
+        mock_return = ReturnTransactionDAO(
+            id=return_id, sale_id=1, status=ReturnStatus.OPEN, lines=[]
+        )
 
-        fetched_return = await repo.get_return_by_id(new_return.id)
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalars.return_value.first.return_value = mock_return
 
-        assert fetched_return is not None
-        assert fetched_return.id == new_return.id
-        assert fetched_return.sale_id == new_return.sale_id
-        assert fetched_return.status == ReturnStatus.OPEN
+        # Act
+        result = await repo.get_return_by_id(return_id)
 
-    @pytest.mark.asyncio
-    async def test_get_return_by_id_not_found(self, repo):
+        # Assert
+        assert result.id == return_id
+        assert result.sale_id == 1
+        assert result.status == ReturnStatus.OPEN
+        mock_session.execute.assert_called_once()
+
+    async def test_get_return_by_id_not_found(self, repo, mock_session):
         """Test getting a return with non-existent ID"""
+        # Arrange
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalars.return_value.first.return_value = None
+
+        # Act & Assert
         with pytest.raises(NotFoundError) as exc_info:
             await repo.get_return_by_id(999999)
 
         assert "not found" in str(exc_info.value).lower()
 
-    @pytest.mark.asyncio
-    async def test_delete_return_transaction(self, repo):
+    async def test_delete_return_success(self, repo, mock_session):
         """Test deleting a return transaction"""
-        # Create a return to delete
-        new_return = await repo.create_return_transaction(sale_id=1)
-        return_id = new_return.id
+        # Arrange
+        return_id = 1
+        mock_return = ReturnTransactionDAO(
+            id=return_id, sale_id=1, status=ReturnStatus.OPEN, lines=[]
+        )
 
-        # Delete it
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalar.return_value = mock_return
+
+        # Act
         result = await repo.delete_return(return_id)
 
-        assert result is not None
+        # Assert
+        assert isinstance(result, BooleanResponseDTO)
         assert result.success is True
+        mock_session.delete.assert_called_once_with(mock_return)
+        mock_session.commit.assert_called_once()
 
-        # Verify it's deleted
-        with pytest.raises(NotFoundError):
-            await repo.get_return_by_id(return_id)
-
-    @pytest.mark.asyncio
-    async def test_delete_return_not_found(self, repo):
+    async def test_delete_return_not_found(self, repo, mock_session):
         """Test deleting a non-existent return"""
+        # Arrange
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalar.return_value = None
+
+        # Act & Assert
         with pytest.raises(NotFoundError):
             await repo.delete_return(999999)
 
-    @pytest.mark.asyncio
-    async def test_close_return_not_found(self, repo):
-        """Test closing a non-existent return"""
+        mock_session.delete.assert_not_called()
+        mock_session.commit.assert_not_called()
+
+    async def test_list_returns_for_sale_id_success(self, repo, mock_session):
+        """Test listing returns for a specific sale"""
+        # Arrange
+        sale_id = 1
+        mock_return_1 = ReturnTransactionDAO(
+            id=1, sale_id=sale_id, status=ReturnStatus.OPEN, lines=[]
+        )
+        mock_return_2 = ReturnTransactionDAO(
+            id=2, sale_id=sale_id, status=ReturnStatus.CLOSED, lines=[]
+        )
+
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalars.return_value = [mock_return_1, mock_return_2]
+
+        # Act
+        returns = await repo.list_returns_for_sale_id(sale_id)
+
+        # Assert
+        assert len(returns) == 2
+        assert all(r.sale_id == sale_id for r in returns)
+        mock_session.execute.assert_called_once()
+
+    async def test_close_return_transaction_not_found(self, repo, mock_session):
+        """Test closing a non-existent return raises NotFoundError"""
+        # Arrange
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalar_one_or_none.return_value = None
+
+        # Act & Assert
         with pytest.raises(NotFoundError):
             await repo.close_return_transaction(999999)
 
-    @pytest.mark.skip(reason="Repository has session refresh bug after delete - tested in E2E")
-    @pytest.mark.asyncio
-    async def test_close_return_empty_deletes(self, repo):
-        """Test that closing an empty return deletes it (business rule)"""
-        # Note: This test exposes a SQLAlchemy session issue in the repository
-        # The functionality is tested thoroughly in E2E tests
-        # Create an empty return
-        new_return = await repo.create_return_transaction(sale_id=1)
-        return_id = new_return.id
+    async def test_reimburse_return_not_closed_raises_invalid_state(
+        self, repo, mock_session
+    ):
+        """Test reimbursing an open return raises InvalidStateError"""
+        # Arrange
+        mock_return = ReturnTransactionDAO(
+            id=1, sale_id=1, status=ReturnStatus.OPEN, lines=[]
+        )
 
-        # Close it (should delete since it has no items)
-        result = await repo.close_return_transaction(return_id)
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalar_one_or_none.return_value = mock_return
 
-        # The repository deletes empty returns when closed
-        assert result is not None
-
-    @pytest.mark.asyncio
-    async def test_reimburse_return_not_closed(self, repo):
-        """Test reimbursing an open return (should fail)"""
-        new_return = await repo.create_return_transaction(sale_id=1)
-
+        # Act & Assert
         with pytest.raises(InvalidStateError):
-            await repo.reimburse_return_transaction(new_return.id)
+            await repo.reimburse_return_transaction(1)
 
-    @pytest.mark.asyncio
-    async def test_reimburse_return_not_found(self, repo):
+    async def test_reimburse_return_not_found(self, repo, mock_session):
         """Test reimbursing a non-existent return"""
+        # Arrange
+        mock_result = MagicMock()
+        mock_session.execute.return_value = mock_result
+        mock_result.scalar_one_or_none.return_value = None
+
+        # Act & Assert
         with pytest.raises(NotFoundError):
             await repo.reimburse_return_transaction(999999)
-
-    @pytest.mark.asyncio
-    async def test_attach_product_to_return_transaction(self, repo):
-        """Test attaching a product to a return - basic repository method"""
-        # Note: This is a basic test of the repository method
-        # Full integration testing happens in controller and E2E tests
-        # Here we just verify it exists and has the right signature
-        assert hasattr(repo, 'attach_product_to_return_transaction')
-
-    @pytest.mark.asyncio
-    async def test_list_returns_for_sale_id(self, repo):
-        """Test listing returns for a specific sale"""
-        # Create multiple returns for the same sale
-        return_1 = await repo.create_return_transaction(sale_id=1)
-        return_2 = await repo.create_return_transaction(sale_id=1)
-
-        returns = await repo.list_returns_for_sale_id(1)
-
-        assert returns is not None
-        assert isinstance(returns, list)
-        assert len(returns) >= 2
-        assert all(r.sale_id == 1 for r in returns)
-
-    @pytest.mark.asyncio
-    async def test_list_returns_for_sale_id_not_found(self, repo):
-        """Test listing returns for non-existent sale"""
-        # Depending on implementation, might return empty list or raise error
-        # Adjust based on actual behavior
-        try:
-            returns = await repo.list_returns_for_sale_id(999999)
-            assert returns == [] or returns is None
-        except NotFoundError:
-            # This is also acceptable behavior
-            pass

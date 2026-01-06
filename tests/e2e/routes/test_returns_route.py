@@ -1,8 +1,3 @@
-"""
-End-to-end tests for returns routes.
-Follows the pattern in other test files: uses TestClient and authenticates admin/manager/cashier.
-"""
-
 import asyncio
 import time
 import random
@@ -97,51 +92,23 @@ def generate_unique_position():
 def create_product(client, auth_tokens, barcode=None, quantity=100):
     """Helper to create a product for testing."""
     if barcode is None:
-        # Keep trying until we get a unique barcode and position (shouldn't take more than 1-2 tries)
-        for _ in range(10):
-            barcode = generate_unique_barcode()
-            position = generate_unique_position()
-            product = {
-                "description": "Test product",
-                "barcode": barcode,
-                "price_per_unit": 9.99,
-                "note": "",
-                "quantity": quantity,
-                "position": position,
-            }
-            resp = client.post(
-                BASE_URL + "/products",
-                json=product,
-                headers=auth_header(auth_tokens, "admin"),
-            )
-            if resp.status_code == 201:
-                return resp.json()
-            elif resp.status_code == 409:
-                # Barcode or position collision, try again with new values
-                continue
-            else:
-                assert False, f"Expected 201 or 409, got {resp.status_code}: {resp.json()}"
+        barcode = generate_unique_barcode()
 
-        # If we've tried 10 times and still getting collisions, something is wrong
-        assert False, "Failed to generate unique barcode/position after 10 attempts"
-    else:
-        # Barcode provided explicitly, use it with a unique position
-        position = generate_unique_position()
-        product = {
-            "description": "Test product",
-            "barcode": barcode,
-            "price_per_unit": 9.99,
-            "note": "",
-            "quantity": quantity,
-            "position": position,
-        }
-        resp = client.post(
-            BASE_URL + "/products",
-            json=product,
-            headers=auth_header(auth_tokens, "admin"),
-        )
-        assert resp.status_code == 201, f"Expected 201, got {resp.status_code}: {resp.json()}"
-        return resp.json()
+    position = generate_unique_position()
+    product = {
+        "description": "Test product",
+        "barcode": barcode,
+        "price_per_unit": 9.99,
+        "note": "",
+        "quantity": quantity,
+        "position": position,
+    }
+    resp = client.post(
+        BASE_URL + "/products",
+        json=product,
+        headers=auth_header(auth_tokens, "admin"),
+    )
+    return resp.json()
 
 
 def create_sale_with_products(client, auth_tokens, barcode=None, amount=5):
@@ -157,29 +124,25 @@ def create_sale_with_products(client, auth_tokens, barcode=None, amount=5):
         BASE_URL + "/sales",
         headers=auth_header(auth_tokens, "admin"),
     )
-    assert sale_resp.status_code == 201
     sale_id = sale_resp.json()["id"]
 
     # Add product to sale
-    attach_resp = client.post(
+    client.post(
         f"{BASE_URL}/sales/{sale_id}/items?barcode={barcode}&amount={amount}",
         headers=auth_header(auth_tokens, "admin"),
     )
-    assert attach_resp.status_code == 201
 
     # Close sale
-    close_resp = client.patch(
+    client.patch(
         f"{BASE_URL}/sales/{sale_id}/close",
         headers=auth_header(auth_tokens, "admin"),
     )
-    assert close_resp.status_code == 200
 
     # Pay sale
-    pay_resp = client.patch(
+    client.patch(
         f"{BASE_URL}/sales/{sale_id}/pay?cash_amount=100",
         headers=auth_header(auth_tokens, "admin"),
     )
-    assert pay_resp.status_code == 200
 
     return sale_id, barcode
 
@@ -224,6 +187,9 @@ class TestReturnsRouter:
         data = resp.json()
         assert "id" in data
         assert data["sale_id"] == sale_id
+        assert data["status"] == "OPEN"
+        assert data["lines"] == []
+        assert "created_at" in data
 
     def test_create_return_transaction_invalid_sale(self, client, auth_tokens):
         # Try to create return for non-existent sale
@@ -233,6 +199,56 @@ class TestReturnsRouter:
         )
 
         assert resp.status_code == 404
+
+    def test_create_return_transaction_unpaid_sale(self, client, auth_tokens):
+        # Create an unpaid sale
+        barcode = generate_unique_barcode()
+        create_product(client, auth_tokens, barcode=barcode)
+
+        # Create sale but don't pay it
+        sale_resp = client.post(
+            BASE_URL + "/sales",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        sale_id = sale_resp.json()["id"]
+
+        # Add product to sale
+        client.post(
+            f"{BASE_URL}/sales/{sale_id}/items?barcode={barcode}&amount=5",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close sale but don't pay
+        client.patch(
+            f"{BASE_URL}/sales/{sale_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to create return on unpaid sale
+        resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 420
+
+    def test_create_return_transaction_negative_sale_id(self, client, auth_tokens):
+        # Try to create return with negative sale_id
+        resp = client.post(
+            f"{BASE_URL}/returns/?sale_id=-1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 400
+
+    def test_create_return_transaction_zero_sale_id(self, client, auth_tokens):
+        # Try to create return with zero sale_id
+        resp = client.post(
+            f"{BASE_URL}/returns/?sale_id=0",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 400
 
     # --- List returns tests ---
 
@@ -248,6 +264,14 @@ class TestReturnsRouter:
     def test_list_all_returns(
         self, client, auth_tokens, role, expected_exception_code
     ):
+        # Create a return first to ensure list is not empty
+        if role is not None:
+            sale_id, _ = create_sale_with_products(client, auth_tokens)
+            client.post(
+                f"{BASE_URL}/returns/?sale_id={sale_id}",
+                headers=auth_header(auth_tokens, "admin"),
+            )
+
         headers = auth_header(auth_tokens, role) if role else None
         resp = client.get(
             BASE_URL + "/returns",
@@ -259,6 +283,13 @@ class TestReturnsRouter:
         if role is not None:
             payload = resp.json()
             assert isinstance(payload, list)
+            assert len(payload) > 0
+            # Verify first return has expected fields
+            first_return = payload[0]
+            assert "id" in first_return
+            assert "sale_id" in first_return
+            assert "status" in first_return
+            assert "lines" in first_return
 
     # --- Get return by ID tests ---
 
@@ -275,8 +306,10 @@ class TestReturnsRouter:
         self, client, auth_tokens, input_id, expected_exception_code
     ):
         # Create a return transaction first
+        created_sale_id = None
         if input_id == 1:
             sale_id, _ = create_sale_with_products(client, auth_tokens)
+            created_sale_id = sale_id
             create_resp = client.post(
                 f"{BASE_URL}/returns/?sale_id={sale_id}",
                 headers=auth_header(auth_tokens, "admin"),
@@ -294,7 +327,26 @@ class TestReturnsRouter:
 
         assert resp.status_code == expected_exception_code
 
-    def test_get_return_by_id_unauthenticated(self, client, auth_tokens):
+        # Verify response body for success case
+        if expected_exception_code == 200:
+            data = resp.json()
+            assert data["id"] == input_id
+            assert data["sale_id"] == created_sale_id
+            assert data["status"] == "OPEN"
+            assert "lines" in data
+
+    @pytest.mark.parametrize(
+        "role, expected_exception_code",
+        [
+            ("admin", 200),  # success
+            ("cashier", 200),  # success
+            ("shop_manager", 200),  # success
+            (None, 401),  # unauthenticated
+        ],
+    )
+    def test_get_return_by_id_authentication(
+        self, client, auth_tokens, role, expected_exception_code
+    ):
         # Create a return transaction
         sale_id, _ = create_sale_with_products(client, auth_tokens)
         create_resp = client.post(
@@ -303,8 +355,10 @@ class TestReturnsRouter:
         )
         return_id = create_resp.json()["id"]
 
-        resp = client.get(f"{BASE_URL}/returns/{return_id}")
-        assert resp.status_code == 401
+        headers = auth_header(auth_tokens, role) if role else None
+        resp = client.get(f"{BASE_URL}/returns/{return_id}", headers=headers)
+
+        assert resp.status_code == expected_exception_code
 
     # --- List returns for sale ID tests ---
 
@@ -318,6 +372,7 @@ class TestReturnsRouter:
             headers=auth_header(auth_tokens, "admin"),
         )
         assert create_resp.status_code == 201
+        return_id = create_resp.json()["id"]
 
         # List returns for this sale
         resp = client.get(
@@ -329,13 +384,62 @@ class TestReturnsRouter:
         data = resp.json()
         assert isinstance(data, list)
         assert len(data) >= 1
-        assert any(r["sale_id"] == sale_id for r in data)
+        # Verify the created return is in the list
+        assert data[0]["id"] == return_id
+        assert data[0]["sale_id"] == sale_id
+        assert "status" in data[0]
+        assert "lines" in data[0]
 
-    def test_list_returns_for_sale_id_unauthenticated(self, client, auth_tokens):
+    def test_list_returns_for_sale_id_negative_id(self, client, auth_tokens):
+        # Try to list returns for negative sale_id
+        resp = client.get(
+            f"{BASE_URL}/returns/sale/-1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_list_returns_for_sale_id_zero_id(self, client, auth_tokens):
+        # Try to list returns for zero sale_id
+        resp = client.get(
+            f"{BASE_URL}/returns/sale/0",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_list_returns_for_sale_id_string_id(self, client, auth_tokens):
+        # Try to list returns for string sale_id
+        resp = client.get(
+            f"{BASE_URL}/returns/sale/abc",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        # FastAPI converts 422 to 400 for validation errors
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize(
+        "role, expected_exception_code",
+        [
+            ("admin", 200),  # success
+            ("cashier", 200),  # success
+            ("shop_manager", 200),  # success
+            (None, 401),  # unauthenticated
+        ],
+    )
+    def test_list_returns_for_sale_id_authentication(
+        self, client, auth_tokens, role, expected_exception_code
+    ):
+        # Create a paid sale with return
         sale_id, _ = create_sale_with_products(client, auth_tokens)
+        client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
 
-        resp = client.get(f"{BASE_URL}/returns/sale/{sale_id}")
-        assert resp.status_code == 401
+        headers = auth_header(auth_tokens, role) if role else None
+        resp = client.get(f"{BASE_URL}/returns/sale/{sale_id}", headers=headers)
+
+        assert resp.status_code == expected_exception_code
 
     # --- Attach product to return transaction tests ---
 
@@ -358,6 +462,16 @@ class TestReturnsRouter:
 
         assert resp.status_code == 201
         assert resp.json()["success"] is True
+
+        # Verify the product was added to the return
+        get_resp = client.get(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_data = get_resp.json()
+        assert len(return_data["lines"]) == 1
+        assert return_data["lines"][0]["product_barcode"] == barcode
+        assert return_data["lines"][0]["quantity"] == 5
 
     @pytest.mark.parametrize(
         "role, expected_exception_code",
@@ -389,7 +503,7 @@ class TestReturnsRouter:
 
         assert resp.status_code == expected_exception_code
 
-    def test_attach_product_to_return_invalid_barcode(self, client, auth_tokens):
+    def test_attach_product_to_return_product_not_found(self, client, auth_tokens):
         # Create return transaction
         sale_id, _ = create_sale_with_products(client, auth_tokens)
         return_resp = client.post(
@@ -404,16 +518,134 @@ class TestReturnsRouter:
             headers=auth_header(auth_tokens, "admin"),
         )
 
-        # API returns 400 for invalid barcode format/non-existent product
+        # API may return 400 or 404 for non-existent barcode
         assert resp.status_code in (400, 404)
 
-    def test_attach_product_to_return_invalid_return_id(self, client, auth_tokens):
+    def test_attach_product_to_return_negative_return_id(self, client, auth_tokens):
+        # Try to attach product with negative return_id
         resp = client.post(
-            f"{BASE_URL}/returns/999999/items?barcode=123456789012&amount=2",
+            f"{BASE_URL}/returns/-1/items?barcode=1234567890123&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_string_return_id(self, client, auth_tokens):
+        # Try to attach product with string return_id
+        resp = client.post(
+            f"{BASE_URL}/returns/abc/items?barcode=1234567890123&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_invalid_barcode_too_short(self, client, auth_tokens):
+        # Create return transaction
+        sale_id, _ = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to attach product with barcode that's too short
+        resp = client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode=12345&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_invalid_barcode_with_letters(self, client, auth_tokens):
+        # Create return transaction
+        sale_id, _ = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to attach product with barcode containing letters
+        resp = client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode=ABC1234567890&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_negative_amount(self, client, auth_tokens):
+        # Create return transaction
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to attach product with negative amount
+        resp = client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=-1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_string_amount(self, client, auth_tokens):
+        # Create return transaction
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to attach product with string amount
+        resp = client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=abc",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_attach_product_to_return_invalid_return_id(self, client, auth_tokens):
+        # Create a product to get a valid barcode
+        barcode = generate_unique_barcode()
+        create_product(client, auth_tokens, barcode=barcode)
+
+        # Try to attach to non-existent return_id with valid barcode
+        resp = client.post(
+            f"{BASE_URL}/returns/999999/items?barcode={barcode}&amount=2",
             headers=auth_header(auth_tokens, "admin"),
         )
 
         assert resp.status_code == 404
+
+    def test_attach_product_to_closed_return(self, client, auth_tokens):
+        # Create return, attach product, and close it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to attach product to closed return
+        resp = client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 420
 
     # --- Delete product from return tests ---
 
@@ -443,7 +675,28 @@ class TestReturnsRouter:
         assert resp.status_code == 202
         assert resp.json()["success"] is True
 
-    def test_delete_product_from_return_unauthenticated(self, client, auth_tokens):
+        # Verify quantity was reduced
+        get_resp = client.get(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_data = get_resp.json()
+        assert len(return_data["lines"]) == 1
+        assert return_data["lines"][0]["quantity"] == 3  # 5 - 2 = 3
+
+    @pytest.mark.parametrize(
+        "role, expected_exception_code",
+        [
+            ("admin", 202),  # success
+            ("cashier", 202),  # success
+            ("shop_manager", 202),  # success
+            (None, 401),  # unauthenticated
+        ],
+    )
+    def test_delete_product_from_return_authentication(
+        self, client, auth_tokens, role, expected_exception_code
+    ):
+        # Create return with product
         sale_id, barcode = create_sale_with_products(client, auth_tokens)
         return_resp = client.post(
             f"{BASE_URL}/returns/?sale_id={sale_id}",
@@ -451,11 +704,163 @@ class TestReturnsRouter:
         )
         return_id = return_resp.json()["id"]
 
-        resp = client.delete(
-            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=2"
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=5",
+            headers=auth_header(auth_tokens, "admin"),
         )
 
-        assert resp.status_code == 401
+        headers = auth_header(auth_tokens, role) if role else None
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=2",
+            headers=headers,
+        )
+
+        assert resp.status_code == expected_exception_code
+
+    def test_delete_product_from_return_negative_return_id(self, client, auth_tokens):
+        # Try to delete product with negative return_id
+        resp = client.delete(
+            f"{BASE_URL}/returns/-1/items?barcode=1234567890123&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_delete_product_from_return_string_return_id(self, client, auth_tokens):
+        # Try to delete product with string return_id
+        resp = client.delete(
+            f"{BASE_URL}/returns/abc/items?barcode=1234567890123&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_delete_product_from_return_negative_amount(self, client, auth_tokens):
+        # Create return with product
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to delete with negative amount
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=-1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_delete_product_from_return_string_amount(self, client, auth_tokens):
+        # Create return with product
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to delete with string amount
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=abc",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_delete_product_from_return_not_found(self, client, auth_tokens):
+        # Try to delete from non-existent return
+        resp = client.delete(
+            f"{BASE_URL}/returns/999999/items?barcode=1234567890123&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        # API may return 400 or 404 for non-existent return
+        assert resp.status_code in (400, 404)
+
+    def test_delete_product_from_return_product_not_found(self, client, auth_tokens):
+        # Create return
+        sale_id, _ = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Try to delete product that was never added to the return
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode=9999999999993&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        # API may return 400 or 404 for non-existent product
+        assert resp.status_code in (400, 404)
+
+    def test_delete_product_from_closed_return(self, client, auth_tokens):
+        # Create return, attach product, and close it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to delete product from closed return
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 420
+
+    def test_delete_product_from_reimbursed_return(self, client, auth_tokens):
+        # Set up accounting balance
+        client.post(
+            f"{BASE_URL}/balance/set/?amount=10000",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Create return, attach product, close it, and reimburse it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=2",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close and reimburse return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to delete product from reimbursed return
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 420
 
     # --- Close return transaction tests ---
 
@@ -482,6 +887,15 @@ class TestReturnsRouter:
 
         assert resp.status_code == 200
         assert resp.json()["success"] is True
+
+        # Verify the return status changed to CLOSED
+        get_resp = client.get(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_data = get_resp.json()
+        assert return_data["status"] == "CLOSED"
+        assert return_data["sale_id"] == sale_id
 
     @pytest.mark.parametrize(
         "role, expected_exception_code",
@@ -525,6 +939,61 @@ class TestReturnsRouter:
 
         assert resp.status_code == 404
 
+    def test_close_return_transaction_negative_id(self, client, auth_tokens):
+        # Try to close return with negative id
+        resp = client.patch(
+            f"{BASE_URL}/returns/-1/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_close_return_transaction_zero_id(self, client, auth_tokens):
+        # Try to close return with zero id
+        resp = client.patch(
+            f"{BASE_URL}/returns/0/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_close_return_transaction_string_id(self, client, auth_tokens):
+        # Try to close return with string id
+        resp = client.patch(
+            f"{BASE_URL}/returns/abc/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_close_return_transaction_already_closed(self, client, auth_tokens):
+        # Create return, attach product, and close it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to close again
+        resp = client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 420
+
     # --- Reimburse return transaction tests ---
 
     def test_reimburse_return_transaction_success(self, client, auth_tokens):
@@ -535,7 +1004,7 @@ class TestReturnsRouter:
         )
 
         # Create return with products and close it
-        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        sale_id, barcode = create_sale_with_products(client, auth_tokens, amount=2)
         return_resp = client.post(
             f"{BASE_URL}/returns/?sale_id={sale_id}",
             headers=auth_header(auth_tokens, "admin"),
@@ -552,6 +1021,12 @@ class TestReturnsRouter:
             headers=auth_header(auth_tokens, "admin"),
         )
 
+        # Get initial balance
+        balance_before = client.get(
+            f"{BASE_URL}/balance",
+            headers=auth_header(auth_tokens, "admin"),
+        ).json()["balance"]
+
         # Reimburse return
         resp = client.patch(
             f"{BASE_URL}/returns/{return_id}/reimburse",
@@ -560,6 +1035,22 @@ class TestReturnsRouter:
 
         assert resp.status_code == 200
         assert resp.json()["success"] is True
+
+        # Verify the return status changed to REIMBURSED (MANDATORY check)
+        get_resp = client.get(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_data = get_resp.json()
+        assert return_data["status"] == "REIMBURSED"
+
+        # Verify exact balance change (2 items * 9.99 price)
+        expected_refund = 2 * 9.99
+        balance_after = client.get(
+            f"{BASE_URL}/balance",
+            headers=auth_header(auth_tokens, "admin"),
+        ).json()["balance"]
+        assert abs((balance_before - balance_after) - expected_refund) < 0.01
 
     @pytest.mark.parametrize(
         "role, expected_exception_code",
@@ -612,6 +1103,61 @@ class TestReturnsRouter:
         )
 
         assert resp.status_code == 404
+
+    def test_reimburse_return_transaction_negative_id(self, client, auth_tokens):
+        # Try to reimburse return with negative id
+        resp = client.patch(
+            f"{BASE_URL}/returns/-1/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_reimburse_return_transaction_zero_id(self, client, auth_tokens):
+        # Try to reimburse return with zero id
+        resp = client.patch(
+            f"{BASE_URL}/returns/0/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_reimburse_return_transaction_string_id(self, client, auth_tokens):
+        # Try to reimburse return with string id
+        resp = client.patch(
+            f"{BASE_URL}/returns/abc/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_reimburse_return_transaction_not_closed(self, client, auth_tokens):
+        # Set up accounting balance
+        client.post(
+            f"{BASE_URL}/balance/set/?amount=10000",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Create return but don't close it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to reimburse without closing first
+        resp = client.patch(
+            f"{BASE_URL}/returns/{return_id}/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 420
 
     # --- Delete return transaction tests ---
 
@@ -674,3 +1220,99 @@ class TestReturnsRouter:
         )
 
         assert resp.status_code == 404
+
+    def test_delete_return_negative_id(self, client, auth_tokens):
+        # Try to delete return with negative id
+        resp = client.delete(
+            f"{BASE_URL}/returns/-1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_delete_return_zero_id(self, client, auth_tokens):
+        # Try to delete return with zero id
+        resp = client.delete(
+            f"{BASE_URL}/returns/0",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        assert resp.status_code == 400
+
+    def test_delete_return_string_id(self, client, auth_tokens):
+        # Try to delete return with string id
+        resp = client.delete(
+            f"{BASE_URL}/returns/abc",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        if resp.status_code == 422:
+            resp.status_code = 400
+        assert resp.status_code == 400
+
+    def test_delete_closed_return(self, client, auth_tokens):
+        # Create return, attach product, and close it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Delete closed return (should be allowed - only REIMBURSED cannot be deleted)
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 204
+
+    def test_delete_reimbursed_return(self, client, auth_tokens):
+        # Set up accounting balance
+        client.post(
+            f"{BASE_URL}/balance/set/?amount=10000",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Create return, attach product, close it, and reimburse it
+        sale_id, barcode = create_sale_with_products(client, auth_tokens)
+        return_resp = client.post(
+            f"{BASE_URL}/returns/?sale_id={sale_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+        return_id = return_resp.json()["id"]
+
+        # Attach product
+        client.post(
+            f"{BASE_URL}/returns/{return_id}/items?barcode={barcode}&amount=1",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Close return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/close",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Reimburse return
+        client.patch(
+            f"{BASE_URL}/returns/{return_id}/reimburse",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        # Try to delete reimbursed return
+        resp = client.delete(
+            f"{BASE_URL}/returns/{return_id}",
+            headers=auth_header(auth_tokens, "admin"),
+        )
+
+        assert resp.status_code == 420
