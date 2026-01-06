@@ -158,7 +158,9 @@ async def delete_sale(sale_id: int) -> None:
     - Status code: 404 sale or product not found
     """
     await controller.delete_sale(
-        sale_id, sold_products_controller=sold_products_controller
+        sale_id,
+        sold_products_controller=sold_products_controller,
+        products_controller=products_controller,
     )
 
 
@@ -191,7 +193,11 @@ async def edit_product_quantity(
     """
 
     return await controller.edit_sold_product_quantity(
-        sale_id, barcode, amount, sold_products_controller=sold_products_controller
+        sale_id,
+        barcode,
+        amount,
+        sold_products_controller=sold_products_controller,
+        products_controller=products_controller,
     )
 
 
@@ -284,7 +290,11 @@ async def close_sale(sale_id: int) -> BooleanResponseDTO:
     - Status code: 404 sale not found
     - Status code: 420 sale already closed
     """
-    return await controller.close_sale(sale_id)
+    return await controller.close_sale(
+        sale_id,
+        products_controller=products_controller,
+        sold_products_controller=sold_products_controller,
+    )
 
 
 @router.patch(
