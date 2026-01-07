@@ -30,6 +30,7 @@ class TestReturnRepository:
     async def test_create_return_transaction(self, repo, mock_session):
         """Test creating a return transaction"""
         # Arrange
+        mock_session.add = MagicMock()
         sale_id = 1
 
         # Act
