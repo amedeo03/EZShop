@@ -48,7 +48,7 @@ class SalesController:
         sales_dto: List[SaleDTO] = list()
 
         if not sales_dao:
-            raise NotFoundError("Product not found")
+            return []
 
         for sale_dao in sales_dao:
             sales_dto.append(sale_dao_to_dto(sale_dao))
@@ -264,8 +264,6 @@ class SalesController:
             )
 
         value = value * (1 - sale.discount_rate)
-        print(sale.lines)
-
         return value
 
     async def get_points(self, sale_id: int) -> PointsResponseDTO:

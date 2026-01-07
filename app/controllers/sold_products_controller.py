@@ -66,25 +66,6 @@ class SoldProductsController:
 
         return sold_product_dao_to_dto(sold_product_dao[0])
 
-    async def get_sold_product_by_barcode(self, product_barcode: str) -> SoldProductDTO:
-        """
-        Get sold product by barcode.
-        - Parameters: product_barcode (str)
-        - Returns: first sold product found as SoldProductDTO
-        - Throws:
-            - NotFoundError if product_barcode not found
-            - BadRequestError if barcode is not valid
-        """
-        validate_field_is_present(product_barcode, "product_barcode")
-        validate_product_barcode(product_barcode)
-
-        sold_product_dao = await self.repo.get_sold_product_by_barcode(product_barcode)
-
-        if not sold_product_dao:
-            raise NotFoundError("Product not found")
-
-        return sold_product_dao_to_dto(sold_product_dao[0])
-
     async def edit_sold_product_quantity(
         self, id: int, sale_id: int, quantity: int
     ) -> BooleanResponseDTO:
