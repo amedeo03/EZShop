@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional
 
 from sqlalchemy import select
@@ -11,7 +12,6 @@ from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
 from app.utils import find_or_throw_not_found
-import datetime
 
 
 class SalesRepository:
@@ -35,7 +35,7 @@ class SalesRepository:
             await session.refresh(sale)
             return sale
 
-    async def list_sales(self) -> List[SaleDAO] | None:
+    async def list_sales(self) -> List[SaleDAO]:
         """
         Get all sales present in the database
         - Returns: List[SaleDAO]
@@ -45,11 +45,7 @@ class SalesRepository:
                 select(SaleDAO).options(selectinload(SaleDAO.lines))
             )
             sales = list(result.scalars())
-            return find_or_throw_not_found(
-                [sales] if sales else [],
-                lambda _: True,
-                f"There is no sale present in the database",
-            )
+        return sales
 
     async def get_sale_by_id(self, sale_id: int) -> SaleDAO | None:
         """
