@@ -77,33 +77,10 @@ class TestProductsRouter:
             assert payload == []
 
     @pytest.mark.parametrize(
-        "role, expected_exception_code",
-        [
-            ("admin", 400),  # success, but no product provided
-            ("cashier", 403),  # fail - insufficient rights
-            ("shop_manager", 400),  # success, but no product provided
-            (None, 401),  # unauthenticated
-        ],
-    )
-    def test_create_new_product_authentication(
-        self, client, auth_tokens, role, expected_exception_code
-    ):
-
-        headers = auth_header(auth_tokens, role) if role else None
-        resp = client.post(
-            BASE_URL + "/products",
-            headers=headers,
-        )
-
-        if expected_exception_code == 400:
-            assert resp.status_code in (expected_exception_code, 422)
-        else:
-            assert resp.status_code == expected_exception_code
-
-    @pytest.mark.parametrize(
-        "product, expected_exception_code",
+        "role, product, expected_exception_code",
         [
             (
+                "admin",
                 {  # correct product
                     "description": "Test product",
                     "barcode": "123456789012",
@@ -115,6 +92,7 @@ class TestProductsRouter:
                 201,
             ),
             (
+                "admin",
                 {  # invalid barcode
                     "description": "Test product",
                     "barcode": "123",
@@ -126,6 +104,7 @@ class TestProductsRouter:
                 400,
             ),
             (
+                "admin",
                 {  # empty description
                     "description": "",
                     "barcode": "123456789012",
@@ -137,6 +116,7 @@ class TestProductsRouter:
                 400,
             ),
             (
+                "admin",
                 {  # wrong position format
                     "description": "test product",
                     "barcode": "123456789012",
@@ -146,13 +126,37 @@ class TestProductsRouter:
                 },
                 400,
             ),
+            (
+                "cashier",
+                {  # insufficient rights
+                    "description": "Test product",
+                    "barcode": "123456789012",
+                    "price_per_unit": 9.99,
+                    "note": "",
+                    "quantity": 10,
+                    "position": "A-1-1",
+                },
+                403,
+            ),
+            (
+                None,
+                {  # unauthenticated
+                    "description": "Test product",
+                    "barcode": "123456789012",
+                    "price_per_unit": 9.99,
+                    "note": "",
+                    "quantity": 10,
+                    "position": "A-1-1",
+                },
+                401,
+            ),
         ],
     )
     def test_create_new_product(
-        self, client, auth_tokens, product, expected_exception_code
+        self, client, auth_tokens, role, product, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         resp = client.post(
             BASE_URL + "/products",
             json=product,
@@ -165,19 +169,20 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_id, expected_exception_code",
+        "input_id, role, expected_exception_code",
         [
-            (1, 200),  # success
-            (-1, 400),  # invalid id
-            (12345, 404),  # no product found
-            ("abc", 400),  # invalid id
+            (1, "admin", 200),  # success
+            (-1, "admin", 400),  # invalid id
+            (12345, "admin", 404),  # no product found
+            ("abc", "admin", 400),  # invalid id
+            (1, None, 401),  # unauthenticated
         ],
     )
     def test_get_product_by_id(
-        self, client, auth_tokens, input_id, expected_exception_code
+        self, client, auth_tokens, input_id, role, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -204,19 +209,21 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_barcode, expected_exception_code",
+        "input_barcode, role, expected_exception_code",
         [
-            ("123456789012", 200),  # success
-            ("426", 400),  # invalid barcode
-            ("4260123456788", 404),  # no product found
-            ("", 400),  # invalid id
+            ("123456789012", "admin", 200),  # success
+            ("426", "admin", 400),  # invalid barcode
+            ("4260123456788", "admin", 404),  # no product found
+            ("", "admin", 400),  # invalid id
+            ("123456789012", "cashier", 403),  # insufficient rights
+            ("123456789012", None, 401),  # unauthenticated
         ],
     )
     def test_get_product_by_barcode(
-        self, client, auth_tokens, input_barcode, expected_exception_code
+        self, client, auth_tokens, input_barcode, role, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -243,17 +250,19 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_description, expected_exception_code",
+        "input_description, role, expected_exception_code",
         [
-            ("Test", 200),  # success
-            ("tseT", 404),  # no product found
+            ("Test", "admin", 200),  # success
+            ("tseT", "admin", 404),  # no product found
+            ("Test", "cashier", 403),  # insufficient rights
+            ("Test", None, 401),  # unauthenticated
         ],
     )
     def test_get_product_by_description(
-        self, client, auth_tokens, input_description, expected_exception_code
+        self, client, auth_tokens, input_description, role, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -280,19 +289,21 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_id, expected_exception_code",
+        "input_id, role, expected_exception_code",
         [
-            (1, 204),  # success
-            (-1, 400),  # invalid id
-            (12345, 404),  # no product found
-            ("abc", 400),  # invalid id
+            (1, "admin", 204),  # success
+            (-1, "admin", 400),  # invalid id
+            (12345, "admin", 404),  # no product found
+            ("abc", "admin", 400),  # invalid id
+            (1, "cashier", 403),  # insufficient rights
+            (1, None, 401),  # unauthenticated
         ],
     )
     def test_delete_product(
-        self, client, auth_tokens, input_id, expected_exception_code
+        self, client, auth_tokens, input_id, role, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -319,10 +330,11 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "product_id, product_update, expected_exception_code",
+        "product_id, role, product_update, expected_exception_code",
         [
             (
                 1,  # correct update
+                "admin",
                 {
                     "description": "updated product",
                     "barcode": "9780201379624",
@@ -335,6 +347,7 @@ class TestProductsRouter:
             ),
             (
                 -1,  # invalid id
+                "admin",
                 {
                     "description": "Test product",
                     "barcode": "9780201379624",
@@ -347,6 +360,7 @@ class TestProductsRouter:
             ),
             (
                 1,  # invalid barcode
+                "admin",
                 {
                     "description": "Test product",
                     "barcode": "12345",
@@ -359,6 +373,7 @@ class TestProductsRouter:
             ),
             (
                 1,  # invalid quantity
+                "admin",
                 {
                     "description": "Test product",
                     "barcode": "9780201379624",
@@ -371,6 +386,7 @@ class TestProductsRouter:
             ),
             (
                 1,  # invalid price
+                "admin",
                 {
                     "description": "Test product",
                     "barcode": "9780201379624",
@@ -383,6 +399,7 @@ class TestProductsRouter:
             ),
             (
                 12345,  # not found
+                "admin",
                 {
                     "description": "Test product",
                     "barcode": "9780201379624",
@@ -393,12 +410,44 @@ class TestProductsRouter:
                 },
                 404,
             ),
+            (
+                1,  # insufficient rights
+                "cashier",
+                {
+                    "description": "updated product",
+                    "barcode": "9780201379624",
+                    "price_per_unit": 9.99,
+                    "note": "updated note",
+                    "quantity": 10,
+                    "position": "B-1-1",
+                },
+                403,
+            ),
+            (
+                1,  # unauthenticated
+                None,
+                {
+                    "description": "updated product",
+                    "barcode": "9780201379624",
+                    "price_per_unit": 9.99,
+                    "note": "updated note",
+                    "quantity": 10,
+                    "position": "B-1-1",
+                },
+                401,
+            ),
         ],
     )
     def test_edit_product(
-        self, client, auth_tokens, product_id, product_update, expected_exception_code
+        self,
+        client,
+        auth_tokens,
+        product_id,
+        role,
+        product_update,
+        expected_exception_code,
     ):
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -500,21 +549,23 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_id, new_position, expected_exception_code",
+        "input_id, role, new_position, expected_exception_code",
         [
-            (1, "Z-1-1", 201),  # success
-            (1, "", 201),  # success
-            (-1, "B-1-1", 400),  # invalid id
-            (12345, "B-1-1", 404),  # no product found
-            ("abc", "B-1-1", 400),  # invalid id
-            (1, "B-1", 400),  # invalid position string
-            (1, "C-1-1", 409),  # position conflict
+            (1, "admin", "Z-1-1", 201),  # success
+            (1, "admin", "", 201),  # success
+            (-1, "admin", "B-1-1", 400),  # invalid id
+            (12345, "admin", "B-1-1", 404),  # no product found
+            ("abc", "admin", "B-1-1", 400),  # invalid id
+            (1, "admin", "B-1", 400),  # invalid position string
+            (1, "admin", "C-1-1", 409),  # position conflict
+            (1, "cashier", "Z-1-1", 403),  # insufficient rights
+            (1, None, "Z-1-1", 401),  # unauthenticated
         ],
     )
     def test_edit_product_position(
-        self, client, auth_tokens, input_id, new_position, expected_exception_code
+        self, client, auth_tokens, input_id, role, new_position, expected_exception_code
     ):
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
@@ -560,21 +611,23 @@ class TestProductsRouter:
             assert resp.status_code == expected_exception_code
 
     @pytest.mark.parametrize(
-        "input_id, quantity, expected_exception_code",
+        "input_id, role, quantity, expected_exception_code",
         [
-            (1, 20, 201),  # success
-            (1, -5, 201),  # success
-            (-1, 20, 400),  # invalid id
-            (12345, 20, 404),  # no product found
-            ("abc", 20, 400),  # invalid id
-            (1, -2000, 400),  # insufficient quaantity available
+            (1, "admin", 20, 201),  # success
+            (1, "admin", -5, 201),  # success
+            (-1, "admin", 20, 400),  # invalid id
+            (12345, "admin", 20, 404),  # no product found
+            ("abc", "admin", 20, 400),  # invalid id
+            (1, "admin", -2000, 400),  # insufficient quaantity available
+            (1, "cashier", 20, 403),  # insufficient rights
+            (1, None, 20, 401),  # unauthenticated
         ],
     )
     def test_edit_product_quantity(
-        self, client, auth_tokens, input_id, quantity, expected_exception_code
+        self, client, auth_tokens, input_id, role, quantity, expected_exception_code
     ):
 
-        headers = auth_header(auth_tokens, "admin")
+        headers = auth_header(auth_tokens, role) if role else None
         product = {
             "description": "Test product",
             "barcode": "123456789012",
