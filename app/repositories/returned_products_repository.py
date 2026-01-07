@@ -127,12 +127,10 @@ class ReturnedProductsRepository:
             result = await session.execute(
                 select(ReturnedProductDAO).filter(ReturnedProductDAO.product_barcode == barcode)
             )
-            products = result.scalar()
-
-            if products is None:
+            if result is None:
                 raise NotFoundError("No products with barcode '{barcode}' returned")
             else:
-                return products
+                return result.scalars().all()
             
             
             
