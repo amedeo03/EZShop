@@ -78,21 +78,6 @@ class SoldProductsRepository:
             else:
                 return products
 
-    async def get_sold_product_by_barcode(self, barcode: str) -> list[SoldProductDAO]:
-        """
-        Get product(s) by barcode or throw NotFoundError if not found
-        """
-        async with await self._get_session() as session:
-            result = await session.execute(
-                select(SoldProductDAO).filter(SoldProductDAO.product_barcode == barcode)
-            )
-            products = result.scalar()
-
-            if products is None:
-                raise NotFoundError("No products with barcode '{barcode}' sold")
-            else:
-                return products
-
     async def edit_sold_product_quantity(
         self, id: int, sale_id: int, quantity: int
     ) -> BooleanResponseDTO:
