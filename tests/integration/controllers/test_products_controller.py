@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -6,6 +8,7 @@ from app.controllers.products_controller import ProductsController
 from app.database.database import Base
 from app.models.DTO.product_dto import ProductCreateDTO, ProductUpdateDTO
 from app.models.errors.bad_request import BadRequestError
+from app.models.errors.conflict_error import ConflictError
 from app.models.errors.invalid_state_error import InvalidStateError
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.products_repository import ProductsRepository
@@ -98,6 +101,7 @@ class TestProductsController:
     @pytest.mark.parametrize(
         "product_id,expected_exception",
         [
+            (1, None),
             (1, NotFoundError),
             (-1, BadRequestError),
         ],
@@ -107,15 +111,37 @@ class TestProductsController:
         controller = ProductsController()
         controller.repo = repo
 
-        with pytest.raises(expected_exception):
-            await controller.get_product(product_id)
+        dto = ProductCreateDTO(
+            description="Milk",
+            barcode="4006381333931",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="A-1-1",
+        )
+
+        if expected_exception is None:
+            await controller.create_product(dto)
+            product = await controller.get_product(product_id)
+            assert product.id == product_id
+            assert product.description == dto.description
+            assert product.barcode == dto.barcode
+            assert product.price_per_unit == dto.price_per_unit
+            assert product.note == dto.note
+            assert product.quantity == dto.quantity
+            assert product.position == dto.position
+
+        elif expected_exception is not None:
+            with pytest.raises(expected_exception):
+                await controller.get_product(product_id)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "barcode,expected_exception",
         [
-            ("123456789012", Exception),
-            ("invalid", BadRequestError),
+            ("4006381333931", None),
+            ("9780201379624", NotFoundError),
+            ("400638", BadRequestError),
         ],
     )
     async def test_get_product_by_barcode(
@@ -125,15 +151,35 @@ class TestProductsController:
         controller = ProductsController()
         controller.repo = repo
 
-        with pytest.raises(expected_exception):
-            await controller.get_product_by_barcode(barcode)
+        dto = ProductCreateDTO(
+            description="Milk",
+            barcode="4006381333931",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="A-1-1",
+        )
+        await controller.create_product(dto)
+
+        if expected_exception is None:
+            product = await controller.get_product_by_barcode(barcode)
+            assert product.description == dto.description
+            assert product.barcode == dto.barcode
+            assert product.price_per_unit == dto.price_per_unit
+            assert product.note == dto.note
+            assert product.quantity == dto.quantity
+            assert product.position == dto.position
+        else:
+            with pytest.raises(expected_exception):
+                await controller.get_product_by_barcode(barcode)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "description,expected_exception",
         [
-            ("Milk", NotFoundError),
-            ("", NotFoundError),
+            ("Milk", None),
+            ("", None),
+            ("Coffee", NotFoundError),
         ],
     )
     async def test_get_product_by_description(
@@ -143,17 +189,38 @@ class TestProductsController:
         controller = ProductsController()
         controller.repo = repo
 
-        with pytest.raises(expected_exception):
-            await controller.get_product_by_description(description)
+        dto = ProductCreateDTO(
+            description="Milk",
+            barcode="4006381333931",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="A-1-1",
+        )
+        await controller.create_product(dto)
+
+        if expected_exception is None:
+            product_list = await controller.get_product_by_description(description)
+            product = product_list[0]
+            assert product.description == dto.description
+            assert product.barcode == dto.barcode
+            assert product.price_per_unit == dto.price_per_unit
+            assert product.note == dto.note
+            assert product.quantity == dto.quantity
+            assert product.position == dto.position
+        else:
+            with pytest.raises(expected_exception):
+                await controller.get_product_by_description(description)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "product_id,position,expected_exception",
         [
             (1, "B-1-1", None),
-            (12345, "A-1-1", NotFoundError),  # nonexistent product
-            (-1, "A-1-1", BadRequestError),  # invalid id
-            (1, "A-1", BadRequestError),  # invalid position format
+            (12345, "B-1-1", NotFoundError),  # nonexistent product
+            (-1, "B-1-1", BadRequestError),  # invalid id
+            (1, "B-1", BadRequestError),  # invalid position format
+            (1, "C-1-1", ConflictError),  # conflicting position
         ],
     )
     async def test_update_product_position(
@@ -171,14 +238,26 @@ class TestProductsController:
             quantity=10,
             position="A-1-1",
         )
-        await controller.create_product(dto)
+        dto2 = ProductCreateDTO(  # conflictint product
+            description="Coffee",
+            barcode="9780201379624",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="C-1-1",
+        )
 
-        if expected_exception:
+        await controller.create_product(dto)
+        await controller.create_product(dto2)
+
+        if expected_exception is None:
+            result = await controller.update_product_position(product_id, position)
+            assert result.success == True
+            product = await controller.get_product(product_id)
+            assert product.position == position
+        else:
             with pytest.raises(expected_exception):
                 await controller.update_product_position(product_id, position)
-        else:
-            result = await controller.update_product_position(product_id, position)
-            assert result.success is True
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -214,3 +293,313 @@ class TestProductsController:
         else:
             result = await controller.update_product_quantity(product_id, quantity)
             assert result.success is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "product_id, product_update_dto, expected_exception",
+        [
+            (
+                1,
+                ProductUpdateDTO(  # correct update
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                None,
+            ),
+            (
+                12345,
+                ProductUpdateDTO(  # id not found
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                NotFoundError,
+            ),
+            (
+                -1,
+                ProductUpdateDTO(  # negative id
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # invalid barcode
+                    description="Milk",
+                    barcode="400638",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # empty description
+                    description="",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # negative quantity
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=-10,
+                    position="A-1-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # negative price
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=-1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # invalid position
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1",
+                ),
+                BadRequestError,
+            ),
+            (
+                1,
+                ProductUpdateDTO(  # product present in a sale or an order
+                    description="Milk",
+                    barcode="4006381333931",
+                    price_per_unit=1.5,
+                    note="",
+                    quantity=10,
+                    position="A-1-1",
+                ),
+                InvalidStateError,
+            ),
+        ],
+    )
+    async def test_update_product(
+        self, db_session, product_id, product_update_dto, expected_exception
+    ):
+        repo = ProductsRepository(session=db_session)
+        controller = ProductsController()
+        controller.repo = repo
+
+        mock_sold_products_controller = AsyncMock()
+        mock_orders_controller = AsyncMock()
+        mock_returned_products_controller = AsyncMock()
+
+        dto = ProductCreateDTO(  # existing product
+            description="Coffee",
+            barcode="9780201379624",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="B-1-1",
+        )
+
+        await controller.create_product(dto)
+
+        if expected_exception is None:
+            mock_sold_products_controller.get_sold_product_by_id.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_orders_controller.get_order_by_product_barcode.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_returned_products_controller.get_returned_products_by_id.side_effect = NotFoundError(
+                "NotFound"
+            )
+
+            result = await controller.update_product(
+                product_id,
+                product_update_dto,
+                mock_sold_products_controller,
+                mock_orders_controller,
+                mock_returned_products_controller,
+            )
+
+            assert result.success == True
+
+        elif expected_exception is InvalidStateError:
+            mock_returned_products_controller.get_returned_products_by_id.return_value = (
+                True
+            )
+            with pytest.raises(expected_exception):  # a return is present
+                await controller.update_product(
+                    product_id,
+                    product_update_dto,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+            mock_orders_controller.get_order_by_product_barcode.return_value = True
+            with pytest.raises(expected_exception):  # an order is present
+                await controller.update_product(
+                    product_id,
+                    product_update_dto,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+            mock_sold_products_controller.get_sold_product_by_id.return_value = True
+            with pytest.raises(expected_exception):  # a sale is present
+                await controller.update_product(
+                    product_id,
+                    product_update_dto,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+        else:
+            mock_sold_products_controller.get_sold_product_by_id.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_orders_controller.get_order_by_product_barcode.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_returned_products_controller.get_returned_products_by_id.side_effect = NotFoundError(
+                "NotFound"
+            )
+
+            with pytest.raises(expected_exception):
+                await controller.update_product(
+                    product_id,
+                    product_update_dto,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "product_id, expected_exception",
+        [
+            (1, None),
+            (12345, NotFoundError),  # nonexistent product
+            (-1, BadRequestError),  # invalid id
+            (1, InvalidStateError),  # product present in a sale, return or order
+        ],
+    )
+    async def test_delete_product(self, db_session, product_id, expected_exception):
+        repo = ProductsRepository(session=db_session)
+        controller = ProductsController()
+        controller.repo = repo
+
+        mock_sold_products_controller = AsyncMock()
+        mock_orders_controller = AsyncMock()
+        mock_returned_products_controller = AsyncMock()
+
+        dto = ProductCreateDTO(  # existing product
+            description="Coffee",
+            barcode="9780201379624",
+            price_per_unit=1.5,
+            note="",
+            quantity=10,
+            position="B-1-1",
+        )
+
+        await controller.create_product(dto)
+
+        if expected_exception is None:
+            mock_sold_products_controller.get_sold_product_by_id.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_orders_controller.get_order_by_product_barcode.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_returned_products_controller.get_returned_products_by_id.side_effect = NotFoundError(
+                "NotFound"
+            )
+
+            await controller.delete_product(
+                product_id,
+                mock_sold_products_controller,
+                mock_orders_controller,
+                mock_returned_products_controller,
+            )
+
+            with pytest.raises(NotFoundError):
+                await controller.get_product(product_id)
+
+        elif expected_exception is InvalidStateError:
+            mock_returned_products_controller.get_returned_products_by_id.return_value = (
+                True
+            )
+            with pytest.raises(expected_exception):  # a return is present
+                await controller.delete_product(
+                    product_id,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+            mock_orders_controller.get_order_by_product_barcode.return_value = True
+            with pytest.raises(expected_exception):  # an order is present
+                await controller.delete_product(
+                    product_id,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+            mock_sold_products_controller.get_sold_product_by_id.return_value = True
+            with pytest.raises(expected_exception):  # a sale is present
+                await controller.delete_product(
+                    product_id,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
+
+        else:
+            mock_sold_products_controller.get_sold_product_by_id.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_orders_controller.get_order_by_product_barcode.side_effect = (
+                NotFoundError("NotFound")
+            )
+            mock_returned_products_controller.get_returned_products_by_id.side_effect = NotFoundError(
+                "NotFound"
+            )
+
+            with pytest.raises(expected_exception):
+                await controller.delete_product(
+                    product_id,
+                    mock_sold_products_controller,
+                    mock_orders_controller,
+                    mock_returned_products_controller,
+                )
