@@ -15,7 +15,7 @@ from app.models.DTO.sold_product_dto import SoldProductDTO
 from app.models.errors.bad_request import BadRequestError
 from app.models.errors.insufficient_stock_error import InsufficientStockError
 from app.models.errors.invalid_state_error import InvalidStateError
-from app.models.errors.notfound_error import NotFoundError
+
 
 FIRST_PRODUCT_DAO=SoldProductDAO(id=1, sale_id=2, product_barcode="0123456789111", quantity = 1,
                price_per_unit= 5.5,discount_rate=0.1)
@@ -106,10 +106,10 @@ async def test_create_sale_controller_ok():
     assert result.lines!=None
 
 @pytest.mark.asyncio
-async def test_get_all_sale_controller_ok():
-    '''controller.repo.list_sales=AsyncMock(return_value=None)
+async def test_get_all_sale_controller_ok():#control
+    controller.repo.list_sales=AsyncMock(return_value=[])
     result=await controller.list_sales()
-    assert isinstance(result,List[SaleDTO])'''
+    assert isinstance(result,List)
     controller.repo.list_sales=AsyncMock(
         return_value=[NEW_SALE_DAO,SECOND_SALE_DAO,THIRD_SALE_DAO])
     result=await controller.list_sales()
@@ -204,17 +204,18 @@ async def test_add_product_ok():
 
 @pytest.mark.asyncio
 async def test_add_product_controller_invalid_input():
+    invalid=9
+    barcode="0000000000000"
+    amount=1
+
     invalid=-9
-    barcode=""
-    amount=-1
-    controller.repo.get_sale_by_id=AsyncMock(
-        return_value=None)
     with pytest.raises(BadRequestError) as exc_info:
         await controller.attach_product(invalid,barcode,amount, products_controller=products_controller,
         sold_products_controller=sold_products_controller)
     assert exc_info.value.status==400
-
     id=1
+
+    barcode=""
     with pytest.raises(BadRequestError) as exc_info:
         await controller.attach_product(id,barcode,amount, products_controller=products_controller,
         sold_products_controller=sold_products_controller)
@@ -225,17 +226,21 @@ async def test_add_product_controller_invalid_input():
         await controller.attach_product(id,barcode,amount, products_controller=products_controller,
         sold_products_controller=sold_products_controller)
     assert exc_info.value.status==400
-
     barcode="000000000000"
+    
+    amount=-15
     with pytest.raises(BadRequestError) as exc_info:
         await controller.attach_product(id,barcode,amount, products_controller=products_controller,
         sold_products_controller=sold_products_controller)
     assert exc_info.value.status==400
+    amount=9
+
     products_controller.get_product_by_barcode=AsyncMock(
         return_value=SECOND_PRODUCT_TYPE_DTO)
     controller.repo.get_sale_by_id=AsyncMock(
         return_value=NEW_SALE_DAO)
     amount=5100
+
     with pytest.raises(InsufficientStockError) as exc_info:
         await controller.attach_product(id,barcode,amount, products_controller=products_controller,
         sold_products_controller=sold_products_controller)
@@ -336,17 +341,25 @@ async def test_edit_sale_discount_controller_ok():
 
 @pytest.mark.asyncio
 async def test_edit_sale_discount_controller_invalid_input():
-    sale_id=-1
-    discount_rate=1.0
-
-    with pytest.raises(BadRequestError) as exc_info:
-        await controller.edit_sale_discount(sale_id,discount_rate)
-    assert exc_info.value.status==400
-
     sale_id=1
+    discount_rate=0.1
+
+    sale_id=-5
     with pytest.raises(BadRequestError) as exc_info:
         await controller.edit_sale_discount(sale_id,discount_rate)
     assert exc_info.value.status==400
+    sale_id=1
+
+    discount_rate=5
+    with pytest.raises(BadRequestError) as exc_info:
+        await controller.edit_sale_discount(sale_id,discount_rate)
+    assert exc_info.value.status==400
+
+    discount_rate=-0.2
+    with pytest.raises(BadRequestError) as exc_info:
+        await controller.edit_sale_discount(sale_id,discount_rate)
+    assert exc_info.value.status==400
+
 
 @pytest.mark.asyncio
 async def test_edit_product_discount_controller_ok():
@@ -363,15 +376,17 @@ async def test_edit_product_discount_controller_ok():
 
 @pytest.mark.asyncio
 async def test_edit_product_discount_controller_invalid_input():
-    sale_id=-1
-    discount_rate=-0.26
-    barcode=""
+    sale_id=1
+    discount_rate=0.26
+    barcode="0000000000000"
 
+    sale_id=-1
     with pytest.raises(BadRequestError) as exc_info:
         await controller.edit_product_discount(sale_id,barcode,discount_rate,sold_products_controller)
     assert exc_info.value.status==400
-
     sale_id=1
+
+    barcode=""
     with pytest.raises(BadRequestError) as exc_info:
         await controller.edit_product_discount(sale_id,barcode,discount_rate,sold_products_controller)
     assert exc_info.value.status==400
@@ -380,8 +395,14 @@ async def test_edit_product_discount_controller_invalid_input():
     with pytest.raises(BadRequestError) as exc_info:
         await controller.edit_product_discount(sale_id,barcode,discount_rate,sold_products_controller)
     assert exc_info.value.status==400
-    
     barcode="4006381333931"
+
+    discount_rate=-0.2
+    with pytest.raises(BadRequestError) as exc_info:
+        await controller.edit_product_discount(sale_id,barcode,discount_rate,sold_products_controller)
+    assert exc_info.value.status==400
+
+    discount_rate=1.2
     with pytest.raises(BadRequestError) as exc_info:
         await controller.edit_product_discount(sale_id,barcode,discount_rate,sold_products_controller)
     assert exc_info.value.status==400
@@ -457,21 +478,23 @@ async def test_paid_sale_controller_ok():
 
 @pytest.mark.asyncio 
 async def test_paid_sale_controller_invalid_input():
-    sale_id=-15
-    cash_amount=-200
+    sale_id=15
+    cash_amount=200
+
+    sale_id=-5
+    with pytest.raises(BadRequestError) as exc_info:
+        await controller.pay_sale(sale_id,cash_amount)
+    assert exc_info.value.status==400
+    sale_id=4
+
+    cash_amount=-9
+    with pytest.raises(BadRequestError) as exc_info:
+        await controller.pay_sale(sale_id,cash_amount)
+    assert exc_info.value.status==400
+
     controller.repo.get_sale_by_id=AsyncMock(
         return_value=FOURTH_SALE_DTO)
     controller.repo.edit_sale_status=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
-    
-    with pytest.raises(BadRequestError) as exc_info:
-        await controller.pay_sale(sale_id,cash_amount)
-    assert exc_info.value.status==400
-
-    sale_id=4
-    with pytest.raises(BadRequestError) as exc_info:
-        await controller.pay_sale(sale_id,cash_amount)
-    assert exc_info.value.status==400
-
     cash_amount=2
     with pytest.raises(BadRequestError) as exc_info:
         await controller.pay_sale(sale_id,cash_amount)
