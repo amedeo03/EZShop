@@ -153,6 +153,7 @@ class ProductsController:
         """
 
         validate_field_is_positive(product_id, "product_id")
+        validate_field_is_present(product_dto.description, "description")
         validate_field_is_present(product_dto.barcode, "barcode")
         validate_product_barcode(product_dto.barcode)
 
