@@ -120,6 +120,8 @@ A bottom-up approach has been used, starting from running unit-tests for the var
 
 ### OrdersRouter
 
+| Test case name                     | Object(s) tested                       | Test level | Technique used                                          |
+|:-----------------------------------|:---------------------------------------|:----------:|:--------------------------------------------------------|
 | test_issue_order_authentication    | OrdersRouter.issue_order (auth)        | End to End | BB / Equivalence Partitioning                           |
 | test_issue_order                   | OrdersRouter.issue_order               | End to End | BB / Equivalence Partitioning                           |
 | test_pay_order_for_authentication  | OrdersRouter.pay_order_for (auth)      | End to End | BB / Equivalence Partitioning                           |
