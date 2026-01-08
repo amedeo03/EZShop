@@ -4,12 +4,12 @@ from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.card_dto import CardDTO
 from app.models.DTO.customer_dto import CustomerDTO, CustomerUpdateDTO
 from app.repositories.customer_repository import CustomerRepository
-from app.services.input_validator_service import control_id, customer_input, len_control
+from app.services.input_validator_service import control_id, customer_input, len_control, validate_field_is_present
 from app.services.mapper_service import (
     carddao_to_responsedto,
     customerdao_to_responsedto,
 )
-
+from app.models.errors.notfound_error import NotFoundError
 
 class CustomerController:
     def __init__(self):
@@ -40,6 +40,10 @@ class CustomerController:
         control_id([customer_id])
         customer_id = int(customer_id)
         dao = await self.repo.get_customer(customer_id)
+        
+        if not dao:
+            raise NotFoundError("Customer not found")
+        
         return customerdao_to_responsedto(dao, dao.card) if dao else None
 
     async def update_customer(
@@ -67,6 +71,10 @@ class CustomerController:
             )
         if updated is not None and updated.cardId is not None:
             card = await self.repo.get_card_by_id(updated.cardId)
+            
+        if not updated:
+            raise NotFoundError("Customer not found")
+        
         return customerdao_to_responsedto(updated, card) if updated else None
 
     async def delete_customer(self, customer_id: str) -> BooleanResponseDTO:
@@ -89,11 +97,20 @@ class CustomerController:
         len_control(card_id, 10)
         card_id = card_id.zfill(10)
         updated = await self.repo.attach_card(customer_id, card_id)
+        
+        if not updated:
+            raise NotFoundError("Customer or Card not found")
+        
         return customerdao_to_responsedto(updated, updated.card) if updated else None
 
     async def modify_point(self, card_id: str, points: int) -> CardDTO:
         """modify points"""
+        validate_field_is_present(points, "points")
         control_id([card_id])
         len_control(card_id, 10)
         updated = await self.repo.modify_point(card_id.zfill(10), points)
+        
+        if not updated:
+            raise NotFoundError("Card not found")
+        
         return carddao_to_responsedto(updated) if updated else None

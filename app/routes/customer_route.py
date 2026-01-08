@@ -89,8 +89,6 @@ async def get_customer(customer_id: str):
     - Status code: 200 OK
     """
     customer = await controller.get_customer(customer_id)
-    if not customer:
-        raise NotFoundError("Customer not found")
     return customer
 
 
@@ -120,8 +118,7 @@ async def update_customer(customer_id: str, customer: CustomerUpdateDTO):
     - Status code: 201 Created
     """
     updated = await controller.update_customer(customer_id, customer)
-    if not updated:
-        raise NotFoundError("Customer not found")
+    
     return updated
 
 
@@ -200,8 +197,7 @@ async def attach_card(customer_id: str, card_id: str):
     - Status code: 201 Created
     """
     updated = await controller.attach_card(customer_id, card_id)
-    if not updated:
-        raise NotFoundError("Customer or Card not found")
+    
     return updated
 
 
@@ -228,9 +224,7 @@ async def modify_point(card_id: str, points: int):
       - BadRequestError: when card_id isn't integer string
     - Status code: 201 Created
     """
-    if not card_id.isdigit():
-        raise BadRequestError("Card ID must be an integer string")
+
     updated = await controller.modify_point(card_id, points)
-    if not updated:
-        raise NotFoundError("Card not found")
+    
     return updated
