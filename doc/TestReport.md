@@ -19,45 +19,97 @@
 
 # Integration approach
 
-    <Write here the integration sequence you adopted, in general terms (top down, bottom up, mixed) and as sequence
-
-    (ex: step1: unit A, step 2: unit A+B, step 3: unit A+B+C, etc)>
-
-    <Some steps may  correspond to unit testing (ex step1 in ex above)>
-
-    <One step will  correspond to API testing >
+A bottom-up approach has been used, starting from running unit-tests for the various repositories. We then wrote integration tests for controller, using real repository objects. Finally, the last tests written were e2e tests on available routes to check the whole application flow. 
 
 # Tests
 
 <in the table below list the test cases defined For each test report the object tested, the test level (API, integration, unit) and the technique used to define the test case (BB/ eq partitioning, BB/ boundary, WB/ statement coverage, etc)> <split the table if needed>
 
 ## Unit Testing
+
+### ProductRepository
+
+| Test case name                 | Object(s) tested                             | Test level | Technique used                                           |
+|:-------------------------------|:---------------------------------------------|:----------:|:---------------------------------------------------------|
+| test_create_product            | ProductsRepository.create_product            |  Unit      | WB / Statement Coverage                                  |
+| test_list_products             | ProductsRepository.list_products             |  Unit      | WB / Statement Coverage                                  |
+| test_get_product               | ProductsRepository.get_product               |  Unit      | WB / Statement Coverage                                  |
+| test_get_product_by_barcode    | ProductsRepository.get_product_by_barcode    |  Unit      | WB / Statement Coverage                                  |
+| test_get_product_by_description| ProductsRepository.get_product_by_description|  Unit      | WB / Statement Coverage                                  |
+| test_update_product_position   | ProductsRepository.update_product_position   |  Unit      | WB / Statement Coverage                                  |
+| test_update_product_quantity   | ProductsRepository.update_product_quantity   |  Unit      | WB / Statement Coverage                                  |
+| test_update_product            | ProductsRepository.update_product            |  Unit      | WB / Statement Coverage                                  |
+| test_delete_product            | ProductsRepository.delete_product            |  Unit      | WB / Statement Coverage                                  |
+
+### OrderRepository
+
 | Test case name               | Object(s) tested                       | Test level | Technique used                                           |
 |:-----------------------------|:-------------------------------------- |:----------:|:---------------------------------------------------------|
-| test_create_order            | OrdersRepository.create_order          |  Unit       | WB / Statement Coverage                                 |
-| test_list_orders             | OrdersRepository.list_orders           |  Unit       | WB / Boundary                                           |
-| test_get_order               | OrdersRepository.get_order             |  Unit       | WB / Boundary                                           |
-| test_pay_order               | OrdersRepository.pay_order             |  Unit       | WB / Decision Coverage                                  |
-| test_record_arrival          | OrdersRepository.record_arrival        |  Unit       | WB / Decision Coverage                                  |
-| test_create_and_pay_order     | OrdersRepository.create_and_pay_order |  Unit       | WB / Statement Coverage                                 |
-| test_get_orders_by_barcode    | OrdersRepository.get_orders_by_barcode|  Unit       | WB / Statement Coverage                                 |
+| test_create_order            | OrdersRepository.create_order          |  Unit      | WB / Statement Coverage                                 |
+| test_list_orders             | OrdersRepository.list_orders           |  Unit      | WB / Boundary                                           |
+| test_get_order               | OrdersRepository.get_order             |  Unit      | WB / Boundary                                           |
+| test_pay_order               | OrdersRepository.pay_order             |  Unit      | WB / Decision Coverage                                  |
+| test_record_arrival          | OrdersRepository.record_arrival        |  Unit      | WB / Decision Coverage                                  |
+| test_create_and_pay_order    | OrdersRepository.create_and_pay_order  |  Unit      | WB / Statement Coverage                                 |
+| test_get_orders_by_barcode   | OrdersRepository.get_orders_by_barcode |  Unit      | WB / Statement Coverage                                 |
 
 
 ## Integration Testing
+
+### ProductsController
+
+|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
+|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
+| test_create_product               | ProductsController.create_product               |  Integration   | BB / Equivalence Partitioning                           |
+| test_list_products                | ProductsController.list_products                |  Integration   | BB / Equivalence Partitioning                           |
+| test_get_product                  | ProductsController.get_product                  |  Integration   | BB / Equivalence Partitioning                           |
+| test_get_product_by_barcode       | ProductsController.get_product_by_barcode       |  Integration   | BB / Equivalence Partitioning                           |
+| test_get_product_by_description   | ProductsController.get_product_by_description   |  Integration   | BB / Equivalence Partitioning                           |
+| test_update_product_position      | ProductsController.update_product_position      |  Integration   | BB / Equivalence Partitioning                           |
+| test_update_product_quantity      | ProductsController.update_product_quantity      |  Integration   | BB / Equivalence Partitioning                           |
+| test_update_product               | ProductsController.update_product               |  Integration   | BB / Equivalence Partitioning                           |
+| test_update_product_invalid_state | ProductsController.update_product               |  Integration   | BB / Equivalence Partitioning                           |
+| test_delete_product               | ProductsController.delete_product               |  Integration   | BB / Equivalence Partitioning                           |
+| test_delete_product_invalid_sttate| ProductsController.delete_product               |  Integration   | BB / Equivalence Partitioning                           |
+
+### AccountingController
+
 |         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
 |:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
 | test_get_balance                  | AccountingController.get_balance                |   Integration  | BB / Equivalence Partitioning                           |
 | test_set_balance                  | AccountingController.set_balance                |   Integration  | BB / Equivalence Partitioning                           |
 | test_reset_balance                | AccountingController.reset_balance              |   Integration  | BB / Equivalence Partitioning                           |
+
+### OrdersController
+
+|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
+|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
 | test_create_order                 | OrdersController.create_order                   |   Integration  | BB / Equivalence Partitioning / Boundary                |
 | test_list_orders                  | OrdersController.list_orders                    |   Integration  | WB / Statement Coverage                                 |
 | test_pay_order                    | OrdersController.pay_order                      |   Integration  | BB / Equivalence Partitioning                           |
 | test_record_arrival               | OrdersController.record_arrival                 |   Integration  | BB / Equivalence Partitioning                           |
 | test_get_order_by_product_barcode | OrdersController.get_order_by_product_barcode   |   Integration  | BB / Equivalence Partitioning                           |
 
-
-
 ## End to end Testing
+
+### ProductsRouter
+
+|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
+|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
+| test_create_product               | ProductsRouter.create_product                   |  End to End    | BB / Equivalence Partitioning                           |
+| test_list_products                | ProductsRouter.list_products                    |  End to End    | BB / Equivalence Partitioning                           |
+| test_get_product                  | ProductsRouter.get_product                      |  End to End    | BB / Equivalence Partitioning                           |
+| test_get_product_by_barcode       | ProductsRouter.get_product_by_barcode           |  End to End    | BB / Equivalence Partitioning                           |
+| test_get_product_by_description   | ProductsRouter.get_product_by_description       |  End to End    | BB / Equivalence Partitioning                           |
+| test_update_product_position      | ProductsRouter.update_product_position          |  End to End    | BB / Equivalence Partitioning                           |
+| test_update_product_quantity      | ProductsRouter.update_product_quantity          |  End to End    | BB / Equivalence Partitioning                           |
+| test_update_product               | ProductsRouter.update_product                   |  End to End    | BB / Equivalence Partitioning                           |
+| test_update_product_invalid_state | ProductsRouter.update_product                   |  End to End    | BB / Equivalence Partitioning                           |
+| test_update_product_duplicates    | ProductsRouter.update_product                   |  End to End    | BB / Equivalence Partitioning                           |
+| test_delete_product               | ProductsRouter.delete_product                   |  End to End    | BB / Equivalence Partitioning                           |
+
+### AccountingRouter
+
 | Test case name                     | Object(s) tested                       | Test level | Technique used                                          |
 |:-----------------------------------|:---------------------------------------|:----------:|:--------------------------------------------------------|
 | test_get_current_balance           | AccountingRouter.get_current_balance   | End to End | BB / Equivalence Partitioning                           |
@@ -65,6 +117,9 @@
 | test_set_balance_authenticated     | AccountingRouter.set_balance           | End to End | BB / Boundary                                           |
 | test_reset_balance_authentication  | AccountingRouter.reset_balance (auth)  | End to End | BB / Equivalence Partitioning                           |
 | test_reset_balance_authenticated   | AccountingRouter.reset_balance         | End to End | BB / State-based                                        |
+
+### OrdersRouter
+
 | test_issue_order_authentication    | OrdersRouter.issue_order (auth)        | End to End | BB / Equivalence Partitioning                           |
 | test_issue_order                   | OrdersRouter.issue_order               | End to End | BB / Equivalence Partitioning                           |
 | test_pay_order_for_authentication  | OrdersRouter.pay_order_for (auth)      | End to End | BB / Equivalence Partitioning                           |
@@ -91,10 +146,13 @@
 |                FR1.4               |                                     |
 |                FR1.5               |                                     |
 |                FR3                 |                                     |
-|                FR3.1               |                                     |
-|                FR3.2               |                                     |
-|                FR3.3               |                                     |
-|                FR3.4               |                                     |
+|                FR3.1               |test_create_product,test_update_product_position,|
+|                                    |test_update_product_quantity,test_update_product,|
+|                                    |test_update_product_invalid_state, test_update_product_duplicates|                                 
+|                FR3.2               |       test_delete_product           |
+|                FR3.3               |        test_list_products           |
+|                FR3.4               |test_get_product, test_get_product_by_barcode,|
+|                                    |   test_get_product_by_description   |
 |                FR4                 |                                     |
 |                FR4.1               |                                     |
 |                FR4.2               |                                     |
