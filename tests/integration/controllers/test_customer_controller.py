@@ -148,14 +148,14 @@ class TestCustomerController:
                 1,
                 AttributeError,
             ),
-            (  # Inavlaid ID -> String
+            (  # Invalaid ID -> String
              CustomerDAO(
                     name="John Doe", cardId=None
                 ),
                 "abc",
                 BadRequestError,
             ),
-            (  # Inavlaid ID -> String
+            (  # Invalaid ID -> String
              CustomerDAO(
                     name="John Doe", cardId=None
                 ),
@@ -502,44 +502,44 @@ class TestCustomerController:
         [
             (  # Update ONLY Name Success
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 '1',
                 CustomerUpdateDTO(
-                    id= "1", name="John Updated"),
+                    id= 1, name="John Updated"),
                 CardDAO(
                     cardId="0000000001", points=0),
                 None,
             ),
             (  # Customer Not Found
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 '999',
                 CustomerUpdateDTO(
-                    id= "1", name="John Updated"),
+                    id= 1, name="John Updated"),
                 CardDAO(
                     cardId="0000000001", points=0),
                 NotFoundError,
             ),
             (  # Empty Customer ID
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 '',
                 CustomerUpdateDTO(
-                    id= "1", name="John Updated"),
+                    id= 1, name="John Updated"),
                 CardDAO(
                     cardId="0000000001", points=0),
                 BadRequestError,
             ),
             (  # Update Card Number -> Success
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 "1",
                 CustomerUpdateDTO(
-                    id= "1", name="John Doe", card= {
+                    id= 1, name="John Doe", card= {
                                                     "card_id": "0000000002",
                                                     "points": 0
                                                 }),
@@ -549,11 +549,11 @@ class TestCustomerController:
             ),
             (  # Update Card Number -> Card ID not found
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 "1",
                 CustomerUpdateDTO(
-                    id= "1", name="John Doe", card= {
+                    id= 1, name="John Doe", card= {
                                                     "card_id": "0000000099",
                                                     "points": 0
                                                 }),
@@ -602,13 +602,12 @@ class TestCustomerController:
             if updated_customer.card is not None:
                 assert saved_updated_customer.cardId == updated_customer.card.card_id
   
-    #@pytest.mark.skip(reason="Not implemented yet")
     @pytest.mark.parametrize(
         "customer, customer_id, updated_customer, card, expected_exception",
         [
             (  # Detach Customer Card and delete Card Success
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id= 1, name="John Doe", cardId="0000000001"
                 ),
                 "1",
                 CustomerUpdateDTO(
@@ -654,23 +653,51 @@ class TestCustomerController:
 
   
 
-  
-  
-  
-'''
-  (  # Attach new Card to Customer which is already attached to another Customer
+    @pytest.mark.parametrize(
+        "customer_1, customer_2, updated_customer_1, card, expected_exception",
+        [
+            (  # Detach Customer Card and delete Card Success
                 CustomerDAO(
-                   id= "1", name="John Doe", cardId="0000000001"
+                   id=1, name="John Doe", cardId=None
                 ),
-                "1",
+                CustomerDAO(
+                   id=2, name="Jane Smith", cardId="0000000001"
+                ),
                 CustomerUpdateDTO(
-                    id= "1", name="John Doe", card= {
-                                                    "card_id": "0000000001",
-                                                    "points": 0
-                                                }),
+                    name="John Doe", card={
+                                            "card_id": "0000000001",
+                                            "points": 0
+                                        }),
                 CardDAO(
                     cardId="0000000001", points=0),
-                True,
-                None,
+                ConflictError,
             ),
-  '''
+            
+        ],
+    )
+    async def test_update_customer_with_card_already_attached(
+        self, db_session, customer_1, customer_2, updated_customer_1, card, expected_exception
+    ):
+        
+        repo = CustomerRepository(session=db_session)
+        controller = CustomerController()
+        controller.repo = repo
+        
+        db_session.add_all([customer_1, customer_2, card])
+        await db_session.commit()
+        
+        if expected_exception:
+            with pytest.raises(expected_exception):
+                await controller.update_customer(str(customer_1.id), updated_customer_1)
+
+        db_result = await db_session.execute(
+            select(CustomerDAO).where(
+                CustomerDAO.id == customer_1.id
+            )
+        )
+        saved_updated_customer = db_result.scalars().first()
+
+        # customer 1 should still have no card attached
+        assert saved_updated_customer.cardId == None
+
+  
