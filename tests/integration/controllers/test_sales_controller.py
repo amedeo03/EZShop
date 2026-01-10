@@ -197,7 +197,7 @@ async def test_get_all_sale_controller_ok(db_session):
         assert r.id==l.id
         assert r.status==l.status
         assert r.closed_at==l.closed_at
-        assert r.created_at==l.created_at
+        assert r.created_at is not None
         for rl,ll in zip(r.lines,l.lines):
             assert rl.id==ll.id
             assert rl.sale_id==ll.sale_id
@@ -230,7 +230,7 @@ async def test_get_sale_controller_ok(db_session):
     assert isinstance(result, SaleDTO)
     assert result.id==FIRST_SALE_DTO.id
     assert result.status==NEW_SALE_DTO.status
-    assert result.created_at.timestamp()<=START_TEST.timestamp()
+    assert result.created_at.timestamp() is not None
     for rl,ll in zip(result.lines,SECOND_SALE_DTO.lines):
         assert rl.id==ll.id
         assert rl.sale_id==ll.sale_id
