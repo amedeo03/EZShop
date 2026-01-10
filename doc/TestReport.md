@@ -79,40 +79,6 @@ A bottom-up approach has been used, starting from running unit-tests for the var
 | test_get_card_by_id_success   | CustomerRepository.get_card_by_id |  Unit      | WB / Statement Coverage                                 |
 | test_get_card_by_id_not_found   | CustomerRepository.get_card_by_id |  Unit      | WB / Decision Coverage                                 |
 
-### SaleRepository
-| Test case name               | Object(s) tested                       | Test level | Technique used                                           |
-|:-----------------------------|:-------------------------------------- |:----------:|:---------------------------------------------------------|
-| test_create_sale_ok         | SaleRepository.create_sale          |  Unit      | WB / Statement Coverage | 
-| test_list_sales_full         | SaleRepository.list_sales          |  Unit      | WB / Statement Coverage | 
-| test_list_sales_empty         | SaleRepository.list_sales          |  Unit      | WB / Statement Coverage | 
-| test_get_sale_by_id_ok  | SaleRepository.get_sale_by_id          |  Unit      | WB / Statement Coverage | 
-| test_get_sale_by_id_not_found | SaleRepository.get_sale_by_id          |  Unit      | WB / Statement Coverage | 
-| test_get_delete_sale_ok    | SaleRepository.delete_sale          |  Unit      | WB / Statement Coverage | 
-| test_get_delete_sale_not_found   | SaleRepository.delete_sale          |  Unit      | WB / Statement Coverage | 
-| test_edit_sale_discount_ok         | SaleRepository.edit_sale_discount          |  Unit      | WB / Statement Coverage | 
-| test_edit_sale_discount_not_found         | SaleRepository.edit_sale_discount          |  Unit      | WB / Statement Coverage | 
-| test_edit_sale_discount_invalid_status   | SaleRepository.edit_sale_discount          |  Unit      | WB / Statement Coverage | 
-| test_edit_sale_status_pending         | SaleRepository.edit_sale_status          |  Unit      | WB / Statement Coverage | 
-| test_edit_sale_status_pay     | SaleRepository.edit_sale_status       |  Unit      | WB / Statement Coverage |
-| test_edit_sale_status_invalid_status    | SaleRepository.edit_sale_status  |  Unit      | WB / Statement Coverage | 
-
-
-### SoldProductRepository
-| Test case name               | Object(s) tested                       | Test level | Technique used                                           |
-|:-----------------------------|:-------------------------------------- |:----------:|:---------------------------------------------------------|
-| test_create_sold_product_ok         | SoldProductsRepository.create_sold_product          |  Unit      | WB / Statement Coverage | 
-| test_create_sold_product_conflict         | SoldProductsRepository.create_sold_product |  Unit      | WB / Statement Coverage | 
-| test_get_sale_by_id_ok         | SoldProductsRepository.get_sold_product_by_id          |  Unit      | WB / Statement Coverage | 
-| test_get_sale_by_id_not_found  | SoldProductsRepository.get_sold_product_by_id          |  Unit      | WB / Statement Coverage | 
-| test_edit_quantity_ok | SoldProductsRepository.edit_sold_product_quantity          |  Unit      | WB / Statement Coverage | 
-| test_edit_quantity_not_found    | SoldProductsRepository.edit_sold_product_quantity         |  Unit      | WB / Statement Coverage | 
-| test_edit_quantity_big_quantity   | SoldProductsRepository.edit_sold_product_quantity          |  Unit      | WB / Statement Coverage | 
-| test_edit_discount_ok         | SoldProductsRepository.edit_sold_product_discount         |  Unit      | WB / Statement Coverage | 
-| test_edit_discount_not_found         | SoldProductsRepository.edit_sold_product_discount          |  Unit      | WB / Statement Coverage | 
-| test_remove_ok   | SoldProductsRepository.remove_sold_product          |  Unit      | WB / Statement Coverage | 
-
-
-
 ## Integration Testing
 
 ### ProductsController
@@ -165,59 +131,6 @@ A bottom-up approach has been used, starting from running unit-tests for the var
 | test_attach_card      | CustomerController.attach_card      |  Integration   | BB / Equivalence Partitioning / Boundary                            |
 | test_modify_point               | CustomerController.modify_point               |  Integration   | BB / Equivalence Partitioning / Boundary                           |
 
-### SaleController
-|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
-|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
-| test_create_sale_controller_ok               | SaleController.create_sale               |  Integration   | BB / Equivalence Partitioning                           |
-| test_get_all_sale_controller_ok               | SaleController.list_sales               |  Integration   | BB / Equivalence Partitioning
-| test_get_sale_controller_ok               | SaleController.get_sale_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_get_sale_controller_invalid_input               | SaleController.get_sale_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_get_sale_controller_not_found               | SaleController.get_sale_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_delete_sale_controller_ok               | SaleController.delete_sale               |  Integration   | BB / Equivalence Partitioning
-| test_delete_sale_controller_invalid_input               | SaleController.delete_sale               |  Integration   | BB / Equivalence Partitioning
-| test_delete_sale_controller_not_found               | SaleController.delete_sale               |  Integration   | BB / Equivalence Partitioning
-| test_delete_sale_controller_invalid_status               | SaleController.delete_sale               |  Integration   | BB / Equivalence Partitioning
-| test_add_product_ok               | SaleController.attach_product               |  Integration   | BB / Equivalence Partitioning
-| test_add_product_controller_invalid_input               | SaleController.attach_product               |  Integration   | BB / Equivalence Partitioning
-| test_add_product_controller_not_found               | SaleController.attach_product               |  Integration   | BB / Equivalence Partitioning
-| test_add_product_controller_invalid_status               | SaleController.attach_product               |  Integration   | BB / Equivalence Partitioning
-| test_edit_product_controller_ok               | SaleController.edit_sold_product_quantity               |  Integration   | BB / Equivalence Partitioning
-| test_edit_product_controller_invalid_input               | SaleController.edit_sold_product_quantity               |  Integration   | BB / Equivalence Partitioning
-| test_edit_product_controller_not_found               | SaleController.edit_sold_product_quantity               |  Integration   | BB / Equivalence Partitioning
-Partitioning
-| test_edit_sale_discount_controller_ok               | SaleController.edit_sale_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_invalid_inputt              | SaleController.edit_sale_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_not_found             | SaleController.edit_sale_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_invalid_status              | SaleController.edit_sale_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_ok               | SaleController.edit_product_discount            |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_invalid_inputt              | SaleController.edit_product_discount            |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_not_found             | SaleController.edit_product_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sale_discount_controller_invalid_status              | SaleController.edit_product_discount               |  Integration   | BB / Equivalence Partitioning
-| test_close_sale_controller_ok               | SaleController.close_sale            |  Integration   | BB / Equivalence Partitioning
-| test_close_sale_controller_invalid_inputt              | SaleController.close_sale            |  Integration   | BB / Equivalence Partitioning
-| test_close_sale_controller_not_found             | SaleController.close_sale               |  Integration   | BB / Equivalence Partitioning
-| test_close_sale_controller_invalid_status              | SaleController.close_sale               |  Integration   | BB / Equivalence Partitioning
-| test_pay_sale_controller_ok               | SaleController.pay_sale            |  Integration   | BB / Equivalence Partitioning
-| test_pay_sale_controller_invalid_inputt              | SaleController.pay_sale            |  Integration   | BB / Equivalence Partitioning
-| test_pay_sale_controller_not_found             | SaleController.pay_sale               |  Integration   | BB / Equivalence Partitioning
-| test_pay_sale_controller_invalid_status              | SaleController.pay_sale               |  Integration   | BB / Equivalence Partitioning
-| test_get_point_controller_ok               | SaleController.get_points            |  Integration   | BB / Equivalence Partitioning
-| test_get_point_controller_invalid_inputt              | SaleController.get_points            |  Integration   | BB / Equivalence Partitioning
-| test_get_point_controller_not_found             | SaleController.get_points               |  Integration   | BB / Equivalence Partitioning
-| test_get_point_controller_invalid_status              | SaleController.get_points               |  Integration   | BB / Equivalence Partitioning
-
-### SoldProductsController
-| test_create_sold_product_controller_ok           | SoldProductsController.create_sold_product               |  Integration   | BB / Equivalence Partitioning
-| test_create_sold_product_controller_invalid_input           | SoldProductsController.create_sold_product               |  Integration   | BB / Equivalence Partitioning
-| test_get_sold_product_by_id_controller_ok           | SoldProductsController.get_sold_product_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_get_sold_product_by_id_controller_invalid_input           | SoldProductsController.get_sold_product_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_get_sold_product_by_id_controller_not_found           | SoldProductsController.get_sold_product_by_id               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sold_product_quantity_controller_ok           | SoldProductsController.edit_sold_product_quantity               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sold_product_quantity_controller_invalid_input           | SoldProductsController.edit_sold_product_quantity               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sold_product_discount_controller_ok           | SoldProductsController.edit_sold_product_discount               |  Integration   | BB / Equivalence Partitioning
-| test_edit_sold_product_discount_controller_invalid_input           | SoldProductsController.edit_sold_product_discount               |  Integration   | BB / Equivalence Partitioning
-| test_remove_sold_product_ok           | SoldProductsController.remove_sold_product               |  Integration   | BB / Equivalence Partitioning
-| test_remove_sold_product_invalid_input           | SoldProductsController.remove_sold_product               |  Integration   | BB / Equivalence Partitioning
 
 ## End to end Testing
 
@@ -277,18 +190,6 @@ Partitioning
 | test_attach_card_already_attached               | CustomerRouter.attach_card                   |  End to End    | BB / Equivalence Partitioning                           |
 | test_modify_points               | CustomerRouter.modify_point                   |  End to End    | BB / Equivalence Partitioning                           |
 
-### SalesRoute
-| test_close_sale_route_ok               | SaleRoute.close_sale                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_create_sale_route               | SaleRoute.create_sale                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_delete_sale_route               | SaleRoute.delete_sale                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_get_all_sale_route               | SaleRoute.list_sales                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_get_sale_id_route_ok               | SaleRoute.get_sale_by_id                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_paid_sale_route               | SaleRoute.pay_sale                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_points_sale_route_ok               | SaleRoute.get_sale_points                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_product_added_route               | SaleRoute.attach_product                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_remove_added_route_ok               | SaleRoute.edit_product_quantity                   |  End to End    | BB / Equivalence Partitioning                           |
-| test_set_discount_product_route               | SaleRoute.edit_product_discount                  |  End to End    | BB / Equivalence Partitioning                           |
-| test_set_discount_route               | SaleRoute.edit_sale_discount                  |  End to End    | BB / Equivalence Partitioning                           |
 
 # Coverage
 
@@ -329,18 +230,16 @@ Partitioning
 |                FR5.6               |                                     | 
 |                FR5.7               |                                     |
 |                FR6                 |                                     |
-|                FR6.1               | test_create_sale_route, test_create_sale_controller_ok,   test_create_sale_ok                                   |
-|                FR6.2               |      test_create_sold_product_ok, test_create_sold_product_conflict, test_add_product_ok,test_add_product_invalid_input,test_add_product_invalid_status, test_add_product_not_found, test_product_added_route                               |
-|                FR6.3               |  test_remove_ok, test_remove_sold_product_ok, test_remove_sold_product_invalid_input, test_remove_product_route_ok                                    |
-|                FR6.4               | test_set_discount,  test_edit_sale_discount_controller_ok,test_edit_sale_discount_controller_invalid_input, test_edit_sale_discount_controller_not_found, test_edit_sale_discount_controller_invalid_status,test_edit_sale_ok,test_edit_sale_discount_invalid_status, test_edit_sale_discount_not_found                                    |
-|                FR6.5               | test_set_discount_product_route, test_edit_product_discount_controllore_ok,test_edit_product_discount_controllore_invalid_input,
-test_edit_product_discount_controllore_invalid_status,
-test_edit_product_discount_controllore_not_found, test_edit_discount_ok,test_edit_discount_not_found                                   |
-|                FR6.6               | test_get_point_controller_ok, test_get_point_controller_invalid_input, test_get_point_controller_invalid_status, test_get_point_controller_not_found, test_point_route_ok                                   |
+|                FR6.1               |                                     |
+|                FR6.2               |                                     |
+|                FR6.3               |                                     |
+|                FR6.4               |                                     |
+|                FR6.5               |                                     |
+|                FR6.6               |                                     |
 |                FR6.7               |                                     |
-|                FR6.8               | test_get_sale_id_route_ok, test_get_sale_controller_ok,test_get_sale_controller_invalid_input,test_get_sale_controller_not_found, test_get_sale_by_id_ok, test_get_sale_by_id_not_found                                    |
-|                FR6.10              | test_edit_sale_status_pending, test_close_sale_controlle_ok,test_close_sale_controlle_not_found,test_close_sale_controlle_invalid_input,test_close_sale_controlle_invalid_status,test_close_sale_sale_route_ok,test_edit_sale_status_invalid_status                                     |
-|                FR6.11              | test_delete_sale_route, test_paid_sale_route, test_delete_sale_controller_ok,test_delete_sale_controller_invalid_input,test_delete_sale_controller_not_found, test_delete_sale_controller_invalid_status,test_delete_paid_controller_invalid_input,test_paid_sale_controller_not_found, test_paid_sale_controller_invalid_status, test_paid_sale_controller_ok, test_delete_sale_ok, test_delete_sale_not_found, test_edit_sale_status_paid, test_edit_sale_status_invalid_status                                  |
+|                FR6.8               |                                     |
+|                FR6.10              |                                     |
+|                FR6.11              |                                     |
 |                FR6.12              |                                     |
 |                FR6.13              |                                     |
 |                FR6.14              |                                     |

@@ -54,7 +54,7 @@ def repo(mock_session):
     return SoldProductsRepository(session=mock_session)
 
 @pytest.mark.asyncio
-async def test_create_sold_product_ok(repo, mock_session):
+async def test_create_sald_product_ok(repo, mock_session):
     
     mock_result=MagicMock()
     mock_result.scalar_one_or_none.return_value=None
@@ -81,7 +81,7 @@ async def test_create_sold_product_ok(repo, mock_session):
     mock_session.refresh.assert_called_once()
 
 @pytest.mark.asyncio
-async def test_create_sold_product_conflict(repo, mock_session):
+async def test_create_sald_product_conflict(repo, mock_session):
     
     mock_result=MagicMock()
     mock_result.scalar_one_or_none.return_value=FIRST_PRODUCT_DAO
@@ -128,7 +128,7 @@ async def test_get_sold_product_by_id_not_found(repo, mock_session):
     exc_info.value.status==404
 
 @pytest.mark.asyncio
-async def test_edit_quantity_ok(repo, mock_session):
+async def test_get_edit_quantity_ok(repo, mock_session):
     id=1 
     sale_id=1 
     quantity=1
@@ -213,7 +213,7 @@ async def test_edit_discount_not_found(repo, mock_session):
     assert exc_info.value.status==404
 
 @pytest.mark.asyncio
-async def test_remove_ok(repo, mock_session):
+async def test_edit_remove_ok(repo, mock_session):
     id=1,
     sale_id=2,
     barcode=FIRST_PRODUCT_DAO.product_barcode
