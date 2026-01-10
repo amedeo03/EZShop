@@ -128,3 +128,14 @@ class SoldProductsRepository:
             await session.refresh(sold_product)
 
         return BooleanResponseDTO(success=True)
+
+    async def remove_sold_product(self,sale_id:int,id:int,barcode:str):
+        async with await self._get_session() as session:
+            res=await session.execute(
+                    select(SoldProductDAO).filter(
+                        (SoldProductDAO.id == id) & (SoldProductDAO.sale_id == sale_id)
+                        & (SoldProductDAO.product_barcode==barcode)
+                    )
+                )
+            await session.delete(res.scalar())
+            await session.commit()

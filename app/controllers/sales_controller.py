@@ -156,18 +156,22 @@ class SalesController:
         for product in sale.lines:
             if product.product_barcode == barcode:
                 product_to_edit = product
-
+                product_in_inventory=await products_controller.get_product_by_barcode(barcode)
         if product_to_edit is None:
             raise NotFoundError(
                 "product barcode '{barcode}' not found in sale {sale_id}"
             )
-        else:
-            await sold_products_controller.edit_sold_product_quantity(
-                product_to_edit.id, sale.id, -amount
-            )
-            await products_controller.update_product_quantity(
-                product_to_edit.id, amount
-            )
+        if product_to_edit.quantity+amount<0 or product_in_inventory.quantity-amount<0:
+            raise InsufficientStockError("too much quantity")
+        
+        await sold_products_controller.edit_sold_product_quantity(
+            product_to_edit.id, sale.id, amount
+        )
+        await products_controller.update_product_quantity(
+            product_to_edit.id, -amount
+        )
+        if product_to_edit.quantity+amount==0:
+           await sold_products_controller.remove_sold_product(sale_id,product_to_edit.id, barcode)
 
         return BooleanResponseDTO(success=True)
 
@@ -195,7 +199,7 @@ class SalesController:
         validate_product_barcode(product_barcode)
         validate_discount_rate(discount_rate)
 
-        product_to_edit: SoldProductDTO
+        product_to_edit: SoldProductDTO=None
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status != "OPEN":
             raise InvalidStateError("Selected sale status is not 'OPEN'")
@@ -203,15 +207,13 @@ class SalesController:
         for product in sale.lines:
             if product.product_barcode == product_barcode:
                 product_to_edit = product
-
+        if product_to_edit==None:
+            raise NotFoundError("")
         success: BooleanResponseDTO = (
             await sold_products_controller.edit_sold_product_discount(
                 product_to_edit.id, sale.id, discount_rate
             )
         )
-
-        if success.success != True:
-            return BooleanResponseDTO(success=False)
 
         return BooleanResponseDTO(success=True)
 
@@ -250,7 +252,7 @@ class SalesController:
         else:
             raise BadRequestError("amount is not enough to pay the sale")
 
-        return ChangeResponseDTO(change=change)
+        return ChangeResponseDTO(change=round(change,2))
 
     async def get_sale_value(self, sale_id: int) -> float:
         validate_field_is_present(str(sale_id), "sale_id")
