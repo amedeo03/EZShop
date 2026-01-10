@@ -557,18 +557,13 @@ class TestProductsRouter:
             "barcode": "9783161484100",
         }
 
-        client.post(  # create product to update
+        resp = client.post(  # create product to update
             BASE_URL + "/products",
             json=product,
             headers=headers,
         )
 
-        resp = client.get(
-            BASE_URL + "/products/barcode/" + "9771234567898",
-            headers=headers,
-        )
-
-        product_id = resp.json()["id"]
+        product_id = 4
 
         if conflict_type == "sale":
             client.post(  # create new empty sale

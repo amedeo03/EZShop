@@ -124,12 +124,6 @@ class CustomerRepository:
                 lambda _: True,
                 f"customer with id '{customer_id}' not found"
             )
-            # delete the card, if one is attached to the customer
-            if customer.cardId is not None:
-                card = await session.get(CardDAO,customer.cardId)
-                customer.cardId = None
-                if card is not None:
-                    await session.delete(card)
 
             await session.delete(customer)
             await session.commit()

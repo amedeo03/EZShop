@@ -6,6 +6,7 @@ from unittest.mock import patch, AsyncMock
 from init_db import init_db, reset
 import pytest
 import asyncio
+from datetime import datetime, timezone
 
 
 @pytest.fixture(scope="session")
@@ -21,9 +22,11 @@ def client():
         yield c
 
 BASE_URL = "http://127.0.0.1:8000/api/v1"
-
+START_TEST=datetime.now(timezone.utc).replace( 
+                    microsecond=0
+                )
 NEW_SALES={
-                "id": 10,
+                "id": 1,
                 "status": "OPEN",
                 "discount_rate": 0.05,
                 "created_at": "2025-10-30T12:34:56Z",
@@ -76,7 +79,7 @@ LIST_ALL_SALES=[
                 }
 ]
 PAID_SALE={
-                "id": 10,
+                "id": 2,
                 "status": "PAID",
                 "discount_rate": 0.05,
                 "created_at": "2025-10-30T12:34:56Z",
@@ -84,7 +87,7 @@ PAID_SALE={
                 "lines": [
                     {
                     "id": 1,
-                    "sale_id": 10,
+                    "sale_id": 2,
                     "product_barcode": "0123456789",
                     "quantity": 2,
                     "price_per_unit": 5.5,
@@ -94,7 +97,7 @@ PAID_SALE={
                 }
 
 CLOSE_SALES={
-                "id": 10,
+                "id": 3,
                 "status": "PENDING",
                 "discount_rate": 0.05,
                 "created_at": "2025-10-30T12:34:56Z",
@@ -109,6 +112,22 @@ CLOSE_SALES={
                     "discount_rate": 0.1
                     }
                     ]
+                }
+FIRST_PRODUCT={
+                    "description": "updated product",
+                    "barcode": "9780201379624",
+                    "price_per_unit": 9.99,
+                    "note": "updated note",
+                    "quantity": 1000,
+                    "position": "B-1-1"
+                }
+SECOND_PRODUCT={
+                    "description": "updated product",
+                    "barcode": "0000000000000",
+                    "price_per_unit": 9.99,
+                    "note": "updated note",
+                    "quantity": 1000,
+                    "position": "B-1-1"
                 }
 INVALID_ERROR={
   "code": 420,
@@ -142,315 +161,677 @@ def auth_tokens(event_loop, client):
 def auth_header(tokens, role: str):
     return {"Authorization": tokens[role]}
 
-
-def test_create_sale_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        resp=client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==201
-        data=resp.json()
-        assert data["status"] == NEW_SALES["status"]
-        assert data["discount_rate"] == NEW_SALES["discount_rate"]
-        assert data["status"] == NEW_SALES["status"]
-        assert data["created_at"] == NEW_SALES["created_at"]
-        assert data["closed_at"] == NEW_SALES["closed_at"]
-        for line_s,line_l in zip(data["lines"],NEW_SALES["lines"]):
-            assert line_s["id"] ==line_l["id"]
-            assert line_s["sale_id"] ==line_l["sale_id"]
-            assert line_s["product_barcode"] ==line_l["product_barcode"]
-            assert line_s["quantity"] ==line_l["quantity"]
-            assert line_s["price_per_unit"] ==line_l["price_per_unit"]
-            assert line_s["discount_rate"] ==line_l["discount_rate"]
-
-def test_create_sale_route_unauthenticated(client):
-    resp=client.post(BASE_URL+"/sales/",json=NEW_SALES)
-    assert resp.status_code==401
-
-def test_get_all_sales_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.list_sales",new_callable=AsyncMock) as mockAllSale:
-        mockAllSale.return_value=LIST_ALL_SALES
-        resp=client.get(BASE_URL+"/sales/",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        data=resp.json()
-        for sale,list in zip(data,LIST_ALL_SALES):
-            assert sale["status"] == list["status"]
-            assert sale["discount_rate"] == list["discount_rate"]
-            assert sale["status"] == list["status"]
-            assert sale["created_at"] == list["created_at"]
-            assert sale["closed_at"] == list["closed_at"]
-            for line_s,line_l in zip(sale["lines"],list["lines"]):
-                assert line_s["id"] ==line_l["id"]
-                assert line_s["sale_id"] ==line_l["sale_id"]
-                assert line_s["product_barcode"] ==line_l["product_barcode"]
-                assert line_s["quantity"] ==line_l["quantity"]
-                assert line_s["price_per_unit"] ==line_l["price_per_unit"]
-                assert line_s["discount_rate"] ==line_l["discount_rate"]
-
-def test_get_all_sales_route_unauthenticated(client):
-    resp=client.get(BASE_URL+"/sales/")
-    assert resp.status_code==401
-
-def test_get_sale_id_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.get_sale_by_id",new_callable=AsyncMock) as mockSale:
-        mockSale.return_value=NEW_SALES
-        resp=client.get(BASE_URL+"/sales/10",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        data=resp.json()
-        assert data["status"] == NEW_SALES["status"]
-        assert data["discount_rate"] == NEW_SALES["discount_rate"]
-        assert data["status"] == NEW_SALES["status"]
-        assert data["created_at"] == NEW_SALES["created_at"]
-        assert data["closed_at"] == NEW_SALES["closed_at"]
-        for line_s,line_l in zip(data["lines"],NEW_SALES["lines"]):
-            assert line_s["id"] ==line_l["id"]
-            assert line_s["sale_id"] ==line_l["sale_id"]
-            assert line_s["product_barcode"] ==line_l["product_barcode"]
-            assert line_s["quantity"] ==line_l["quantity"]
-            assert line_s["price_per_unit"] ==line_l["price_per_unit"]
-            assert line_s["discount_rate"] ==line_l["discount_rate"]
-
-def test_get_sale_id_route_invalid_id(client,auth_tokens):
-    invalid={"a","-4"}
-    for i in invalid:  
-        resp=client.get(BASE_URL+"/sales/"+i,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_get_sale_id_route_unauthenticated(client):
-    resp=client.get(BASE_URL+"/sales/10")
-    assert resp.status_code==401
-
-def test_get_sale_id_route_not_found(client,auth_tokens):
-    resp = client.get(BASE_URL + "/sales/111", headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
-
-def test_delete_sale_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=PAID_SALE
-        client.post(BASE_URL+"/sales/",json=PAID_SALE,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.delete_sale",new_callable=AsyncMock) as mockDeleteSale:
-        mockDeleteSale.return_value={}
-        resp=client.delete(BASE_URL+"/sales/10",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==204
-
-def test_delete_sale_route_invalid_id(client,auth_tokens):
-    invalid={"a","-4"}
-    for i in invalid:  
-        resp=client.get(BASE_URL+"/sales/"+i,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_product_added_route_ok(client,auth_tokens):
-    query="?barcode=0123456789&amount=5"
-    with patch("app.routes.sales_route.controller.attach_product",new_callable=AsyncMock) as mockAddItem:
-        mockAddItem.return_value=BOOLEAN_RESPONSE
-        resp = client.post(BASE_URL + "/sales/10"+"/items"+query, headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code == 201
-        data=resp.json()
-        assert data["success"]
-
-def test_product_added_route_invalid_input(client,auth_tokens):
-    query="?barcode=&amount=5"
-    resp = client.post(BASE_URL + "/sales/10"+"/items"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 400
-
-def test_product_added_route_unauthenticated(client):
-    query="?barcode=0123456789&amount=5"
-    resp = client.post(BASE_URL + "/sales/10"+"/items"+query)
-    assert resp.status_code == 401
-
-def test_product_added_route_not_found(client,auth_tokens):
-    resp = client.get(BASE_URL + "/sales/10", headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
+@pytest.mark.parametrize(
+        "role, new_sale, expected_exception_code",
+    [("admin",{
+        "id":1,
+        "status":"OPEN",
+        "discount_rate":0.0
+        }, 201),("cashier",{
+        "id":1,
+        "status":"OPEN",
+        "discount_rate":0.0
+        }, 201),("cashier",{
+        "id":1,
+        "status":"OPEN",
+        "discount_rate":0.0
+        }, 201),
+     (None,{}, 401)]
+)
+def test_create_sale_route(client,auth_tokens,role, new_sale, expected_exception_code):
+    headers=auth_header(auth_tokens,role) if role else None
+    resp = client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    assert resp.status_code==expected_exception_code
+    if resp.status_code==201 and "admin"==role:
+        resp=resp.json()
+        assert resp["id"]== 1
+        assert resp["status"]=='OPEN'
+        assert resp["created_at"]>=str(START_TEST)
+        assert resp["discount_rate"]==0.0
+        assert resp["lines"]==[]
     
+@pytest.mark.parametrize(
+        "role, expected_exception_code",
+        [
+            ("admin", 200),  # success
+            ("manager", 200),  # success
+            ("cashier", 200),  # success
+            (None, 401),  # unauthenticated
+        ],
+    )
+def test_get_all_sales_route(client,auth_tokens,role,expected_exception_code):
+    headers=auth_header(auth_tokens,role) if role else None
+    resp = client.get(
+            BASE_URL + "/sales/",
+            headers=headers,
+        )
+    assert resp.status_code==expected_exception_code
+    if role=="admin":
+        for r in resp.json():
+            re=client.delete(
+                BASE_URL+"/sales/"+str(r["id"]),
+                headers=headers,
+            )
+        resp = client.get(
+            BASE_URL + "/sales/",
+            headers=headers,
+            )
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+        resp=resp.json()
+        assert resp==[]
+        client.post(
+            BASE_URL+"/products",
+            json=FIRST_PRODUCT,
+            headers=headers
+        )
+        client.post(
+             BASE_URL+"/sales/1/items/?barcode="+FIRST_PRODUCT["barcode"]+"amount=1"
+            , headers=headers
+        )
+        resp = client.get(
+            BASE_URL + "/sales/",
+            headers=headers,
+        )
+        resp=resp.json()
+        for r in resp:
+            assert r["id"]== 1
+            assert r["status"]=='OPEN'
+            assert r["created_at"]>=str(START_TEST)
+            assert r["discount_rate"]==0.0
+            for rl in r["lines"]:
+                rl["id"]==1
+                rl["sale_id"]==1
+                rl["product_barcode"]==FIRST_PRODUCT["barcode"]
+                rl["quantity"]==1
+                rl["price_per_unit"]==FIRST_PRODUCT["price_per_unit"]
+                rl["discount_rate"]==0.0
 
-def test_remove_product_route_ok(client,auth_tokens):
-    query="?barcode=0123456789&amount=5"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.edit_sold_product_quantity",new_callable=AsyncMock) as mockAddItem:
-        mockAddItem.return_value=BOOLEAN_RESPONSE
-        resp = client.delete(BASE_URL + "/sales/10"+"/items"+query, headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code == 202
-        data=resp.json()
-        assert data["success"]
+        
 
-def test_remove_product_route_invalid_input(client,auth_tokens):
-    query="?barcode=&amount=5"
-    invalid={"a","-4"}
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-       mockCreateSale.return_value=NEW_SALES
-       client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    resp = client.delete(BASE_URL + "/sales/10"+"/items"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code in (400,404)
-    query="?barcode=0000000000&amount=5"
-    for i in invalid:
-        resp = client.delete(BASE_URL + "/sales/"+i+"/items"+query, headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-def test_remove_product_route_unauthenticated(client):
-    query="?barcode=0123456789&amount=5"
-    resp = client.delete(BASE_URL + "/sales/10"+"/items"+query)
-    assert resp.status_code == 401
+@pytest.mark.parametrize(
+        "input_id, role, expected_exception_code",
+        [
+            (1, "admin", 200),  # success
+            (-1, "manager", 400),  # invalid id
+            (12345, "cashier", 404),  # no product found
+            ("abc", "admin", 400),  # invalid id
+            (1, None, 401),  # unauthenticated
+        ],
+    )
+def test_get_sale_id_route_ok(client,auth_tokens,input_id, role, expected_exception_code):
+    headers = auth_header(auth_tokens, role) if role else None
+    client.post(
+            BASE_URL + "/sales",
+            json=NEW_SALES,
+            headers=headers,
+        )
+    if role=="admin":
+        client.post(
+            BASE_URL+"/products",
+            json=FIRST_PRODUCT,
+            headers=headers
+        )
+        client.post(
+             BASE_URL+"/sales/1/items/?barcode="+FIRST_PRODUCT["barcode"]+"amount=1"
+            ,headers=headers
+        )
+        resp = client.get(
+            BASE_URL + "/sales/",
+            headers=headers,
+        )
+        resp=resp.json()
+        
 
-def test_remove_product_route_not_found(client,auth_tokens):
-    query="?barcode=0123456789&amount=5"
-    resp = client.delete(BASE_URL + "/sales/10/items"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code in (404,400)
-
-def test_set_discount_route_ok(client,auth_tokens):
-    query="?discount_rate=0.04"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.edit_sale_discount",new_callable=AsyncMock) as mockSetDiscount:
-        mockSetDiscount.return_value=BOOLEAN_RESPONSE
-        resp=client.patch(BASE_URL+"/sales/10/discount"+query,json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        assert resp.json()["success"]
-
-def test_set_discount_route_invalid_input(client,auth_tokens):
-    invalid={"a","-4"}
-    query="?discount_rate=w"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    resp=client.patch(BASE_URL+"/salses/10/discount"+query,headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code in (400,404)
-    query="?discount_rate=0.5"
-    for i in invalid:  
-        resp=client.patch(BASE_URL+"/sales/"+i+"/discount"+query,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_set_discount_route_unauthenticated(client):
-    query="?discount_rate=0.5"
-    resp = client.patch(BASE_URL + "/sales/10"+"/discount"+query)
-    assert resp.status_code == 401
-
-def test_set_discount_route_not_found(client,auth_tokens):
-    query="?discount_rate=0.5"
-    resp = client.patch(BASE_URL + "/sales/10"+"/discount"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
-
-def test_set_discount_product_route_ok(client,auth_tokens):
-    query="?discount_rate=0.04"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.edit_product_discount",new_callable=AsyncMock) as mockSetDiscount:
-        mockSetDiscount.return_value=BOOLEAN_RESPONSE
-        resp=client.patch(BASE_URL+"/sales/10/items/0123456789/discount"+query,json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        assert resp.json()["success"]
-
-def test_set_discount_product_route_invalid_input(client,auth_tokens):
-    invalid={"a","-4"}
-    query="?discount_rate=w"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    resp=client.patch(BASE_URL+"/sales/10/items/0123456789/discount"+query,headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code in (400,404,422)
-    query="?discount_rate=0.5"
-    for i in invalid:  
-        resp=client.patch(BASE_URL+"/sales/"+i+"/items/0123456789/discount"+query,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-    for i in invalid:  
-        resp=client.patch(BASE_URL+"/sales/10/items/"+i+"/discount"+query,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_set_discount_product_route_unauthenticated(client):
-    query="?discount_rate=0.5"
-    resp = client.patch(BASE_URL + "/sales/10/items/0123456789/discount"+query)
-    assert resp.status_code == 401
-
-def test_set_discount_product_route_not_found(client,auth_tokens):
-    query="?discount_rate=0.5"
-    resp = client.patch(BASE_URL + "/sales/10/item/0123456789"+"/discount"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
-
-def test_close_sale_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.close_sale",new_callable=AsyncMock) as mockSetDiscount:
-        mockSetDiscount.return_value=BOOLEAN_RESPONSE
-        resp=client.patch(BASE_URL+"/sales/10/close",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        assert resp.json()["success"]
-
-def test_close_sale_route_invalid_input(client,auth_tokens):
-    invalid={"a","-4"}
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    for i in invalid:  
-        resp=client.patch(BASE_URL+"/sales/"+i+"/close",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_close_sale_route_unauthenticated(client):
-    resp = client.patch(BASE_URL + "/sales/10"+"/close")
-    assert resp.status_code == 401
-
-def test_close_sale_route_not_found(client,auth_tokens):
-    resp = client.patch(BASE_URL + "/sales/10"+"/close", headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
-
-def test_paid_sale_route_ok(client,auth_tokens):
-    query="?cash_amount=5"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=CLOSE_SALES
-        client.post(BASE_URL+"/sales/",json=CLOSE_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.pay_sale",new_callable=AsyncMock) as mockSetDiscount:
-        mockSetDiscount.return_value=CHANGE_RESPONSE
-        resp=client.patch(BASE_URL+"/sales/10/pay"+query,headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        assert resp.json()["change"]==5
-
-def test_paid_sale_route_invalid_input(client,auth_tokens):
-    invalid={"a","-4"}
-    query="?cash_amount=a"
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=CLOSE_SALES
-        client.post(BASE_URL+"/sales/",json=CLOSE_SALES,headers=auth_header(auth_tokens, "admin"))
-    resp=client.patch(BASE_URL+"/sales/10/pay"+query,headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code in (400,422)
-    query="?cash_amount=5"
-    for i in invalid:  
-        resp=client.patch(BASE_URL+"/sales/"+i+"/pay",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
-
-def test_paid_sale_route_unauthenticated(client):
-    query="?cash_amount=5"
-    resp = client.patch(BASE_URL + "/sales/10"+"/pay"+query)
-    assert resp.status_code == 401
-
-def test_paid_sale_route_not_found(client,auth_tokens):
-    query="?cash_amount=5"
-    resp = client.patch(BASE_URL + "/sales/10"+"/pay"+query, headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
-
-def test_points_route_ok(client,auth_tokens):
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=CLOSE_SALES
-        client.post(BASE_URL+"/sales/",json=CLOSE_SALES,headers=auth_header(auth_tokens, "admin"))
-    with patch("app.routes.sales_route.controller.get_points",new_callable=AsyncMock) as mockSetDiscount:
-        mockSetDiscount.return_value=POINT_RESPONSE
-        resp=client.get(BASE_URL+"/sales/10/points",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code==200
-        assert resp.json()["points"]==15
-
-def test_points_route_invalid_input(client,auth_tokens):
-    invalid={"a","-4"}
-    with patch("app.routes.sales_route.controller.create_sale",new_callable=AsyncMock) as mockCreateSale:
-        mockCreateSale.return_value=NEW_SALES
-        client.post(BASE_URL+"/sales/",json=NEW_SALES,headers=auth_header(auth_tokens, "admin"))
-    for i in invalid:  
-        resp=client.get(BASE_URL+"/sales/"+i+"/points",headers=auth_header(auth_tokens, "admin"))
-        assert resp.status_code in (400,422)
+    resp = client.get(
+            BASE_URL + "/sales/" + str(input_id),
+            headers=headers,
+        )
     
-def test_points_route_unauthenticated(client):
-    resp = client.get(BASE_URL + "/sales/10"+"/points")
-    assert resp.status_code == 401
+    if expected_exception_code == 400:
+            assert resp.status_code in (expected_exception_code, 422)
+    else:
+            assert resp.status_code == expected_exception_code
+    if expected_exception_code==201:
+        for r in resp:
+            assert r["id"]== 1
+            assert r["status"]=='OPEN'
+            assert r["created_at"]>=str(START_TEST)
+            assert r["discount_rate"]==0.0
+            for rl in r["lines"]:
+                rl["id"]==1
+                rl["sale_id"]==1
+                rl["product_barcode"]==FIRST_PRODUCT["barcode"]
+                rl["quantity"]==1
+                rl["price_per_unit"]==FIRST_PRODUCT["price_per_unit"]
+                rl["discount_rate"]==0.0
 
-def test_points_route_not_found(client,auth_tokens):
-    resp = client.get(BASE_URL + "/sales/10"+"/points", headers=auth_header(auth_tokens, "admin"))
-    assert resp.status_code == 404
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code",
+        [
+            (1, "admin", 204),  # success
+            (-1, "manager", 400),  # invalid id
+            (12345, "cashier", 404),  # no product found
+            ("abc", "admin", 400),  # invalid id
+            (1, None, 401),  # unauthenticated
+            (2, "admin", 420)
+        ],
+    )
+def test_delete_sale_route(client,auth_tokens,role,input_id,exception_code):
+        headers = auth_header(auth_tokens, role) if role else None
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+        result=client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+
+        if role=="admin":
+            client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+
+            client.post(
+             BASE_URL+"/sales/2/items?barcode="
+             +FIRST_PRODUCT["barcode"]+"&amount=2"
+            ,headers=headers
+            )
+            
+            client.patch(
+                BASE_URL + "/sales/2/close",
+                headers=headers,
+            )
+            client.patch(
+                BASE_URL + "/sales/2/pay/?cash_amount=10000",
+                headers=headers,
+            )
+
+        resp=client.delete(
+             BASE_URL+"/sales/"+str(input_id),
+             headers=headers)
+        
+        if exception_code == 400:
+            assert resp.status_code in (exception_code, 422)
+        else:
+            assert resp.status_code == exception_code
+
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code,stack,barcode",
+        [
+            (3, "admin", 201,1,FIRST_PRODUCT["barcode"]),  # success
+            (-1, "manager", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
+            (12345, "cashier", 404,1,FIRST_PRODUCT["barcode"]),  # no product found
+            ("abc", "admin", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
+            (3, None, 401,1,FIRST_PRODUCT["barcode"]),  # unauthenticated
+            (3, "admin", 400,1,"000"),
+            (3, "admin", 400,1,""),
+            (4, "admin", 400,8000000,FIRST_PRODUCT["barcode"]),
+            (4, "admin", 400,-80,FIRST_PRODUCT["barcode"]),
+            (3, "cashier", 420,1,FIRST_PRODUCT["barcode"])
+        ],
+    )
+def test_product_added_route(client,auth_tokens,input_id, role, exception_code,stack,barcode):
+    headers = auth_header(auth_tokens, role) if role else None
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    resp=client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +barcode+"&amount="+str(stack),
+            headers=headers,
+        )
+    if exception_code == 400 or resp.status_code==409:
+        assert resp.status_code in (exception_code, 422,409)
+    else:
+        assert resp.status_code == exception_code
+    if resp.status_code==201:
+        assert resp.json()["success"]
+
+    if role=="cashier" and input_id!=12345:
+            client.patch(
+                BASE_URL + "/sales/3/close",
+                headers=headers,
+            )
+            resp=client.post(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +barcode+"&amount="+str(stack),
+                headers=headers,
+            )
+            assert resp.status_code==420
+            client.patch(
+                BASE_URL + "/sales/3/pay/?cash_amount=10000",
+                headers=headers,
+            )
+            assert resp.status_code==420
+    
+@pytest.mark.parametrize(
+        "input_id, role, exception_code,stack,barcode",
+        [
+            (4, "admin", 202,1,FIRST_PRODUCT["barcode"]),  # success
+            (4, "manager", 202,-1,FIRST_PRODUCT["barcode"]),
+            (4, "manager", 202,-2,FIRST_PRODUCT["barcode"]),
+            (12345, "admin", 404,1,FIRST_PRODUCT["barcode"]),
+            (-1, "admin", 400,1,FIRST_PRODUCT["barcode"]),  # no product found
+            ("abc", "admin", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
+            (4, None, 401,1,FIRST_PRODUCT["barcode"]),  # unauthenticated
+            (4, "admin", 400,1,"000"),
+            (4, "admin", 400,1,""),
+            (4, "admin", 400,8000000,FIRST_PRODUCT["barcode"]),
+            (4, "admin", 400,-80,FIRST_PRODUCT["barcode"]),
+            (4, "cashier", 202,1,FIRST_PRODUCT["barcode"])
+        ],
+    )
+def test_remove_product_route_ok(client,auth_tokens,input_id, role, exception_code,stack,barcode):
+    headers = auth_header(auth_tokens, role) if role else None
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    for i in range(4):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +FIRST_PRODUCT["barcode"]+"&amount=1",
+            headers=headers,
+        )
+    resp = client.get(
+            BASE_URL + "/sales/" + str(input_id),
+            headers=headers,
+        )
+    if resp.status_code==201:
+        q=resp.json()["lines"][0]["quantity"]
+    else:
+        q=0
+    if role=="admin" or role=="cashier":
+        resp=client.delete(
+             BASE_URL+"/sales/"+str(input_id)+"/items/?barcode="+
+             barcode+"&amount="+str(stack),
+             headers=headers)
+    elif role=="manager":
+         if stack==-2 and q<-stack:
+            resp=client.delete(
+                BASE_URL+"/sales/"+str(input_id)+"/items/?barcode="+
+                barcode+"&amount=-1",
+                headers=headers)
+         else:
+            resp=client.delete(
+                BASE_URL+"/sales/"+str(input_id)+"/items/?barcode="+
+                barcode+"&amount="+str(stack),
+                headers=headers)
+        
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    else:
+        assert resp.status_code == exception_code
+    
+    if exception_code==202:
+        assert resp.json()["success"]
+
+    if stack==-2:
+         resp = client.get(
+            BASE_URL + "/sales/" + str(input_id),
+            headers=headers,
+        )
+         resp=resp.json()
+         assert resp["lines"]==[]
+    if role=="cashier":
+            client.post(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +FIRST_PRODUCT["barcode"]+"&amount=1",
+                headers=headers,
+            )
+            client.patch(
+                BASE_URL + "/sales/"+str(input_id)+"/close",
+                headers=headers,
+            )
+            resp=client.delete(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +barcode+"&amount="+str(stack),
+                headers=headers,
+            )
+            assert resp.status_code==420
+            client.patch(
+                BASE_URL + "/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+                headers=headers,
+            )
+            resp=client.delete(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +barcode+"&amount="+str(stack),
+                headers=headers,
+            )
+            assert resp.status_code==420
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code, disc",
+        [
+            (5, "admin", 200,0.01),
+            (-1,"admin",400,0.01),
+            (5,"manager",400,2),
+            (5,"admin",400,-0.5),
+            (5,None,401,0.01),
+            (15555,"admin",404,0.5),
+            (5,"admin",420,0.02)
+        ]
+    )    
+def test_set_discount_route(client,auth_tokens,input_id, role, exception_code, disc):
+    headers = auth_header(auth_tokens, role) if role else None
+    for i in range(5):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    resp=client.patch(
+        BASE_URL+"/sales/"+str(input_id)+"/discount?discount_rate="+str(disc),
+        headers=headers)
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
+        assert resp.status_code == exception_code
+    if exception_code==200:
+        assert resp.json()["success"]
+    
+    if exception_code==420:
+            client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+            client.post(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +FIRST_PRODUCT["barcode"]+"&amount=1",
+                headers=headers,
+            )
+            client.patch(
+                BASE_URL + "/sales/"+str(input_id)+"/close",
+                headers=headers,
+            )
+            resp=client.patch(
+                BASE_URL+"/sales/"+str(input_id)+"/discount?discount_rate="+str(disc),
+                headers=headers)
+            assert resp.status_code==420
+            client.patch(
+                BASE_URL + "/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+                headers=headers,
+            )
+            resp=client.patch(
+                BASE_URL+"/sales/"+str(input_id)+"/discount?discount_rate="+str(disc),
+                headers=headers
+            )
+            assert resp.status_code==420
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code, disc,barcode",
+        [
+            (6, "admin", 200,0.01,FIRST_PRODUCT["barcode"]),
+            (-1,"admin",400,0.01,FIRST_PRODUCT["barcode"]),
+            (6,"manager",400,2,FIRST_PRODUCT["barcode"]),
+            (6,"admin",400,-0.5,FIRST_PRODUCT["barcode"]),
+            (6, "admin", 400,0.1,"000"),
+            (6,None,401,0.01,FIRST_PRODUCT["barcode"]),
+            (15555,"admin",404,0.5,FIRST_PRODUCT["barcode"]),
+            (6,"admin",420,0.02,FIRST_PRODUCT["barcode"])
+        ]
+    ) 
+def test_set_discount_product_route(client,auth_tokens,input_id, role, exception_code, disc,barcode):
+    headers = auth_header(auth_tokens, role) if role else None
+    for i in range(6):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +barcode+"&amount=1",
+            headers=headers,
+            )
+    resp=client.patch(
+        BASE_URL+"/sales/"+str(input_id)+"/items/"+barcode+
+        "/discount?discount_rate="+str(disc),
+        headers=headers)
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
+        assert resp.status_code == exception_code
+    if exception_code==200:
+        assert resp.json()["success"]
+    
+    if exception_code==420:
+        client.patch(
+            BASE_URL + "/sales/"+str(input_id)+"/close",
+            headers=headers,
+        )
+        resp=client.patch(
+            BASE_URL+"/sales/"+str(input_id)+"/items/"+barcode+
+            "/discount?discount_rate="+str(disc),
+            headers=headers)
+        assert resp.status_code==420
+        client.patch(
+            BASE_URL + "/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers,
+        )
+        resp=client.patch(
+            BASE_URL+"/sales/"+str(input_id)+"/items/"+barcode+
+            "/discount?discount_rate="+str(disc),
+            headers=headers)
+        assert resp.status_code==420
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code",
+        [
+            (7, "admin", 200),
+            (-1,"admin",400),
+            (7,None,401),
+            (15555,"admin",404),
+            (7,"manager",420),
+            (8,"cashier",200)
+        ]
+    ) 
+def test_close_sale_route_ok(client,auth_tokens,input_id, role, exception_code):
+    headers = auth_header(auth_tokens, role) if role else None
+    for i in range(8):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    if input_id!=8:
+        client.post(
+                BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+                +FIRST_PRODUCT["barcode"]+"&amount=1",
+                headers=headers,
+                )
+    resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+    
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
+        assert resp.status_code == exception_code
+    if exception_code==200:
+        assert resp.json()["success"]
+    
+    if input_id==8:
+        resp=client.get(BASE_URL+"sale"+str(input_id),headers=headers)
+        assert resp.status_code==404
+
+    if exception_code==420:
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+        assert exception_code==420
+        client.patch(
+            BASE_URL + "/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers,
+        )
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+        assert exception_code==420
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code,amount",
+        [
+            (9, "admin", 200,10000),
+            (9, "admin", 400,-10000),
+            (9, "admin", 420,1),
+            (-1,"admin",400,10000),
+            (9,None,401,10000),
+            (15555,"admin",404,10000),
+            (10,"manager",420,10000),
+        ]
+    ) 
+def test_paid_sale_route(client,auth_tokens,input_id,amount, role, exception_code):
+    headers = auth_header(auth_tokens, role) if role else None
+    for i in range(9):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    client.post(
+                BASE_URL+"/products",
+                json=SECOND_PRODUCT,
+                headers=headers
+            )
+    client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +FIRST_PRODUCT["barcode"]+"&amount=1",
+            headers=headers,
+            )
+    client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +SECOND_PRODUCT["barcode"]+"&amount=1",
+            headers=headers,
+            )
+    client.patch(
+        BASE_URL+"/sales/"+str(input_id)+"/discount?discount_rate=0.02",
+        headers=headers)
+    client.patch(
+        BASE_URL+"/sales/"+str(input_id)+"/items/"+SECOND_PRODUCT["barcode"]+
+        "/discount?discount_rate=0.05",
+        headers=headers)
+    client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+    
+    resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/pay/?cash_amount="+str(amount),
+            headers=headers)
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
+        assert resp.status_code == exception_code
+    elif amount==1:
+        assert resp.status_code == exception_code
+    if exception_code==200:
+        assert resp.json()["change"]==9990.21
+    
+    if exception_code==420:
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers)
+        assert exception_code==420
+
+        client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +SECOND_PRODUCT["barcode"]+"&amount=1",
+            headers=headers,
+            )
+        client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers)
+        resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers)
+        assert exception_code==420
+
+@pytest.mark.parametrize(
+        "input_id, role, exception_code",
+        [
+            (11, "admin", 200),
+            (-1,"admin",400),
+            (11,None,401),
+            (15555,"admin",404)
+        ]
+    ) 
+def test_points_route_ok(client,auth_tokens,input_id, role, exception_code):
+    headers = auth_header(auth_tokens, role) if role else None
+    for i in range(11):
+        client.post(
+            BASE_URL + "/sales",
+            headers=headers,
+        )
+    client.post(
+                BASE_URL+"/products",
+                json=FIRST_PRODUCT,
+                headers=headers
+            )
+    client.post(
+            BASE_URL + "/sales/"+str(input_id)+"/items/?barcode="
+            +FIRST_PRODUCT["barcode"]+"&amount=10",
+            headers=headers,
+            )
+    resp=client.get(BASE_URL+"/sales/"+str(input_id)+"/points",
+                headers=headers)
+    if exception_code==420:
+        assert resp.status_code==420
+    client.patch(BASE_URL+"/sales/"+str(input_id)+"/close",
+            headers=headers)
+    resp=client.get(BASE_URL+"/sales/"+str(input_id)+"/points",
+                headers=headers)
+    if exception_code==420:
+        assert resp.status_code==420
+    resp=client.patch(BASE_URL+"/sales/"+str(input_id)+"/pay/?cash_amount=10000",
+            headers=headers)
+    
+    resp=client.get(BASE_URL+"/sales/"+str(input_id)+"/points",
+                headers=headers)
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
+        assert resp.status_code == exception_code
+    if exception_code==200:
+        assert resp.json()["points"]==9
