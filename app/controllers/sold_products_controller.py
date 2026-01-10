@@ -102,15 +102,3 @@ class SoldProductsController:
             if BooleanResponseDTO(success=True)
             else BooleanResponseDTO(success=False)
         )
-
-    async def remove_sold_product(self,sale_id:int,id:int, barcode:str)->None:
-        validate_field_is_present(str(id), "product_id")
-        validate_field_is_positive(id, "product_id")
-        validate_field_is_present(str(sale_id), "sale_id")
-        validate_field_is_positive(sale_id, "sale_id")
-        validate_product_barcode(barcode)
-
-        await self.repo.remove_sold_product(sale_id,id,barcode)
-        return None
-    
-    

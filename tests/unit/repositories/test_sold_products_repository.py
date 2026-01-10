@@ -211,15 +211,3 @@ async def test_edit_discount_not_found(repo, mock_session):
     with pytest.raises(NotFoundError)as exc_info:
         await repo.edit_sold_product_discount(id, sale_id,discount)
     assert exc_info.value.status==404
-
-@pytest.mark.asyncio
-async def test_edit_remove_ok(repo, mock_session):
-    id=1,
-    sale_id=2,
-    barcode=FIRST_PRODUCT_DAO.product_barcode
-
-    mock_result=MagicMock()
-    mock_result.scalar.return_value= FIRST_PRODUCT_DAO
-    mock_session.execute.return_value = mock_result
-
-    await repo.remove_sold_product(id,sale_id,barcode)
