@@ -14,6 +14,8 @@ test-all:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
+    - if: '$CI_COMMIT_BRANCH == "QA"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "QA"'
       when: always
   allow_failure: false

@@ -1,0 +1,286 @@
+from typing import List, Optional
+
+
+from app.models.DAO.return_transaction_dao import ReturnTransactionDAO
+from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+from app.models.DTO.product_dto import ProductTypeDTO
+from app.models.DTO.return_transaction_dto import ReturnTransactionDTO
+from app.models.DTO.returned_product_dto import ReturnedProductDTO
+from app.models.DTO.sale_dto import SaleDTO
+from app.models.errors.bad_request import BadRequestError
+from app.models.errors.insufficient_quantity_sold_error import (
+    InsufficientQuantitySoldError,
+)
+from app.models.errors.invalid_state_error import InvalidStateError
+from app.models.errors.notfound_error import NotFoundError
+from app.models.return_status_type import ReturnStatus
+from app.repositories.return_repository import ReturnRepository
+from app.services.input_validator_service import (
+    validate_field_is_positive,
+    validate_field_is_present,
+    validate_product_barcode,
+)
+from app.services.mapper_service import return_transaction_dao_to_return_transaction_dto
+
+
+class ReturnController:
+    def __init__(self):
+        self.repo = ReturnRepository()
+
+
+    async def create_return_transaction(
+        self, sale_id: int, sales_controller
+    ) -> ReturnTransactionDTO:
+        """
+        Create a new return transaction.
+
+        - Parameters: return_transaction (ReturnDTO)
+        - Returns: ReturnDTO
+        """
+        validate_field_is_present(sale_id, "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
+
+        sale: SaleDTO = await sales_controller.get_sale_by_id(sale_id)
+        if sale.status != "PAID":
+            raise InvalidStateError("Return allowed only on paid sales")
+
+        new_return_transaction: ReturnTransactionDAO = (
+            await self.repo.create_return_transaction(sale_id=sale_id)
+        )
+        return return_transaction_dao_to_return_transaction_dto(new_return_transaction)
+
+    async def list_returns(self) -> List[ReturnTransactionDTO]:
+        """
+        List present return transactions.
+
+        - Returns: List of ReturnTransactionDTO
+        """
+
+        return_transactions_dao: Optional[List[ReturnTransactionDAO]] = (
+            await self.repo.list_returns()
+        )
+        return_transactions_dto: List[ReturnTransactionDTO] = list()
+
+        if not return_transactions_dao:
+            raise NotFoundError("Return Transaction not found")
+
+        for return_transaction_dao in return_transactions_dao:
+            return_transactions_dto.append(
+                return_transaction_dao_to_return_transaction_dto(return_transaction_dao)
+            )
+
+        return return_transactions_dto
+
+    async def get_return_by_id(self, return_id: int) -> ReturnTransactionDTO:
+        """
+        Returns a Return Transaction given its ID, or NotFound if not present
+
+        - Parameters: return_id as int
+        - Returns: ReturnTransactionDTO
+        """
+        validate_field_is_present(return_id, "return_id")
+        validate_field_is_positive(return_id, "return_id")
+
+        return_transaction: ReturnTransactionDAO = await self.repo.get_return_by_id(
+            return_id
+        )
+        return return_transaction_dao_to_return_transaction_dto(return_transaction)
+
+    async def delete_return(self, return_id: int) -> BooleanResponseDTO:
+
+        return_transaction: ReturnTransactionDTO = await self.get_return_by_id(
+            return_id
+        )
+        if return_transaction.status == ReturnStatus.REIMBURSED:
+            raise InvalidStateError("Cannot delete a reimbursed return")
+        await self.repo.delete_return(return_id)
+
+        return BooleanResponseDTO(success=True)
+
+    async def list_returns_for_sale_id(
+        self, sale_id: int
+    ) -> List[ReturnTransactionDTO]:
+        """
+        List present return transactions for a given sale ID.
+
+        - Parameters: sale_id as int
+        - Returns: List of ReturnTransactionDTO
+        """
+        validate_field_is_present(sale_id, "sale_id")
+        validate_field_is_positive(sale_id, "sale_id")
+        return_transactions_dao: List[ReturnTransactionDAO] = (
+            await self.repo.list_returns_for_sale_id(sale_id)
+        )
+        return [
+            return_transaction_dao_to_return_transaction_dto(rt)
+            for rt in return_transactions_dao
+        ]
+
+    async def attach_product_to_return_transaction(
+        self,
+        return_id: int,
+        barcode: str,
+        amount: int,
+        products_controller,
+        sales_controller,
+        returned_products_controller
+    ) -> BooleanResponseDTO:
+        """
+        Attach a product to a given return transaction.
+
+        - Parameters: return_id as int, barcode as str, amount as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
+        validate_field_is_present(return_id, "return_id")
+        validate_field_is_present(barcode, "barcode")
+        validate_product_barcode(barcode)
+        validate_field_is_positive(amount, "amount")
+
+        return_transaction: ReturnTransactionDTO = await self.get_return_by_id(
+            return_id
+        )
+        if return_transaction.status != "OPEN":
+            raise InvalidStateError("Cannot modify a closed or reimbursed return")
+
+        product: ProductTypeDTO = await products_controller.get_product_by_barcode(
+            barcode
+        )
+        sale: SaleDTO = await sales_controller.get_sale_by_id(
+            return_transaction.sale_id
+        )
+
+        for sold_item in sale.lines:
+            if sold_item.product_barcode == barcode:
+                sold_quantity = sold_item.quantity
+                break
+        else:
+            raise BadRequestError(
+                "The product with the given barcode was not sold in the sale associated with this return transaction"
+            )
+
+        if sold_quantity - amount < 0:
+            raise InsufficientQuantitySoldError(
+                "Amount selected is greater than quantity sold in the sale"
+            )
+
+        if product.id == None:
+            raise BadRequestError("Invalid product")
+
+        returned_product: ReturnedProductDTO = (
+            await returned_products_controller.create_returned_product(
+                product.id, return_id, product.barcode, amount, product.price_per_unit
+            )
+        )
+
+        return (
+            BooleanResponseDTO(success=True)
+            if returned_product
+            else BooleanResponseDTO(success=False)
+        )
+
+    async def edit_quantity_of_returned_product(
+        self, 
+        return_id: int, 
+        barcode: str, 
+        amount: int,
+        returned_products_controller
+    ) -> BooleanResponseDTO:
+        """
+        Update the quantity of a product from a given return transaction.
+        Delete the returned product if the remaining quantity is zero.
+
+        - Parameters: return_id as int, barcode as str, amount as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
+        validate_field_is_present(barcode, "barcode")
+        validate_product_barcode(barcode)
+
+        return_transaction: ReturnTransactionDTO = await self.get_return_by_id(
+            return_id
+        )
+        if return_transaction.status != "OPEN":
+            raise InvalidStateError("Cannot remove items from a closed return")
+
+        returned_product: ReturnedProductDTO = (
+            await returned_products_controller.edit_quantity_of_returned_product(
+                return_id, barcode, amount
+            )
+        )
+
+        return (
+            BooleanResponseDTO(success=True)
+            if returned_product
+            else BooleanResponseDTO(success=False)
+        )
+
+    async def close_return_transaction(
+        self, return_id: int, products_controller
+    ) -> BooleanResponseDTO:
+        """
+        Close a return transaction.
+
+        - Parameters: return_id as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
+
+        return_transaction = await self.get_return_by_id(return_id)
+        if return_transaction.status != "OPEN":
+            raise InvalidStateError("Selected return status is not 'OPEN'")
+
+        response: BooleanResponseDTO = await self.repo.close_return_transaction(
+            return_id
+        )
+        """
+        update inventory:
+        increase quantity of each returned product in the inventory
+        """
+        if response.success:
+            for returned_product in return_transaction.lines:
+                product: ProductTypeDTO = (
+                    await products_controller.get_product_by_barcode(
+                        returned_product.product_barcode
+                    )
+                )
+                if product.id is None:
+                    raise BadRequestError("Invalid product")
+                await products_controller.update_product_quantity(
+                    product.id, returned_product.quantity
+                )
+
+        return response
+
+    async def reimburse_return_transaction(self, return_id: int, accounting_controller) -> BooleanResponseDTO:
+        """
+        Close a return transaction.
+
+        - Parameters: return_id as int
+        - Returns: BooleanResponseDTO
+        """
+        validate_field_is_positive(return_id, "return_id")
+
+        return_transaction = await self.get_return_by_id(return_id)
+        if return_transaction.status != "CLOSED":
+            raise InvalidStateError("Selected return transaction is not 'CLOSED'")
+
+        response: BooleanResponseDTO = await self.repo.reimburse_return_transaction(
+            return_id
+        )
+
+        """
+        update balance:
+        decrease balance by the total amount of the return transaction
+        """
+
+        current_balance = await accounting_controller.get_balance()
+        if current_balance is None:
+            raise BadRequestError("Invalid balance")
+        total_return_amount = sum(
+            line.price_per_unit * line.quantity for line in return_transaction.lines
+        )
+        new_balance = current_balance - total_return_amount
+        await accounting_controller.set_balance(new_balance)
+
+        return response
