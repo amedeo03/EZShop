@@ -1,7 +1,5 @@
 # Test Report
 
-<The goal of this document is to explain how the application was tested, detailing how the test cases were defined and what they cover>
-
 # Contents
 
 - [Test Report](#test-report)
@@ -15,15 +13,13 @@
 
 # Dependency graph
 
-     <report the here the dependency graph of EzShop>
+![Dependency graph](media/dependency-graph.jpg)
 
 # Integration approach
 
 A bottom-up approach has been used, starting from running unit-tests for the various repositories. We then wrote integration tests for controller, using real repository objects. Finally, the last tests written were e2e tests on available routes to check the whole application flow. 
 
 # Tests
-
-<in the table below list the test cases defined For each test report the object tested, the test level (API, integration, unit) and the technique used to define the test case (BB/ eq partitioning, BB/ boundary, WB/ statement coverage, etc)> <split the table if needed>
 
 ## Unit Testing
 
@@ -236,6 +232,8 @@ Partitioning
 | test_get_point_controller_invalid_status              | SaleController.get_points               |  Integration   | BB / Equivalence Partitioning
 
 ### SoldProductsController
+|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
+|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
 | test_create_sold_product_controller_ok           | SoldProductsController.create_sold_product               |  Integration   | BB / Equivalence Partitioning
 | test_create_sold_product_controller_invalid_input           | SoldProductsController.create_sold_product               |  Integration   | BB / Equivalence Partitioning
 | test_get_sold_product_by_id_controller_ok           | SoldProductsController.get_sold_product_by_id               |  Integration   | BB / Equivalence Partitioning
@@ -349,6 +347,8 @@ Partitioning
 | test_modify_points               | CustomerRouter.modify_point                   |  End to End    | BB / Equivalence Partitioning                           |
 
 ### SalesRoute
+|         Test case name            | Object(s) tested                                |   Test level   |         Technique used                                  |
+|:--------------------------------: |:----------------------------------------------: |:--------------:|:--------------------------------------------------------|
 | test_close_sale_route_ok               | SaleRoute.close_sale                   |  End to End    | BB / Equivalence Partitioning                           |
 | test_create_sale_route               | SaleRoute.create_sale                   |  End to End    | BB / Equivalence Partitioning                           |
 | test_delete_sale_route               | SaleRoute.delete_sale                   |  End to End    | BB / Equivalence Partitioning                           |
@@ -427,8 +427,6 @@ Partitioning
 
 ## Coverage of FR
 
-<Report in the following table the coverage of functional requirements and scenarios(from official requirements) >
-
 | Functional Requirement or scenario |           Test(s)                   |
 | :--------------------------------: | :----------------------------------:|
 |                FR1                 |                                     |
@@ -438,9 +436,7 @@ Partitioning
 |                FR1.4               |                                     |
 |                FR1.5               |                                     |
 |                FR3                 |                                     |
-|                FR3.1               |test_create_product,test_update_product_position,|
-|                                    |test_update_product_quantity,test_update_product,|
-|                                    |test_update_product_invalid_state, test_update_product_duplicates|                                 
+|                FR3.1               |test_create_product,test_update_product_position, test_update_product_quantity,test_update_product, test_update_product_invalid_state, test_update_product_duplicates|                                 
 |                FR3.2               |       test_delete_product           |
 |                FR3.3               |        test_list_products           |
 |                FR3.4               |test_get_product, test_get_product_by_barcode,|
@@ -488,19 +484,19 @@ test_edit_product_discount_controllore_not_found, test_edit_discount_ok,test_edi
 |                FR8.2               |test_set_balance_authenticated (e2e) |
 |                FR8.3               |   test_get_current_balance (e2e)    |
 |                FR8.4               |test_set_balance_authenticated (e2e) |
-|             Scenario 1-1           |                                     |
-|             Scenario 1-2           |                                     |
-|             Scenario 1-3           |                                     |
+|             Scenario 1-1           |    test_create_product              |
+|             Scenario 1-2           |  test_update_product_position       |
+|             Scenario 1-3           |    test_update_product              |
 |             Scenario 2-1           |                                     |
 |             Scenario 2-2           |                                     |
 |             Scenario 2-3           |                                     |
 |             Scenario 3-1           |       test_issue_order (e2e)        |
 |             Scenario 3-2           |       test_pay_order (e2e)          |
 |             Scenario 3-3           |      test_record_arrival (e2e)      |
-|             Scenario 4-1           |                                     |
-|             Scenario 4-2           |                                     |
-|             Scenario 4-3           |                                     |
-|             Scenario 4-4           |                                     |
+|             Scenario 4-1           |      test_create_customer (e2e)     |
+|             Scenario 4-2           |test_create_card, test_attach_card (e2e)|
+|             Scenario 4-3           |      test_update_customer (e2e)     |
+|             Scenario 4-4           |      test_update_customer (e2e)     |
 |             Scenario 4-1           |                                     |
 |             Scenario 5-1           |                                     |
 |             Scenario 5-2           |                                     |
@@ -510,17 +506,108 @@ test_edit_product_discount_controllore_not_found, test_edit_discount_ok,test_edi
 |             Scenario 6-4           |test_create_sale_route, test_product_added_route,test_remove_product_route_ok, test_close_sale_route_ok, test_close_paid_route,test_points_route_ok                                     |
 |             Scenario 6-5           | test_create_sale_route, test_product_added_route,test_remove_product_route_ok, test_close_sale_route_ok, test_close_paid_route, test_delete_sale_route                                    |
 |             Scenario 6-6           |test_create_sale_route, test_product_added_route,test_remove_product_route_ok, test_close_sale_route_ok, test_close_paid_route,                                     |
-|             Scenario 7-1           | test_create_return_transaction_success, test_attach_product_to_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
-|             Scenario 7-2           | test_create_return_transaction_success, test_attach_product_to_return_success, test_delete_product_from_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
-|             Scenario 7-3           | test_list_returns_for_sale_id_success (e2e) |
-|             Scenario 7-4           | test_create_return_transaction_success, test_delete_return_success (e2e) |
-|             Scenario 8-1           |                                     |
-|             Scenario 8-2           |                                     |
-|             Scenario 9-1           |                                     |
-|             Scenario 10-1          |                                     |
-|             Scenario 10-2          |                                     |
+|             Scenario 7-1           |                                      |
+|             Scenario 7-2           |                                      |
+|             Scenario 7-3           |                                      |
+|             Scenario 7-4           |                                      |
+|             Scenario 8-1           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
+|             Scenario 8-2           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_delete_product_from_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
+|             Scenario 9-1           |                                      |
+|             Scenario 10-1          |                                      |
+|             Scenario 10-2          |                                      |
 
 
 ## Coverage white box
 
-Report here the screenshot of coverage values obtained with PyTest
+![test coverage](media/test-coverage.jpg)
+
+Detailed test execution is the following:
+
+- platform linux -- Python 3.13.11, pytest-9.0.2, pluggy-1.6.0
+- rootdir: /home/User/ezshop
+- configfile: pytest.ini
+- plugins: cov-7.0.0, anyio-4.12.0, asyncio-1.3.0
+- asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+- collected 656 items
+
+|Name                                                    |Stmts  | Miss | Cover |
+| :----------------------------------------------------: | :----:| :--: | :---: |
+|app/config/config.py                                    |   24  |    2 |  92%  |
+|app/controllers/accounting_controller.py                |   15  |    0 | 100%  |
+|app/controllers/auth_controller.py                      |   18  |    3 |  83%  |
+|app/controllers/customer_controller.py                  |   69  |    2 |  97%  |
+|app/controllers/orders_controller.py                    |   45  |    0 | 100%  |
+|app/controllers/products_controller.py                  |  103  |    0 | 100%  |
+|app/controllers/return_controller.py                    |  109  |    6 |  94%  |
+|app/controllers/returned_product_controller.py          |   40  |    2 |  95%  |
+|app/controllers/sales_controller.py                     |  147  |    5 |  97%  |
+|app/controllers/sold_products_controller.py             |   47  |    0 | 100%  |
+|app/controllers/user_controller.py                      |   21  |    1 |  95%  |
+|app/controllers_instances.py                            |   16  |    0 | 100%  |
+|app/database/database.py                                |   25  |    2 |  92%  |
+|app/middleware/auth_middleware.py                       |   11  |    0 | 100%  |
+|app/middleware/error_middleware.py                      |    7  |    0 | 100%  |
+|app/models/DAO/__init__.py                              |    0  |    0 | 100%  |
+|app/models/DAO/accounting_dao.py                        |    6  |    0 | 100%  |
+|app/models/DAO/card_dao.py                              |    8  |    0 | 100%  |
+|app/models/DAO/customer_dao.py                          |    9  |    0 | 100%  |
+|app/models/DAO/order_dao.py                             |   10  |    0 | 100%  |
+|app/models/DAO/product_dao.py                           |   11  |    0 | 100%  |
+|app/models/DAO/return_transaction_dao.py                |   12  |    0 | 100%  |
+|app/models/DAO/returned_product_dao.py                  |   11  |    0 | 100%  |
+|app/models/DAO/sale_dao.py                              |   12  |    0 | 100%  |
+|app/models/DAO/sold_product_dao.py                      |   12  |    0 | 100%  |
+|app/models/DAO/system_dao.py                            |    6  |    0 | 100%  |
+|app/models/DAO/user_dao.py                              |    9  |    0 | 100%  |
+|app/models/DTO/boolean_response_dto.py                  |    3  |    0 | 100%  |
+|app/models/DTO/card_dto.py                              |   14  |    0 | 100%  |
+|app/models/DTO/change_response_dto.py                   |    3  |    0 | 100%  |
+|app/models/DTO/customer_dto.py                          |   19  |    0 | 100%  |
+|app/models/DTO/error_dto.py                             |    9  |    0 | 100%  |
+|app/models/DTO/order_dto.py                             |   10  |    0 | 100%  |
+|app/models/DTO/points_response_dto.py                   |    3  |    0 | 100%  |
+|app/models/DTO/product_dto.py                           |   26  |    0 | 100%  |
+|app/models/DTO/return_transaction_dto.py                |   13  |    0 | 100%  |
+|app/models/DTO/returned_product_dto.py                  |    9  |    0 | 100%  |
+|app/models/DTO/sale_dto.py                              |   12  |    0 | 100%  |
+|app/models/DTO/sold_product_dto.py                      |    9  |    0 | 100%  |
+|app/models/DTO/token_dto.py                             |    3  |    0 | 100%  |
+|app/models/DTO/user_dto.py                              |   20  |    0 | 100%  |
+|app/models/errors/app_error.py                          |    5  |    0 | 100%  |
+|app/models/errors/bad_request.py                        |    5  |    0 | 100%  |
+|app/models/errors/balance_error.py                      |    6  |    0 | 100%  |
+|app/models/errors/conflict_error.py                     |    5  |    0 | 100%  |
+|app/models/errors/customer_card_error.py                |    5  |    0 | 100%  |
+|app/models/errors/insufficient_quantity_sold_error.py   |    5  |    2 |  60%  |
+|app/models/errors/insufficient_stock_error.py           |    5  |    0 | 100%  |
+|app/models/errors/invalid_state_error.py                |    5  |    0 | 100%  |
+|app/models/errors/notfound_error.py                     |    5  |    0 | 100%  |
+|app/models/errors/unauthorized_error.py                 |    5  |    0 | 100%  |
+|app/models/return_status_type.py                        |    5  |    0 | 100%  |
+|app/models/user_type.py                                 |    5  |    0 | 100%  |
+|app/repositories/accounting_repository.py               |   35  |    0 | 100%  |
+|app/repositories/customer_repository.py                 |  134  |    6 |  96%  |
+|app/repositories/orders_repository.py                   |   93  |    0 | 100%  |
+|app/repositories/products_repository.py                 |   95  |    0 | 100%  |
+|app/repositories/return_repository.py                   |   85  |   16 |  81%  |
+|app/repositories/returned_products_repository.py        |   56  |    0 | 100%  |
+|app/repositories/sales_repository.py                    |   72  |    1 |  99%  |
+|app/repositories/sold_products_repository.py            |   60  |    0 | 100%  |
+|app/repositories/user_repository.py                     |   56  |   18 |  68%  |
+|app/routes/accounting_route.py                          |   18  |    0 | 100%  |
+|app/routes/auth_route.py                                |   10  |    0 | 100%  |
+|app/routes/customer_route.py                            |   41  |    0 | 100%  |
+|app/routes/orders_route.py                              |   25  |    0 | 100%  |
+|app/routes/products_route.py                            |   38  |    0 | 100%  |
+|app/routes/returns_route.py                             |   38  |    0 | 100%  |
+|app/routes/sales_route.py                               |   45  |    0 | 100%  |
+|app/routes/user_route.py                                |   40  |    8 |  80%  |
+|app/services/auth_service.py                            |   36  |    6 |  83%  |
+|app/services/error_service.py                           |   10  |    0 | 100%  |
+|app/services/gtin_service.py                            |   16  |    0 | 100%  |
+|app/services/input_validator_service.py                 |   37  |    3 |  92%  |
+|app/services/mapper_service.py                          |   41  |    0 | 100%  |
+|app/utils.py                                            |   17  |    1 |  94%  |
+|TOTAL                                                   | 2115  |   84 |   96% |
+
+=== 656 passed in 10.00s ===
