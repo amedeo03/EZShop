@@ -449,13 +449,13 @@ Partitioning
 |                FR4.6               |      test_record_arrival (e2e)      |
 |                FR4.7               |       test_list_orders (e2e)        |
 |                FR 5                |                                     |
-|                FR5.1               |                                     |
-|                FR5.2               |                                     |
-|                FR5.3               |                                     |
-|                FR5.4               |                                     |
-|                FR5.5               |                                     |
-|                FR5.6               |                                     | 
-|                FR5.7               |                                     |
+|                FR5.1               |    test_update_customer (e2e)       |
+|                FR5.2               |   test_delete_customer(e2e),test_delete_customer_with_card(e2e)         |
+|                FR5.3               |    test_get_customer(e2e)           |
+|                FR5.4               |    test_list_customers(e2e)         |
+|                FR5.5               |   test_create_card(e2e)             |
+|                FR5.6               |  test_attach_card(e2e), test_attach_card_already_attached(e2e)     | 
+|                FR5.7               |  test_modify_points(e2e)            |
 |                FR6                 |                                     |
 |                FR6.1               | test_create_sale_route, test_create_sale_controller_ok,   test_create_sale_ok,test_create_return_transaction_success (e2e)                                   |
 |                FR6.2               |      test_create_sold_product_ok, test_create_sold_product_conflict, test_add_product_ok,test_add_product_invalid_input,test_add_product_invalid_status, test_add_product_not_found, test_product_added_route,test_attach_product_to_return_success (e2e)                               |
