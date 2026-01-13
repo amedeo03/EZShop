@@ -155,7 +155,6 @@ async def delete_sale(sale_id: int) -> None:
     - Status code: 204 sale deleted succesfully
     - Status code: 400 invalid ID or sale cannot be deleted
     - Status code: 401 unauthenticated
-    - Status code: 404 sale or product not found
     """
     await controller.delete_sale(
         sale_id,

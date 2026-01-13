@@ -85,8 +85,8 @@ class SalesController:
         validate_product_barcode(barcode)
         validate_field_is_positive(amount, "amount")
 
-        inventory_product: ProductTypeDTO = None
-        sold_product: SoldProductDTO = None
+        inventory_product: ProductTypeDTO = None  # type: ignore
+        sold_product: SoldProductDTO = None  # type: ignore
 
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status != "OPEN":
@@ -131,19 +131,18 @@ class SalesController:
     async def delete_sale(
         self, sale_id: int, sold_products_controller, products_controller
     ) -> None:
-        validate_field_is_positive(sale_id, "product_id")
-
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status == "PAID":
-            raise InvalidStateError("Selected sale status is 'PAID'")
+            raise InvalidStateError("Selected sale status is not 'PAID'")
 
         for sold_product in sale.lines:
+            # remove sold product
+            await sold_products_controller.remove_sold_product(sale.id, sold_product.id)
+            # restore inventory quantity
             await products_controller.update_product_quantity(
                 sold_product.quantity, sold_product.id
             )
-            await sold_products_controller.edit_sold_product_quantity(
-                sold_product.id, sale.id, -sold_product.quantity
-            )
+
         await self.repo.delete_sale(sale_id)
 
     async def remove_sold_product_quantity(
