@@ -85,30 +85,47 @@ class SalesController:
         validate_product_barcode(barcode)
         validate_field_is_positive(amount, "amount")
 
+        inventory_product: ProductTypeDTO = None
+        sold_product: SoldProductDTO = None
+
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
         if sale.status != "OPEN":
             raise InvalidStateError("Selected sale status is not 'OPEN'")
 
-        product: ProductTypeDTO = await products_controller.get_product_by_barcode(
-            barcode
+        inventory_product: ProductTypeDTO = (
+            await products_controller.get_product_by_barcode(barcode)
         )
 
-        if product.quantity - amount < 0:
+        if inventory_product.quantity - amount < 0:
             raise InsufficientStockError(
                 "Amount selected is greater than available stock"
             )
-
-        await products_controller.update_product_quantity(product.id, -amount)
-
-        if product.id == None:
+        if inventory_product.id == None:
             raise BadRequestError("Invalid product")
 
-        sold_product: SoldProductDTO = (
-            await sold_products_controller.create_sold_product(
-                product.id, sale_id, product.barcode, amount, product.price_per_unit
+        try:
+            sold_product: SoldProductDTO = (
+                await sold_products_controller.get_product_by_sale_barcode(
+                    sale_id, barcode
+                )
             )
-        )
+        except:
+            pass
 
+        if sold_product is not None:
+            await sold_products_controller.edit_sold_product_quantity(
+                sold_product.id, sold_product.product_barcode, amount
+            )
+        else:
+            await sold_products_controller.create_sold_product(
+                inventory_product.id,
+                sale_id,
+                inventory_product.barcode,
+                amount,
+                inventory_product.price_per_unit,
+            )
+
+        await products_controller.update_product_quantity(inventory_product.id, -amount)
         return BooleanResponseDTO(success=True)
 
     async def delete_sale(

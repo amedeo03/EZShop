@@ -195,7 +195,7 @@ async def remove_product_quantity(
     return await controller.remove_sold_product_quantity(
         sale_id,
         barcode,
-        -amount,
+        amount,
         sold_products_controller=sold_products_controller,
         products_controller=products_controller,
     )
