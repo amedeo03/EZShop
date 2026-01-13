@@ -120,6 +120,8 @@ class SoldProductsRepository:
                 sold_product.quantity += quantity  # type: ignore
                 await session.commit()
                 await session.refresh(sold_product)
+            if sold_product.quantity == 0:  # type: ignore
+                await self.remove_sold_product(sale_id, id)
 
         return BooleanResponseDTO(success=True)
 

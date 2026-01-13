@@ -116,17 +116,11 @@ class SoldProductsController:
         validate_field_is_positive(id, "product_id")
         validate_field_is_present(str(sale_id), "sale_id")
         validate_field_is_positive(sale_id, "sale_id")
-        validate_field_is_present(str(quantity), "sale_id")
+        validate_field_is_present(str(quantity), "quantity")
 
-        success: BooleanResponseDTO = await self.repo.edit_sold_product_quantity(
-            id, sale_id, quantity
-        )
+        await self.repo.edit_sold_product_quantity(id, sale_id, quantity)
 
-        return (
-            BooleanResponseDTO(success=True)
-            if BooleanResponseDTO(success=True)
-            else BooleanResponseDTO(success=False)
-        )
+        return BooleanResponseDTO(success=True)
 
     async def edit_sold_product_discount(
         self, id: int, sale_id: int, discount_rate: float
@@ -136,15 +130,9 @@ class SoldProductsController:
         validate_field_is_present(str(sale_id), "sale_id")
         validate_discount_rate(discount_rate)
 
-        success: BooleanResponseDTO = await self.repo.edit_sold_product_discount(
-            id, sale_id, discount_rate
-        )
+        await self.repo.edit_sold_product_discount(id, sale_id, discount_rate)
 
-        return (
-            BooleanResponseDTO(success=True)
-            if BooleanResponseDTO(success=True)
-            else BooleanResponseDTO(success=False)
-        )
+        return BooleanResponseDTO(success=True)
 
     async def remove_sold_product(self, sale_id: int, id: int) -> None:
         validate_field_is_present(str(id), "product_id")
