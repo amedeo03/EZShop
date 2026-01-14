@@ -97,8 +97,6 @@ class ProductsController:
         """
         products_daos = await self.repo.get_product_by_description(description)
 
-        if not products_daos:
-            raise NotFoundError("Products not found")
         return [productdao_to_product_type_dto(dao) for dao in products_daos]
 
     async def update_product_position(
