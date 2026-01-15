@@ -87,34 +87,28 @@ class SalesController:
 
         inventory_product: ProductTypeDTO = None  # type: ignore
         sold_product: SoldProductDTO = None  # type: ignore
-
         sale: SaleDTO = await self.get_sale_by_id(sale_id)
+
+        # sale checks
         if sale.status != "OPEN":
             raise InvalidStateError("Selected sale status is not 'OPEN'")
 
-        inventory_product: ProductTypeDTO = (
-            await products_controller.get_product_by_barcode(barcode)
-        )
+        inventory_product = await products_controller.get_product_by_barcode(barcode)
 
+        # inventory checks
         if inventory_product.quantity - amount < 0:
             raise InsufficientStockError(
                 "Amount selected is greater than available stock"
             )
-        if inventory_product.id == None:
-            raise BadRequestError("Invalid product")
 
-        try:
-            sold_product: SoldProductDTO = (
-                await sold_products_controller.get_product_by_sale_barcode(
-                    sale_id, barcode
-                )
-            )
-        except:
-            pass
-
+        for product in sale.lines:
+            if product.product_barcode == barcode:
+                sold_product = product
+                break
+        
         if sold_product is not None:
             await sold_products_controller.edit_sold_product_quantity(
-                sold_product.id, sold_product.product_barcode, amount
+                sold_product.id, sold_product.sale_id, amount
             )
         else:
             await sold_products_controller.create_sold_product(
