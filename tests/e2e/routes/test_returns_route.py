@@ -85,7 +85,7 @@ def generate_unique_position():
     aisle = chr(65 + (_barcode_counter // 81) % 26)  # A-Z (26 aisles)
     shelf = (_barcode_counter // 9) % 9 + 1  # 1-9
     bin_num = _barcode_counter % 9 + 1  # 1-9
-    return f"{aisle}-{shelf}-{bin_num}"
+    return f"{shelf}-{aisle}-{bin_num}"
 
 
 # Helper functions to create test data

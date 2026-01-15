@@ -14,7 +14,7 @@ TEST_PRODUCT_ON_DB = {
     "price_per_unit": 2.5,
     "quantity": 7,
     "note": "Last milk type",
-    "position": "A-1-G",
+    "position": "1-A-1",
 }
 
 

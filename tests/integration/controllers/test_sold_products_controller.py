@@ -415,7 +415,7 @@ async def test_remove_sold_product_ok(db_session):
         SECOND_PRODUCT_DAO.price_per_unit
     )
     
-    result=await controller.remove_sold_product(sale_id,id,barcode)
+    result=await controller.remove_sold_product(sale_id,id)
     assert result is None
 
 @pytest.mark.asyncio
@@ -430,22 +430,22 @@ async def test_remove_sold_product_invalid_input(db_session):
 
     id=-1
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(sale_id,id,barcode)
+        await controller.remove_sold_product(sale_id,id)
     assert exc_info.value.status==400
 
     id=1
     sale_id=-2
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
+        await controller.remove_sold_product(id,sale_id)
     assert exc_info.value.status==400
 
     sale_id=2
     barcode=""
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
+        await controller.remove_sold_product(id,sale_id)
     assert exc_info.value.status==400
 
     barcode="432"
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
+        await controller.remove_sold_product(id,sale_id)
     assert exc_info.value.status==400

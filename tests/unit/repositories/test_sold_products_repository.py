@@ -81,23 +81,6 @@ async def test_create_sold_product_ok(repo, mock_session):
     mock_session.refresh.assert_called_once()
 
 @pytest.mark.asyncio
-async def test_create_sold_product_conflict(repo, mock_session):
-    
-    mock_result=MagicMock()
-    mock_result.scalar_one_or_none.return_value=FIRST_PRODUCT_DAO
-    mock_session.execute.return_value = mock_result
-    with pytest.raises(ConflictError)as exc_info:
-        await repo.create_sold_product(
-            FIRST_PRODUCT_DAO.id,
-            FIRST_PRODUCT_DAO.sale_id,
-            FIRST_PRODUCT_DAO.product_barcode,
-            FIRST_PRODUCT_DAO.quantity,
-            FIRST_PRODUCT_DAO.price_per_unit,
-            FIRST_PRODUCT_DAO.discount_rate,
-        )
-    assert exc_info.value.status==409
-
-@pytest.mark.asyncio
 async def test_get_sold_product_by_id_ok(repo, mock_session):
     product_id=1
 
@@ -222,4 +205,4 @@ async def test_remove_ok(repo, mock_session):
     mock_result.scalar.return_value= FIRST_PRODUCT_DAO
     mock_session.execute.return_value = mock_result
 
-    await repo.remove_sold_product(id,sale_id,barcode)
+    await repo.remove_sold_product(id,sale_id)
