@@ -80,6 +80,58 @@ async def test_create_sold_product_ok(repo, mock_session):
     mock_session.commit.assert_called_once()
     mock_session.refresh.assert_called_once()
 
+@pytest.mark.parametrize("ret, code",
+                         [
+                            (FIRST_PRODUCT_DAO,0),
+                            (None,404)
+                         ]
+                         )
+@pytest.mark.asyncio
+async def test_get_sold_product(repo, mock_session,ret,code):
+    mock_result=MagicMock()
+    mock_result.scalar.return_value=ret
+    mock_session.execute.return_value=mock_result
+
+    if(code==0):
+        result=await repo.get_sold_product(1,2)
+        assert FIRST_PRODUCT_DAO.id==result.id
+        assert FIRST_PRODUCT_DAO.sale_id==result.sale_id
+        assert FIRST_PRODUCT_DAO.product_barcode==result.product_barcode
+        assert FIRST_PRODUCT_DAO.quantity==result.quantity
+        assert FIRST_PRODUCT_DAO.price_per_unit==result.price_per_unit
+        assert FIRST_PRODUCT_DAO.discount_rate==result.discount_rate
+    elif(code==404):
+        with pytest.raises(NotFoundError)as exc_info:
+            await repo.get_sold_product(0,0)
+        exc_info.value.status==404
+
+@pytest.mark.parametrize("ret, code",
+                         [
+                            (FIRST_PRODUCT_DAO,0),
+                            (None,404)
+                         ]
+                         )       
+@pytest.mark.asyncio
+async def test_get_sold_product_by_sale_barcode(repo,mock_session,ret,code):
+    mock_result=MagicMock()
+    mock_result.scalar.return_value=ret
+    mock_session.execute.return_value=mock_result
+
+    if(code==0):
+        result=await repo.get_sold_product_by_sale_barcode(ret.sale_id,ret.product_barcode)
+        assert FIRST_PRODUCT_DAO.id==result.id
+        assert FIRST_PRODUCT_DAO.sale_id==result.sale_id
+        assert FIRST_PRODUCT_DAO.product_barcode==result.product_barcode
+        assert FIRST_PRODUCT_DAO.quantity==result.quantity
+        assert FIRST_PRODUCT_DAO.price_per_unit==result.price_per_unit
+        assert FIRST_PRODUCT_DAO.discount_rate==result.discount_rate
+    elif(code==404):
+        with pytest.raises(NotFoundError)as exc_info:
+            await repo.get_sold_product_by_sale_barcode(0,FIRST_PRODUCT_DAO.product_barcode)
+        exc_info.value.status==404
+
+
+
 @pytest.mark.asyncio
 async def test_get_sold_product_by_id_ok(repo, mock_session):
     product_id=1
@@ -99,16 +151,6 @@ async def test_get_sold_product_by_id_ok(repo, mock_session):
     assert FIRST_PRODUCT_DAO.discount_rate==result.discount_rate
     mock_session.execute.assert_called_once()
 
-@pytest.mark.asyncio
-async def test_get_sold_product_by_id_not_found(repo, mock_session):
-    product_id=1
-
-    #mock_result.scalars.return_value.all.return_value = []
-    mock_session.execute.return_value = None
-
-    with pytest.raises(NotFoundError)as exc_info:
-        await repo.get_sold_product_by_id(product_id)
-    exc_info.value.status==404
 
 @pytest.mark.asyncio
 async def test_edit_quantity_ok(repo, mock_session):
