@@ -436,64 +436,64 @@ Partitioning
 |                FR1.4               |                                     |
 |                FR1.5               |                                     |
 |                FR3                 |                                     |
-|                FR3.1               |test_create_product,test_update_product_position, test_update_product_quantity, test_update_product, test_update_product_invalid_state, test_update_product_duplicates|                                 
-|                FR3.2               |       test_delete_product           |
+|                FR3.1               |test_create_product, test_update_product_position, test_update_product_quantity, test_update_product, test_update_product_invalid_state, test_update_product_duplicates|                                 
+|                FR3.2               |       test_delete_product, test_delete_product_invalid_state            |
 |                FR3.3               |        test_list_products           |
 |                FR3.4               |test_get_product, test_get_product_by_barcode, test_get_product_by_description   |
 |                FR4                 |                                     |
-|                FR4.1               |                                     |
-|                FR4.2               |                                     |
+|                FR4.1               |    test_update_product_quantity     |
+|                FR4.2               |    test_update_product_position     |
 |                FR4.3               |                                     |
-|                FR4.4               |      test_pay_order_for (e2e)       |
+|                FR4.4               |      test_pay_order_for       |
 |                FR4.5               |                                     |
-|                FR4.6               |      test_record_arrival (e2e)      |
-|                FR4.7               |       test_list_orders (e2e)        |
+|                FR4.6               |      test_record_arrival       |
+|                FR4.7               |       test_list_orders         |
 |                FR 5                |                                     |
-|                FR5.1               |    test_update_customer (e2e)       |
-|                FR5.2               |   test_delete_customer(e2e),test_delete_customer_with_card(e2e)         |
-|                FR5.3               |    test_get_customer(e2e)           |
-|                FR5.4               |    test_list_customers(e2e)         |
-|                FR5.5               |   test_create_card(e2e)             |
-|                FR5.6               |  test_attach_card(e2e), test_attach_card_already_attached(e2e)     | 
-|                FR5.7               |  test_modify_points(e2e)            |
+|                FR5.1               |    test_update_customer        |
+|                FR5.2               |   test_delete_customer,test_delete_customer_with_card         |
+|                FR5.3               |    test_get_customer           |
+|                FR5.4               |    test_list_customers         |
+|                FR5.5               |   test_create_card             |
+|                FR5.6               |  test_attach_card, test_attach_card_already_attached     | 
+|                FR5.7               |  test_modify_points            |
 |                FR6                 |                                     |
-|                FR6.1               | test_create_sale_route, test_create_sale_controller_ok,   test_create_sale_ok,test_create_return_transaction_success (e2e)                                   |
-|                FR6.2               |      test_create_sold_product_ok, test_create_sold_product_conflict, test_add_product_ok,test_add_product_invalid_input,test_add_product_invalid_status, test_add_product_not_found, test_product_added_route,test_attach_product_to_return_success (e2e)                               |
-|                FR6.3               |  test_remove_ok, test_remove_sold_product_ok, test_remove_sold_product_invalid_input, test_remove_product_route_ok,test_delete_product_from_return_success (e2e)                                    |
-|                FR6.4               | test_set_discount,  test_edit_sale_discount_controller_ok,test_edit_sale_discount_controller_invalid_input, test_edit_sale_discount_controller_not_found, test_edit_sale_discount_controller_invalid_status,test_edit_sale_ok,test_edit_sale_discount_invalid_status, test_edit_sale_discount_not_found, test_close_return_transaction_success (e2e)                                    |
-|                FR6.5               | test_set_discount_product_route, test_edit_product_discount_controllore_ok,test_edit_product_discount_controllore_invalid_input, test_edit_product_discount_controllore_invalid_status, test_edit_product_discount_controllore_not_found, test_edit_discount_ok,test_edit_discount_not_found,test_list_all_returns (e2e)                                   |
-|                FR6.6               | test_get_point_controller_ok, test_get_point_controller_invalid_input, test_get_point_controller_invalid_status, test_get_point_controller_not_found, test_point_route_ok,test_get_return_by_id (e2e)                                   |
-|                FR6.7               |   test_list_returns_for_sale_id_success (e2e)                                  |
-|                FR6.8               | test_get_sale_id_route_ok, test_get_sale_controller_ok,test_get_sale_controller_invalid_input,test_get_sale_controller_not_found, test_get_sale_by_id_ok, test_get_sale_by_id_not_found, test_delete_return_success (e2e)                                    |
-|                FR6.10              | test_edit_sale_status_pending, test_close_sale_controlle_ok,test_close_sale_controlle_not_found,test_close_sale_controlle_invalid_input,test_close_sale_controlle_invalid_status,test_close_sale_sale_route_ok,test_edit_sale_status_invalid_status,test_attach_product_to_return_success (e2e)                                     |
-|                FR6.11              | test_delete_sale_route, test_paid_sale_route, test_delete_sale_controller_ok,test_delete_sale_controller_invalid_input,test_delete_sale_controller_not_found, test_delete_sale_controller_invalid_status,test_delete_paid_controller_invalid_input,test_paid_sale_controller_not_found, test_paid_sale_controller_invalid_status, test_paid_sale_controller_ok, test_delete_sale_ok, test_delete_sale_not_found, test_edit_sale_status_paid, test_edit_sale_status_invalid_status, test_delete_product_from_return_success (e2e)                                 |
-|                FR6.12              |test_list_all_returns (e2e)                                      |
-|                FR6.13              |  test_close_return_transaction_success (e2e)   |
-|                FR6.14              |  test_delete_return_success (e2e)              |
-|                FR6.15              |  test_reimburse_return_transaction_success (e2e) |
+|                FR6.1               | test_create_sale_route, test_create_sale_controller_ok,   test_create_sale_ok,test_create_return_transaction_success                                    |
+|                FR6.2               |      test_create_sold_product_ok, test_create_sold_product_conflict, test_add_product_ok,test_add_product_invalid_input,test_add_product_invalid_status, test_add_product_not_found, test_product_added_route,test_attach_product_to_return_success                                |
+|                FR6.3               |  test_remove_ok, test_remove_sold_product_ok, test_remove_sold_product_invalid_input, test_remove_product_route_ok,test_delete_product_from_return_success                                     |
+|                FR6.4               | test_set_discount,  test_edit_sale_discount_controller_ok,test_edit_sale_discount_controller_invalid_input, test_edit_sale_discount_controller_not_found, test_edit_sale_discount_controller_invalid_status,test_edit_sale_ok,test_edit_sale_discount_invalid_status, test_edit_sale_discount_not_found, test_close_return_transaction_success                                     |
+|                FR6.5               | test_set_discount_product_route, test_edit_product_discount_controllore_ok,test_edit_product_discount_controllore_invalid_input, test_edit_product_discount_controllore_invalid_status, test_edit_product_discount_controllore_not_found, test_edit_discount_ok,test_edit_discount_not_found,test_list_all_returns                                    |
+|                FR6.6               | test_get_point_controller_ok, test_get_point_controller_invalid_input, test_get_point_controller_invalid_status, test_get_point_controller_not_found, test_point_route_ok,test_get_return_by_id                                    |
+|                FR6.7               |   test_list_returns_for_sale_id_success                                   |
+|                FR6.8               | test_get_sale_id_route_ok, test_get_sale_controller_ok,test_get_sale_controller_invalid_input,test_get_sale_controller_not_found, test_get_sale_by_id_ok, test_get_sale_by_id_not_found, test_delete_return_success                                     |
+|                FR6.10              | test_edit_sale_status_pending, test_close_sale_controlle_ok,test_close_sale_controlle_not_found,test_close_sale_controlle_invalid_input,test_close_sale_controlle_invalid_status,test_close_sale_sale_route_ok,test_edit_sale_status_invalid_status,test_attach_product_to_return_success                                      |
+|                FR6.11              | test_delete_sale_route, test_paid_sale_route, test_delete_sale_controller_ok,test_delete_sale_controller_invalid_input,test_delete_sale_controller_not_found, test_delete_sale_controller_invalid_status,test_delete_paid_controller_invalid_input,test_paid_sale_controller_not_found, test_paid_sale_controller_invalid_status, test_paid_sale_controller_ok, test_delete_sale_ok, test_delete_sale_not_found, test_edit_sale_status_paid, test_edit_sale_status_invalid_status, test_delete_product_from_return_success                                  |
+|                FR6.12              |test_list_all_returns                                       |
+|                FR6.13              |  test_close_return_transaction_success    |
+|                FR6.14              |  test_delete_return_success               |
+|                FR6.15              |  test_reimburse_return_transaction_success  |
 |                FR7                 |                                     |
-|                FR7.1               |  test_reimburse_return_transaction_success (e2e) |
-|                FR7.2               |  test_reimburse_return_transaction_success (e2e) |
-|                FR7.3               |  test_reimburse_return_transaction_success (e2e) |
-|                FR7.4               |  test_get_current_balance (e2e)                  |
+|                FR7.1               |  test_reimburse_return_transaction_success  |
+|                FR7.2               |  test_reimburse_return_transaction_success  |
+|                FR7.3               |  test_reimburse_return_transaction_success  |
+|                FR7.4               |  test_get_current_balance                   |
 |                FR8                 |                                     |
-|                FR8.1               |test_set_balance_authenticated (e2e) |
-|                FR8.2               |test_set_balance_authenticated (e2e) |
-|                FR8.3               |   test_get_current_balance (e2e)    |
-|                FR8.4               |test_set_balance_authenticated (e2e) |
+|                FR8.1               |test_set_balance_authenticated  |
+|                FR8.2               |test_set_balance_authenticated  |
+|                FR8.3               |   test_get_current_balance     |
+|                FR8.4               |test_set_balance_authenticated  |
 |             Scenario 1-1           |    test_create_product              |
 |             Scenario 1-2           |  test_update_product_position       |
 |             Scenario 1-3           |    test_update_product              |
 |             Scenario 2-1           |                                     |
 |             Scenario 2-2           |                                     |
 |             Scenario 2-3           |                                     |
-|             Scenario 3-1           |       test_issue_order (e2e)        |
-|             Scenario 3-2           |       test_pay_order (e2e)          |
-|             Scenario 3-3           |      test_record_arrival (e2e)      |
-|             Scenario 4-1           |      test_create_customer (e2e)     |
-|             Scenario 4-2           |test_create_card, test_attach_card (e2e)|
-|             Scenario 4-3           |      test_update_customer (e2e)     |
-|             Scenario 4-4           |      test_update_customer (e2e)     |
+|             Scenario 3-1           |       test_issue_order         |
+|             Scenario 3-2           |       test_pay_order           |
+|             Scenario 3-3           |      test_record_arrival       |
+|             Scenario 4-1           |      test_create_customer      |
+|             Scenario 4-2           |test_create_card, test_attach_card |
+|             Scenario 4-3           |      test_update_customer      |
+|             Scenario 4-4           |      test_update_customer      |
 |             Scenario 4-1           |                                     |
 |             Scenario 5-1           |                                     |
 |             Scenario 5-2           |                                     |
@@ -507,8 +507,8 @@ Partitioning
 |             Scenario 7-2           |                                      |
 |             Scenario 7-3           |                                      |
 |             Scenario 7-4           |                                      |
-|             Scenario 8-1           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
-|             Scenario 8-2           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_delete_product_from_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success (e2e) |
+|             Scenario 8-1           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success  |
+|             Scenario 8-2           | test_create_return_transaction_authentication, test_create_return_transaction_success, test_attach_product_to_return_success, test_delete_product_from_return_success, test_close_return_transaction_success, test_reimburse_return_transaction_success  |
 |             Scenario 9-1           |                                      |
 |             Scenario 10-1          |                                      |
 |             Scenario 10-2          |                                      |
