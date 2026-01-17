@@ -40,3 +40,10 @@ productivity = ((LOC of production code)+ (LOC of test code)) / effort
 
 
 Report, as estimate of effort, the value obtained via activity decomposition technique.  The comparison is meaningful for productivity, since the stimates for size and effort were not based on the Official requirements.
+
+| Activity name                                 | Effort (person hours)           | Productivity  |
+| --------------------------------------------- | ------------------------------- | ------------- |
+| Requirement analysis and definition           | 71.5                            |      n/a      |
+| Backend Development                           | 154                             | 22 loc / hour |
+| Testing                                       | 174                             | 75 loc / hour |
+| Total                                         | 399.5                           | 39 loc / hour |
