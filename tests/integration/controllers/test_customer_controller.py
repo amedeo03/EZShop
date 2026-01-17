@@ -22,8 +22,6 @@ from app.models.errors.balance_error import BalanceError
 from app.models.errors.notfound_error import NotFoundError
 from app.repositories.orders_repository import OrdersRepository
 
-# suppress SQLAlchemy 'fully NULL primary key identity' warnings for these e2e tests
-pytestmark = pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 

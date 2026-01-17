@@ -5,8 +5,6 @@ Follows the pattern in tests/acceptance/user_test.py: uses TestClient and authen
 
 import asyncio
 import pytest
-# suppress SQLAlchemy 'fully NULL primary key identity' warnings for these e2e tests
-pytestmark = pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
 from fastapi.testclient import TestClient
 
 from main import app
