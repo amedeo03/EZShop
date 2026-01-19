@@ -33,10 +33,10 @@ productivity = ((LOC of production code)+ (LOC of test code)) / effort
 |                                        | Estimated (end of task 1)               | Actual (jan 18, end of task 3)|
 | ---------------------------------------|---------------------------------------- | ------------------------------|
 | production code size                   | 6050                                    |              3381             |
-| test code size                         | n/a                                     |             13054             |
-| total size                             | 6050                                    |             16435             |
+| test code size                         | n/a                                     |              8861             |
+| total size                             | 6050                                    |             12242             |
 | effort                                 | 605                                     |               422             |
-| productivity                           | 10 loc / hour                           |          39 loc / hour        |
+| productivity                           | 10 loc / hour                           |          29 loc / hour        |
 
 
 Report, as estimate of effort, the value obtained via activity decomposition technique.  The comparison is meaningful for productivity, since the stimates for size and effort were not based on the Official requirements.
@@ -45,5 +45,5 @@ Report, as estimate of effort, the value obtained via activity decomposition tec
 | --------------------------------------------- | ------------------------------- | ------------- |
 | Requirement analysis and definition           | 71.5                            |      n/a      |
 | Backend Development                           | 154                             | 22 loc / hour |
-| Testing                                       | 174                             | 75 loc / hour |
-| Total                                         | 399.5                           | 39 loc / hour |
+| Testing                                       | 174                             | 51 loc / hour |
+| Total                                         | 399.5                           | 29 loc / hour |

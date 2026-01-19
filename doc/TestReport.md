@@ -516,95 +516,59 @@ Partitioning
 
 ## Coverage white box
 
+Note: this test session only executed tests written by the student group and not evaluation tests provided by the teacher. As such, coverage for classes not under our tasks is remarkably low (i.e. authentication and user management)
+
 ![test coverage](media/test-coverage.jpg)
 
 Detailed test execution is the following:
 
-- platform linux -- Python 3.13.11, pytest-9.0.2, pluggy-1.6.0
-- rootdir: /home/User/ezshop
+- platform linux -- Python 3.14.2, pytest-9.0.2, pluggy-1.6.0
+- rootdir: /home/user/ezshop
 - configfile: pytest.ini
-- plugins: cov-7.0.0, anyio-4.12.0, asyncio-1.3.0
+- plugins: cov-7.0.0, anyio-4.12.1, asyncio-1.3.0
 - asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-- collected 656 items
+- collected 646 items
 
-|Name                                                    |Stmts  | Miss | Cover |
-| :----------------------------------------------------: | :----:| :--: | :---: |
-|app/config/config.py                                    |   24  |    2 |  92%  |
-|app/controllers/accounting_controller.py                |   15  |    0 | 100%  |
-|app/controllers/auth_controller.py                      |   18  |    3 |  83%  |
-|app/controllers/customer_controller.py                  |   69  |    2 |  97%  |
-|app/controllers/orders_controller.py                    |   45  |    0 | 100%  |
-|app/controllers/products_controller.py                  |  103  |    0 | 100%  |
-|app/controllers/return_controller.py                    |  109  |    6 |  94%  |
-|app/controllers/returned_product_controller.py          |   40  |    2 |  95%  |
-|app/controllers/sales_controller.py                     |  147  |    5 |  97%  |
-|app/controllers/sold_products_controller.py             |   47  |    0 | 100%  |
-|app/controllers/user_controller.py                      |   21  |    1 |  95%  |
-|app/controllers_instances.py                            |   16  |    0 | 100%  |
-|app/database/database.py                                |   25  |    2 |  92%  |
-|app/middleware/auth_middleware.py                       |   11  |    0 | 100%  |
-|app/middleware/error_middleware.py                      |    7  |    0 | 100%  |
-|app/models/DAO/__init__.py                              |    0  |    0 | 100%  |
-|app/models/DAO/accounting_dao.py                        |    6  |    0 | 100%  |
-|app/models/DAO/card_dao.py                              |    8  |    0 | 100%  |
-|app/models/DAO/customer_dao.py                          |    9  |    0 | 100%  |
-|app/models/DAO/order_dao.py                             |   10  |    0 | 100%  |
-|app/models/DAO/product_dao.py                           |   11  |    0 | 100%  |
-|app/models/DAO/return_transaction_dao.py                |   12  |    0 | 100%  |
-|app/models/DAO/returned_product_dao.py                  |   11  |    0 | 100%  |
-|app/models/DAO/sale_dao.py                              |   12  |    0 | 100%  |
-|app/models/DAO/sold_product_dao.py                      |   12  |    0 | 100%  |
-|app/models/DAO/system_dao.py                            |    6  |    0 | 100%  |
-|app/models/DAO/user_dao.py                              |    9  |    0 | 100%  |
-|app/models/DTO/boolean_response_dto.py                  |    3  |    0 | 100%  |
-|app/models/DTO/card_dto.py                              |   14  |    0 | 100%  |
-|app/models/DTO/change_response_dto.py                   |    3  |    0 | 100%  |
-|app/models/DTO/customer_dto.py                          |   19  |    0 | 100%  |
-|app/models/DTO/error_dto.py                             |    9  |    0 | 100%  |
-|app/models/DTO/order_dto.py                             |   10  |    0 | 100%  |
-|app/models/DTO/points_response_dto.py                   |    3  |    0 | 100%  |
-|app/models/DTO/product_dto.py                           |   26  |    0 | 100%  |
-|app/models/DTO/return_transaction_dto.py                |   13  |    0 | 100%  |
-|app/models/DTO/returned_product_dto.py                  |    9  |    0 | 100%  |
-|app/models/DTO/sale_dto.py                              |   12  |    0 | 100%  |
-|app/models/DTO/sold_product_dto.py                      |    9  |    0 | 100%  |
-|app/models/DTO/token_dto.py                             |    3  |    0 | 100%  |
-|app/models/DTO/user_dto.py                              |   20  |    0 | 100%  |
-|app/models/errors/app_error.py                          |    5  |    0 | 100%  |
-|app/models/errors/bad_request.py                        |    5  |    0 | 100%  |
-|app/models/errors/balance_error.py                      |    6  |    0 | 100%  |
-|app/models/errors/conflict_error.py                     |    5  |    0 | 100%  |
-|app/models/errors/customer_card_error.py                |    5  |    0 | 100%  |
-|app/models/errors/insufficient_quantity_sold_error.py   |    5  |    2 |  60%  |
-|app/models/errors/insufficient_stock_error.py           |    5  |    0 | 100%  |
-|app/models/errors/invalid_state_error.py                |    5  |    0 | 100%  |
-|app/models/errors/notfound_error.py                     |    5  |    0 | 100%  |
-|app/models/errors/unauthorized_error.py                 |    5  |    0 | 100%  |
-|app/models/return_status_type.py                        |    5  |    0 | 100%  |
-|app/models/user_type.py                                 |    5  |    0 | 100%  |
-|app/repositories/accounting_repository.py               |   35  |    0 | 100%  |
-|app/repositories/customer_repository.py                 |  134  |    6 |  96%  |
-|app/repositories/orders_repository.py                   |   93  |    0 | 100%  |
-|app/repositories/products_repository.py                 |   95  |    0 | 100%  |
-|app/repositories/return_repository.py                   |   85  |   16 |  81%  |
-|app/repositories/returned_products_repository.py        |   56  |    0 | 100%  |
-|app/repositories/sales_repository.py                    |   72  |    1 |  99%  |
-|app/repositories/sold_products_repository.py            |   60  |    0 | 100%  |
-|app/repositories/user_repository.py                     |   56  |   18 |  68%  |
-|app/routes/accounting_route.py                          |   18  |    0 | 100%  |
-|app/routes/auth_route.py                                |   10  |    0 | 100%  |
-|app/routes/customer_route.py                            |   41  |    0 | 100%  |
-|app/routes/orders_route.py                              |   25  |    0 | 100%  |
-|app/routes/products_route.py                            |   38  |    0 | 100%  |
-|app/routes/returns_route.py                             |   38  |    0 | 100%  |
-|app/routes/sales_route.py                               |   45  |    0 | 100%  |
-|app/routes/user_route.py                                |   40  |    8 |  80%  |
-|app/services/auth_service.py                            |   36  |    6 |  83%  |
-|app/services/error_service.py                           |   10  |    0 | 100%  |
-|app/services/gtin_service.py                            |   16  |    0 | 100%  |
-|app/services/input_validator_service.py                 |   37  |    3 |  92%  |
-|app/services/mapper_service.py                          |   41  |    0 | 100%  |
-|app/utils.py                                            |   17  |    1 |  94%  |
-|TOTAL                                                   | 2115  |   84 |   96% |
+|Name                                                     |Stmts  | Miss  | Cover|
+|---------------------------------------------------------|-------|-------|------|
+| app/config/config.py                                    |   24  |    2  |  92% |
+| app/controllers/accounting_controller.py                |   15  |    0  | 100% |
+| app/controllers/auth_controller.py                      |   18  |    3  |  83% |
+| app/controllers/customer_controller.py                  |   71  |    1  |  99% |
+| app/controllers/orders_controller.py                    |   45  |    0  | 100% |
+| app/controllers/products_controller.py                  |  101  |    0  | 100% |
+| app/controllers/return_controller.py                    |  109  |    5  |  95% |
+| app/controllers/returned_product_controller.py          |   40  |    2  |  95% |
+| app/controllers/sales_controller.py                     |  158  |    2  |  99% |
+| app/controllers/sold_products_controller.py             |   54  |    1  |  98% |
+| app/controllers/user_controller.py                      |   21  |    9  |  57% |
+| app/controllers_instances.py                            |   16  |    0  | 100% |
+| app/database/database.py                                |   25  |    2  |  92% |
+| app/middleware/auth_middleware.py                       |   11  |    0  | 100% |
+| app/middleware/error_middleware.py                      |    7  |    0  | 100% |
+| app/repositories/accounting_repository.py               |   35  |    0  | 100% |
+| app/repositories/customer_repository.py                 |  132  |    1  |  99% |
+| app/repositories/orders_repository.py                   |   93  |    0  | 100% |
+| app/repositories/products_repository.py                 |   95  |    0  | 100% |
+| app/repositories/return_repository.py                   |   85  |    7  |  92% |
+| app/repositories/returned_products_repository.py        |   56  |    0  | 100% |
+| app/repositories/sales_repository.py                    |   72  |    1  |  99% |
+| app/repositories/sold_products_repository.py            |   70  |    0  | 100% |
+| app/repositories/user_repository.py                     |   56  |   25  |  55% |
+| app/routes/accounting_route.py                          |   18  |    0  | 100% |
+| app/routes/auth_route.py                                |   10  |    0  | 100% |
+| app/routes/customer_route.py                            |   41  |    0  | 100% |
+| app/routes/orders_route.py                              |   25  |    0  | 100% |
+| app/routes/products_route.py                            |   38  |    0  | 100% |
+| app/routes/returns_route.py                             |   39  |    0  | 100% |
+| app/routes/sales_route.py                               |   45  |    0  | 100% |
+| app/routes/user_route.py                                |   40  |   18  |  55% |
+| app/services/auth_service.py                            |   36  |    6  |  83% |
+| app/services/error_service.py                           |   10  |    0  | 100% |
+| app/services/gtin_service.py                            |   16  |    0  | 100% |
+| app/services/input_validator_service.py                 |   37  |    3  |  92% |
+| app/services/mapper_service.py                          |   41  |    1  |  98% |
+| app/utils.py                                            |   17  |    1  |  94% |           
+| TOTAL                                                   |  2114 |   92  |  96% |
 
-=== 656 passed in 10.00s ===
+=== 646 passed in 6.45s ===
