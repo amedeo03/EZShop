@@ -36,10 +36,9 @@ class CustomerRepository:
                 if result_conflict is None:
                     customer = CustomerDAO(name=name, cardId=cardId)
                     card=  await session.get(CardDAO, cardId)
-                    if(card.points!=points):
-                        card.points= points
                 else:
-                    customer = CustomerDAO(name=name, cardId=None)
+                    raise BadRequestError("Card associated with another customer")
+                    #customer = CustomerDAO(name=name, cardId=None)
             session.add(customer)
             await session.commit()
             await session.refresh(customer,attribute_names=["card"])

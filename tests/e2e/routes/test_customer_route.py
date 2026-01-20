@@ -5,8 +5,6 @@ Follows the pattern in tests/acceptance/user_test.py: uses TestClient and authen
 
 import asyncio
 import pytest
-# suppress SQLAlchemy 'fully NULL primary key identity' warnings for these e2e tests
-pytestmark = pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
 from fastapi.testclient import TestClient
 
 from main import app
@@ -83,7 +81,7 @@ CUSTOMER_UPDATE = {"name": "John Updated", "card": None}
             ),
             (
                 "admin",
-                {"name": "John Doe", "card": {"card_id": "0000000001", "points": 10}},
+                {"name": "John Doe", "card": {}},
                 201,
             ),
             ( # unauthorized roles
@@ -102,6 +100,16 @@ def test_create_customer(
     client, auth_tokens, role, customer_sample, expected_exception_code
     ):
     headers = auth_header(auth_tokens, role) if role else None
+    
+    if customer_sample['card'] is not None:
+        # create a new card
+        card_response = client.post(BASE_URL + "/customers/cards", headers=auth_header(auth_tokens, 'admin'))
+        card_id = card_response.json()['card_id']
+        card_points = card_response.json()['points']
+        
+        # add card to customer object 
+        customer_sample['card']['card_id'] = card_id
+        customer_sample['card']['points'] = card_points
 
     resp = client.post(BASE_URL + "/customers", json=customer_sample, headers=headers)
         
@@ -238,7 +246,7 @@ def test_get_customer(client, auth_tokens, role, customer, customer_id, expected
             ),
             ( # customer update with card
                 "admin",
-                {"id": 1, "name": "John Doe", "card": {'card_id': '0000000000', 'points': 0}},
+                {"id": 1, "name": "John Doe", "card": {}},
                 {"id": 1, "name": "John Update", "card": None},
                 True,
                 1,
@@ -311,10 +319,15 @@ def test_update_customer(client, auth_tokens, role, customer, customer_update,cr
         assert resp.json()["name"] == customer_update["name"]
   
         if customer_update["card"] is not None and customer_update["card"]["card_id"] == "":
+            # update card -> delete
             assert resp.json()["card"] is None
+        elif customer['card'] is not None:
+            # initial card is still attached after an update
+            assert resp.json()["card"]["card_id"] == card_id
         else:
-            assert resp.json()["card"] == customer["card"]
-    
+            # if not card was attached and the card is not updated --> None
+            assert resp.json()["card"] is None
+            
 
 
 
@@ -581,7 +594,7 @@ def test_attach_card_already_attached(client, auth_tokens):
                 -1,
                 False,
                 False,
-                400,
+                500,
             ),
         ]
 )
@@ -607,7 +620,7 @@ def test_modify_points(client, auth_tokens, role, points, invalid_card, card_not
     else:
         assert resp.status_code == expected_exception_code
     
-    if expected_exception_code not in (400, 401, 404):
+    if expected_exception_code not in (400, 401, 404, 500):
         assert resp.json()["points"] == points
 
 

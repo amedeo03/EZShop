@@ -284,13 +284,17 @@ async def test_delete_sale_controller_ok(db_session):
     sold_products_controller.edit_sold_product_quantity=products_controller.update_product_quantity=AsyncMock(
         return_value=BOOLEAN_RESPONSE_TRUE_DTO
     )
-
+    sold_products_controller.remove_sold_product=AsyncMock(return_value=None)
+    products_controller.update_product_quantity=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
     await db_session.commit()
     id=3
     result=await controller.delete_sale(id,
                 sold_products_controller,products_controller)
     assert result is None
     id=1
+    result=await controller.delete_sale(id,sold_products_controller=sold_products_controller,products_controller=products_controller)
+    assert result is None 
+    id=2
     result=await controller.delete_sale(id,sold_products_controller=sold_products_controller,products_controller=products_controller)
     assert result is None 
 
@@ -369,6 +373,83 @@ async def test_delete_sale_controller_invalid_status(db_session):
     )
     assert db_check.scalar_one_or_none() is not None
 
+@pytest.mark.parametrize(
+        "productSaleId, barcode, amount, productReturn,code",
+        [
+            (1,FIRST_PRODUCT_DAO.product_barcode,1,FIRST_PRODUCT_DTO,0),
+            (-1,FIRST_PRODUCT_DAO.product_barcode,1,FIRST_PRODUCT_DTO,400),
+            (1,"",1,FIRST_PRODUCT_DTO,400),
+            (1,"000",1,FIRST_PRODUCT_DTO,400),
+            (1,FIRST_PRODUCT_DAO.product_barcode,-1,FIRST_PRODUCT_DTO,400),
+            (1,FIRST_PRODUCT_DAO.product_barcode,-1,FIRST_PRODUCT_DTO,400),
+            (1,FIRST_PRODUCT_DAO.product_barcode,100000,FIRST_PRODUCT_DTO,400),
+            (1,SECOND_PRODUCT_DAO.product_barcode,1,None,404)
+        ]
+)
+@pytest.mark.asyncio
+async def test_remove_sold_product_quantity(db_session,productSaleId, barcode, amount, productReturn,code):
+    repo = SalesRepository(session=db_session)
+    controller = SalesController()
+    controller.repo = repo
+    sold= SoldProductsController()
+    srepo = SoldProductsRepository(session=db_session)
+    sold.repo=srepo
+    id=1
+    await controller.create_sale()
+    await sold.create_sold_product(
+        FIRST_PRODUCT_DAO.id,
+        id,
+        FIRST_PRODUCT_DAO.product_barcode,
+        FIRST_PRODUCT_DAO.quantity,
+        FIRST_PRODUCT_DAO.price_per_unit
+    )
+
+    products_controller.get_product_by_barcode=AsyncMock(return_value=productReturn)
+    sold_products_controller.edit_sold_product_quantity=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
+    products_controller.update_product_quantity=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
+
+    if(code==0):   
+        result=await controller.remove_sold_product_quantity(
+            sale_id=productSaleId,
+            barcode=barcode,
+            amount=amount,
+            sold_products_controller=sold_products_controller,
+            products_controller=products_controller
+            )
+        assert result.success
+    elif(code==400):
+        if(amount>50):
+            with pytest.raises(InsufficientStockError) as exc_info:
+                await controller.remove_sold_product_quantity(
+                sale_id=productSaleId,
+                barcode=barcode,
+                amount=amount,
+                sold_products_controller=sold_products_controller,
+                products_controller=products_controller
+                )
+        else:
+            with pytest.raises(BadRequestError) as exc_info:
+                await controller.remove_sold_product_quantity(
+                sale_id=productSaleId,
+                barcode=barcode,
+                amount=amount,
+                sold_products_controller=sold_products_controller,
+                products_controller=products_controller
+                ) 
+        assert exc_info.value.status==400
+    elif(code==404):
+        with pytest.raises(NotFoundError) as exc_info:
+                await controller.remove_sold_product_quantity(
+                sale_id=productSaleId,
+                barcode=barcode,
+                amount=amount,
+                sold_products_controller=sold_products_controller,
+                products_controller=products_controller
+                ) 
+        assert exc_info.value.status==404
+
+
+    
 
 @pytest.mark.asyncio
 async def test_add_product_ok(db_session):
@@ -384,7 +465,29 @@ async def test_add_product_ok(db_session):
     products_controller.update_product_quantity=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
     products_controller.get_product_by_barcode=AsyncMock(return_value=FIRST_PRODUCT_TYPE_DTO)
     sold_products_controller.create_sold_product=AsyncMock(return_value=FIRST_PRODUCT_DTO)
+    sold_products_controller.edit_sold_product_quantity=AsyncMock(return_value=BOOLEAN_RESPONSE_TRUE_DTO)
+    
+    sold= SoldProductsController()
+    srepo = SoldProductsRepository(session=db_session)
+    sold.repo=srepo
+    id=2
     await controller.create_sale()
+    await controller.create_sale()
+    await sold.create_sold_product(
+        THIRD_PRODUCT_DAO.id,
+        id,
+        THIRD_PRODUCT_DAO.product_barcode,
+        THIRD_PRODUCT_DAO.quantity,
+        THIRD_PRODUCT_DAO.price_per_unit
+    )
+
+    result=await controller.attach_product(sale_id,barcode,amount, products_controller,
+        sold_products_controller)
+    assert result.success
+
+    sale_id=2
+    barcode="4006381333931"
+    amount=1
 
     result=await controller.attach_product(sale_id,barcode,amount, products_controller,
         sold_products_controller)

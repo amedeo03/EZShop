@@ -12,6 +12,7 @@ from app.controllers_instances import (
 )
 from app.middleware.auth_middleware import authenticate_user
 from app.models.DTO.boolean_response_dto import BooleanResponseDTO
+from app.models.DTO.refund_response_dto import RefundResponseDTO
 from app.models.DTO.return_transaction_dto import ReturnTransactionDTO
 from app.models.user_type import UserType
 
@@ -270,13 +271,13 @@ async def close_return_transaction(return_id: int) -> BooleanResponseDTO:
 
 @router.patch(
     "/{return_id}/reimburse",
-    response_model=BooleanResponseDTO,
+    response_model=RefundResponseDTO,
     status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(authenticate_user([UserType.Administrator, UserType.ShopManager]))
     ],
 )
-async def reimburse_return_transaction(return_id: int) -> BooleanResponseDTO:
+async def reimburse_return_transaction(return_id: int) -> RefundResponseDTO:
     """
     Turn a CLOSED return transaction to REIMBURSED.
 

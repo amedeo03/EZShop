@@ -76,10 +76,10 @@ class TestReturnRepository:
         mock_result.scalars.return_value = []
 
         # Act & Assert
-        with pytest.raises(NotFoundError) as exc_info:
-            await repo.list_returns()
+        
+        result = await repo.list_returns()
 
-        assert "no return present" in str(exc_info.value).lower()
+        assert len(result) == 0
 
     async def test_get_return_by_id_success(self, repo, mock_session):
         """Test getting a return by valid ID"""

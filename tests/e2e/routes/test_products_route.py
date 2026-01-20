@@ -60,7 +60,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 201,
             ),
@@ -72,7 +72,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 400,
             ),
@@ -84,7 +84,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 400,
             ),
@@ -107,7 +107,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 403,
             ),
@@ -119,7 +119,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 401,
             ),
@@ -181,7 +181,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(
@@ -222,7 +222,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(
@@ -245,7 +245,6 @@ class TestProductsRouter:
         "input_description, role, expected_exception_code",
         [
             ("Test", "admin", 200),  # success
-            ("tseT", "admin", 404),  # no product found
             ("Test", "cashier", 403),  # insufficient rights
             ("Test", None, 401),  # unauthenticated
         ],
@@ -261,7 +260,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(
@@ -302,7 +301,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(
@@ -333,7 +332,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "updated note",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 201,
             ),
@@ -346,7 +345,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 400,
             ),
@@ -359,7 +358,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 400,
             ),
@@ -372,7 +371,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": -3,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 400,
             ),
@@ -385,7 +384,7 @@ class TestProductsRouter:
                     "price_per_unit": -9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 400,
             ),
@@ -398,7 +397,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 404,
             ),
@@ -411,7 +410,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "updated note",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 403,
             ),
@@ -424,7 +423,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "updated note",
                     "quantity": 10,
-                    "position": "B-1-1",
+                    "position": "1-B-1",
                 },
                 401,
             ),
@@ -446,7 +445,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(  # create product to update
@@ -477,7 +476,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "A-1-1",
+                    "position": "1-A-1",
                 },
                 409,
             ),
@@ -489,7 +488,7 @@ class TestProductsRouter:
                     "price_per_unit": 9.99,
                     "note": "",
                     "quantity": 10,
-                    "position": "C-1-1",
+                    "position": "1-C-1",
                 },
                 409,
             ),
@@ -505,7 +504,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "B-1-1",
+            "position": "1-B-1",
         }
 
         product2 = {
@@ -514,7 +513,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "C-1-1",
+            "position": "1-C-1",
         }
 
         resp = client.post(  # create product to update
@@ -549,7 +548,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "D-3-1",
+            "position": "3-D-1",
         }
 
         update = {
@@ -616,15 +615,15 @@ class TestProductsRouter:
     @pytest.mark.parametrize(
         "input_id, role, new_position, expected_exception_code",
         [
-            (1, "admin", "Z-1-1", 201),  # success
+            (1, "admin", "1-Z-1", 201),  # success
             (1, "admin", "", 201),  # success
-            (-1, "admin", "B-1-1", 400),  # invalid id
-            (12345, "admin", "B-1-1", 404),  # no product found
-            ("abc", "admin", "B-1-1", 400),  # invalid id
+            (-1, "admin", "1-B-1", 400),  # invalid id
+            (12345, "admin", "1-B-1", 404),  # no product found
+            ("abc", "admin", "1-B-1", 400),  # invalid id
             (1, "admin", "B-1", 400),  # invalid position string
-            (1, "admin", "C-1-1", 409),  # position conflict
-            (1, "cashier", "Z-1-1", 403),  # insufficient rights
-            (1, None, "Z-1-1", 401),  # unauthenticated
+            (1, "admin", "1-C-1", 409),  # position conflict
+            (1, "cashier", "1-Z-1", 403),  # insufficient rights
+            (1, None, "1-Z-1", 401),  # unauthenticated
         ],
     )
     def test_update_product_position(
@@ -637,7 +636,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         product2 = {
@@ -646,7 +645,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "C-1-1",
+            "position": "1-C-1",
         }
 
         client.post(  # create product to update
@@ -699,7 +698,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 100,
-            "position": "A-1-1",
+            "position": "1-A-1",
         }
 
         client.post(  # create product to update
@@ -731,7 +730,7 @@ class TestProductsRouter:
             "price_per_unit": 9.99,
             "note": "",
             "quantity": 10,
-            "position": "D-3-1",
+            "position": "3-D-1",
         }
 
         client.post(  # create product to update

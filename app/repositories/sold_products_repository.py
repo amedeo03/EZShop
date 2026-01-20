@@ -31,24 +31,8 @@ class SoldProductsRepository:
     ) -> SoldProductDAO:
         """
         Create sold product.
-        - Throws:
-            - ConflictError if an existing product with the same id/barcode is already associated to the same sale
         """
         async with await self._get_session() as session:
-            result = await session.execute(
-                select(SoldProductDAO).filter(
-                    (SoldProductDAO.product_barcode == product_barcode)
-                    & (SoldProductDAO.sale_id == sale_id)
-                )
-            )
-
-            existing_product = result.scalar_one_or_none()
-
-            if existing_product is not None:
-                raise ConflictError(
-                    "Product with id '{id}' already exists in sale '{sale_id}'"
-                )
-
             sold_product = SoldProductDAO(
                 id=id,
                 sale_id=sale_id,
@@ -61,7 +45,44 @@ class SoldProductsRepository:
             session.add(sold_product)
             await session.commit()
             await session.refresh(sold_product)
+
             return sold_product
+
+    async def get_sold_product(self, product_id: int, sale_id: int) -> SoldProductDAO:
+        """
+        Get product by id and sale id or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(SoldProductDAO).filter(
+                    (SoldProductDAO.id == product_id)
+                    & (SoldProductDAO.sale_id == sale_id)
+                )
+            )
+            products = result.scalar()
+            if products is None:
+                raise NotFoundError("No products with id '{product_id}' sold")
+            else:
+                return products
+
+    async def get_sold_product_by_sale_barcode(
+        self, sale_id: int, barcode: str
+    ) -> SoldProductDAO:
+        """
+        Get product by barcode and sale id or throw NotFoundError if not found
+        """
+        async with await self._get_session() as session:
+            result = await session.execute(
+                select(SoldProductDAO).filter(
+                    (SoldProductDAO.product_barcode == barcode)
+                    & (SoldProductDAO.sale_id == sale_id)
+                )
+            )
+            products = result.scalar()
+            if products is None:
+                raise NotFoundError("No products with id '{product_id}' sold")
+            else:
+                return products
 
     async def get_sold_product_by_id(self, product_id: int) -> list[SoldProductDAO]:
         """
@@ -71,9 +92,6 @@ class SoldProductsRepository:
             result = await session.execute(
                 select(SoldProductDAO).filter(SoldProductDAO.id == product_id)
             )
-            if result is None:
-                raise NotFoundError("No products with id '{product_id}' sold")
-            # products = result.scalar()
             products = list(result.scalars().all())
             return products
 
@@ -102,6 +120,8 @@ class SoldProductsRepository:
                 sold_product.quantity += quantity  # type: ignore
                 await session.commit()
                 await session.refresh(sold_product)
+            if sold_product.quantity == 0:  # type: ignore
+                await self.remove_sold_product(sale_id, id)
 
         return BooleanResponseDTO(success=True)
 
@@ -129,13 +149,12 @@ class SoldProductsRepository:
 
         return BooleanResponseDTO(success=True)
 
-    async def remove_sold_product(self,sale_id:int,id:int,barcode:str):
+    async def remove_sold_product(self, sale_id: int, id: int):
         async with await self._get_session() as session:
-            res=await session.execute(
-                    select(SoldProductDAO).filter(
-                        (SoldProductDAO.id == id) & (SoldProductDAO.sale_id == sale_id)
-                        & (SoldProductDAO.product_barcode==barcode)
-                    )
+            res = await session.execute(
+                select(SoldProductDAO).filter(
+                    (SoldProductDAO.id == id) & (SoldProductDAO.sale_id == sale_id)
                 )
+            )
             await session.delete(res.scalar())
             await session.commit()

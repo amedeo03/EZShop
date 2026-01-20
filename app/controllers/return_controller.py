@@ -6,6 +6,7 @@ from app.models.DTO.boolean_response_dto import BooleanResponseDTO
 from app.models.DTO.product_dto import ProductTypeDTO
 from app.models.DTO.return_transaction_dto import ReturnTransactionDTO
 from app.models.DTO.returned_product_dto import ReturnedProductDTO
+from app.models.DTO.refund_response_dto import RefundResponseDTO
 from app.models.DTO.sale_dto import SaleDTO
 from app.models.errors.bad_request import BadRequestError
 from app.models.errors.insufficient_quantity_sold_error import (
@@ -60,9 +61,6 @@ class ReturnController:
             await self.repo.list_returns()
         )
         return_transactions_dto: List[ReturnTransactionDTO] = list()
-
-        if not return_transactions_dao:
-            raise NotFoundError("Return Transaction not found")
 
         for return_transaction_dao in return_transactions_dao:
             return_transactions_dto.append(
@@ -269,18 +267,20 @@ class ReturnController:
             return_id
         )
 
-        """
-        update balance:
-        decrease balance by the total amount of the return transaction
-        """
+        if response.success:
+    
+            """
+            update balance:
+            decrease balance by the total amount of the return transaction
+            """
 
-        current_balance = await accounting_controller.get_balance()
-        if current_balance is None:
-            raise BadRequestError("Invalid balance")
-        total_return_amount = sum(
-            line.price_per_unit * line.quantity for line in return_transaction.lines
-        )
-        new_balance = current_balance - total_return_amount
-        await accounting_controller.set_balance(new_balance)
+            current_balance = await accounting_controller.get_balance()
+            if current_balance is None:
+                raise BadRequestError("Invalid balance")
+            total_return_amount = sum(
+                line.price_per_unit * line.quantity for line in return_transaction.lines
+            )
+            new_balance = current_balance - total_return_amount
+            await accounting_controller.set_balance(new_balance)
 
-        return response
+        return RefundResponseDTO(refund_amount=total_return_amount)

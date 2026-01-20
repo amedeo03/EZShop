@@ -274,12 +274,53 @@ async def test_get_sold_product_by_id_controller_not_found(db_session):
     repo=SoldProductsRepository(session=db_session)
     controller=SoldProductsController()
     controller.repo=repo
-    await db_session.commit()
+    
     with pytest.raises(NotFoundError) as exc_info:
         await controller.get_sold_product_by_id(id)
     assert exc_info.value.status==404
 
+@pytest.mark.parametrize(
+    "productId,productSaleId, soldProduct, code",[
+        (1,2,FIRST_PRODUCT_DTO,0),
+        (-1,2,FIRST_PRODUCT_DTO,400),
+        (1,-2,FIRST_PRODUCT_DTO,400),
+        (10,20,FIRST_PRODUCT_DTO,404),
+    ]
+)
+@pytest.mark.asyncio
+async def test_get_sold_product(db_session,productId,productSaleId, soldProduct, code):
+    repo=SoldProductsRepository(session=db_session)
+    controller=SoldProductsController()
+    controller.repo=repo
+    await controller.create_sold_product(
+        soldProduct.id,
+        soldProduct.sale_id,
+        soldProduct.product_barcode,
+        soldProduct.quantity,
+        soldProduct.price_per_unit
+                                   )
+    if(code==0):
+        result=await controller.get_sold_product(product_id=productId,
+                                              sale_id=productSaleId)
+        assert isinstance(result,SoldProductDTO)
+        assert result.id==soldProduct.id
+        assert result.sale_id==soldProduct.sale_id
+        assert result.product_barcode==soldProduct.product_barcode
+        assert result.quantity==soldProduct.quantity
+        assert result.price_per_unit==soldProduct.price_per_unit
+        assert result.discount_rate==0.0
+    elif(code==400):
+        with pytest.raises(BadRequestError) as exc_info:
+            await controller.get_sold_product(product_id=productId,
+                                              sale_id=productSaleId)
+        assert exc_info.value.status==code
+    elif(code==404):
+        with pytest.raises(NotFoundError) as exc_info:
+            await controller.get_sold_product(product_id=productId,
+                                              sale_id=productSaleId)
+        assert exc_info.value.status==code
 
+    
 
 @pytest.mark.asyncio
 async def test_edit_sold_product_quantity_controller_ok(db_session):
@@ -415,7 +456,7 @@ async def test_remove_sold_product_ok(db_session):
         SECOND_PRODUCT_DAO.price_per_unit
     )
     
-    result=await controller.remove_sold_product(sale_id,id,barcode)
+    result=await controller.remove_sold_product(sale_id,id)
     assert result is None
 
 @pytest.mark.asyncio
@@ -430,22 +471,13 @@ async def test_remove_sold_product_invalid_input(db_session):
 
     id=-1
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(sale_id,id,barcode)
+        await controller.remove_sold_product(sale_id,id)
     assert exc_info.value.status==400
 
     id=1
     sale_id=-2
     with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
+        await controller.remove_sold_product(id,sale_id)
     assert exc_info.value.status==400
 
     sale_id=2
-    barcode=""
-    with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
-    assert exc_info.value.status==400
-
-    barcode="432"
-    with pytest.raises(BadRequestError) as exc_info:
-        await controller.remove_sold_product(id,sale_id,barcode)
-    assert exc_info.value.status==400

@@ -42,7 +42,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 None,
             ),
@@ -53,7 +53,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -64,7 +64,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -117,7 +117,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
 
         if expected_exception is None:
@@ -157,7 +157,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
         await controller.create_product(dto)
 
@@ -179,7 +179,6 @@ class TestProductsController:
         [
             ("Milk", None),
             ("", None),
-            ("Coffee", NotFoundError),
         ],
     )
     async def test_get_product_by_description(
@@ -195,7 +194,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
         await controller.create_product(dto)
 
@@ -216,11 +215,11 @@ class TestProductsController:
     @pytest.mark.parametrize(
         "product_id,position,expected_exception",
         [
-            (1, "B-1-1", None),
-            (12345, "B-1-1", NotFoundError),  # nonexistent product
-            (-1, "B-1-1", BadRequestError),  # invalid id
+            (1, "1-B-1", None),
+            (12345, "1-B-1", NotFoundError),  # nonexistent product
+            (-1, "1-B-1", BadRequestError),  # invalid id
             (1, "B-1", BadRequestError),  # invalid position format
-            (1, "C-1-1", ConflictError),  # conflicting position
+            (1, "1-C-1", ConflictError),  # conflicting position
         ],
     )
     async def test_update_product_position(
@@ -236,7 +235,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
         dto2 = ProductCreateDTO(  # conflictint product
             description="Coffee",
@@ -244,7 +243,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="C-1-1",
+            position="1-C-1",
         )
 
         await controller.create_product(dto)
@@ -283,7 +282,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
         await controller.create_product(dto)
 
@@ -306,7 +305,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 None,
             ),
@@ -318,7 +317,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 NotFoundError,
             ),
@@ -330,7 +329,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -342,19 +341,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
-                ),
-                BadRequestError,
-            ),
-            (
-                1,
-                ProductUpdateDTO(  # empty description
-                    description="",
-                    barcode="4006381333931",
-                    price_per_unit=1.5,
-                    note="",
-                    quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -366,7 +353,7 @@ class TestProductsController:
                     price_per_unit=1.5,
                     note="",
                     quantity=-10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -378,7 +365,7 @@ class TestProductsController:
                     price_per_unit=-1.5,
                     note="",
                     quantity=10,
-                    position="A-1-1",
+                    position="1-A-1",
                 ),
                 BadRequestError,
             ),
@@ -423,7 +410,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="B-1-1",
+            position="1-B-1",
         )
 
         await controller.create_product(dto)
@@ -469,7 +456,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="B-1-1",
+            position="1-B-1",
         )
         update_dto = ProductUpdateDTO(
             description="Milk",
@@ -477,7 +464,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="A-1-1",
+            position="1-A-1",
         )
 
         await controller.create_product(dto)
@@ -564,7 +551,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="B-1-1",
+            position="1-B-1",
         )
 
         await controller.create_product(dto)
@@ -618,7 +605,7 @@ class TestProductsController:
             price_per_unit=1.5,
             note="",
             quantity=10,
-            position="B-1-1",
+            position="1-B-1",
         )
 
         await controller.create_product(dto)

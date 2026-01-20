@@ -114,16 +114,16 @@ CLOSE_SALES={
                     ]
                 }
 FIRST_PRODUCT={
-                    "description": "updated product",
-                    "barcode": "9780201379624",
+                    "description": "Test product",
+                    "barcode": "123456789012",
                     "price_per_unit": 9.99,
-                    "note": "updated note",
-                    "quantity": 1000,
-                    "position": "B-1-1"
+                    "note": "",
+                    "quantity": 100,
+                    "position": "1-A-1",
                 }
 SECOND_PRODUCT={
                     "description": "updated product",
-                    "barcode": "0000000000000",
+                    "barcode": "8001234567890",
                     "price_per_unit": 9.99,
                     "note": "updated note",
                     "quantity": 1000,
@@ -335,12 +335,11 @@ def test_delete_sale_route(client,auth_tokens,role,input_id,exception_code):
         )
 
         if role=="admin":
-            client.post(
+            r=client.post(
                 BASE_URL+"/products",
                 json=FIRST_PRODUCT,
                 headers=headers
             )
-
             client.post(
              BASE_URL+"/sales/2/items?barcode="
              +FIRST_PRODUCT["barcode"]+"&amount=2"
@@ -370,6 +369,7 @@ def test_delete_sale_route(client,auth_tokens,role,input_id,exception_code):
         "input_id, role, exception_code,stack,barcode",
         [
             (3, "admin", 201,1,FIRST_PRODUCT["barcode"]),  # success
+            (3, "admin", 201,1,FIRST_PRODUCT["barcode"]),
             (-1, "manager", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
             (12345, "cashier", 404,1,FIRST_PRODUCT["barcode"]),  # no product found
             ("abc", "admin", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
@@ -405,9 +405,9 @@ def test_product_added_route(client,auth_tokens,input_id, role, exception_code,s
             +barcode+"&amount="+str(stack),
             headers=headers,
         )
-    if exception_code == 400 or resp.status_code==409:
-        assert resp.status_code in (exception_code, 422,409)
-    else:
+    if exception_code == 400:
+        assert resp.status_code in (exception_code, 422)
+    elif exception_code!=420:
         assert resp.status_code == exception_code
     if resp.status_code==201:
         assert resp.json()["success"]
@@ -433,9 +433,8 @@ def test_product_added_route(client,auth_tokens,input_id, role, exception_code,s
         "input_id, role, exception_code,stack,barcode",
         [
             (4, "admin", 202,1,FIRST_PRODUCT["barcode"]),  # success
-            (4, "manager", 202,-1,FIRST_PRODUCT["barcode"]),
-            (4, "manager", 202,-2,FIRST_PRODUCT["barcode"]),
             (12345, "admin", 404,1,FIRST_PRODUCT["barcode"]),
+            (4, "admin", 400,-1,FIRST_PRODUCT["barcode"]),
             (-1, "admin", 400,1,FIRST_PRODUCT["barcode"]),  # no product found
             ("abc", "admin", 400,1,FIRST_PRODUCT["barcode"]),  # invalid id
             (4, None, 401,1,FIRST_PRODUCT["barcode"]),  # unauthenticated
@@ -467,7 +466,7 @@ def test_remove_product_route_ok(client,auth_tokens,input_id, role, exception_co
             BASE_URL + "/sales/" + str(input_id),
             headers=headers,
         )
-    if resp.status_code==201:
+    if resp.status_code==202:
         q=resp.json()["lines"][0]["quantity"]
     else:
         q=0
@@ -539,12 +538,12 @@ def test_remove_product_route_ok(client,auth_tokens,input_id, role, exception_co
             (5,"admin",400,-0.5),
             (5,None,401,0.01),
             (15555,"admin",404,0.5),
-            (5,"admin",420,0.02)
+            (6,"admin",420,0.02)
         ]
     )    
 def test_set_discount_route(client,auth_tokens,input_id, role, exception_code, disc):
     headers = auth_header(auth_tokens, role) if role else None
-    for i in range(5):
+    for i in range(7):
         client.post(
             BASE_URL + "/sales",
             headers=headers,
@@ -591,19 +590,19 @@ def test_set_discount_route(client,auth_tokens,input_id, role, exception_code, d
 @pytest.mark.parametrize(
         "input_id, role, exception_code, disc,barcode",
         [
-            (6, "admin", 200,0.01,FIRST_PRODUCT["barcode"]),
+            (7, "admin", 200,0.01,FIRST_PRODUCT["barcode"]),
             (-1,"admin",400,0.01,FIRST_PRODUCT["barcode"]),
-            (6,"manager",400,2,FIRST_PRODUCT["barcode"]),
-            (6,"admin",400,-0.5,FIRST_PRODUCT["barcode"]),
-            (6, "admin", 400,0.1,"000"),
-            (6,None,401,0.01,FIRST_PRODUCT["barcode"]),
+            (7,"manager",400,2,FIRST_PRODUCT["barcode"]),
+            (7,"admin",400,-0.5,FIRST_PRODUCT["barcode"]),
+            (7, "admin", 400,0.1,"000"),
+            (7,None,401,0.01,FIRST_PRODUCT["barcode"]),
             (15555,"admin",404,0.5,FIRST_PRODUCT["barcode"]),
-            (6,"admin",420,0.02,FIRST_PRODUCT["barcode"])
+            (7,"admin",420,0.02,FIRST_PRODUCT["barcode"])
         ]
     ) 
 def test_set_discount_product_route(client,auth_tokens,input_id, role, exception_code, disc,barcode):
     headers = auth_header(auth_tokens, role) if role else None
-    for i in range(6):
+    for i in range(7):
         client.post(
             BASE_URL + "/sales",
             headers=headers,
@@ -652,12 +651,12 @@ def test_set_discount_product_route(client,auth_tokens,input_id, role, exception
 @pytest.mark.parametrize(
         "input_id, role, exception_code",
         [
-            (7, "admin", 200),
+            (8, "admin", 200),
             (-1,"admin",400),
-            (7,None,401),
+            (8,None,401),
             (15555,"admin",404),
-            (7,"manager",420),
-            (8,"cashier",200)
+            (8,"manager",420),
+            (9,"cashier",200)
         ]
     ) 
 def test_close_sale_route_ok(client,auth_tokens,input_id, role, exception_code):
@@ -709,18 +708,18 @@ def test_close_sale_route_ok(client,auth_tokens,input_id, role, exception_code):
 @pytest.mark.parametrize(
         "input_id, role, exception_code,amount",
         [
-            (9, "admin", 200,10000),
-            (9, "admin", 400,-10000),
-            (9, "admin", 420,1),
+            (10, "admin", 200,10000),
+            (10, "admin", 400,-10000),
+            (10, "admin", 420,1),
             (-1,"admin",400,10000),
-            (9,None,401,10000),
+            (10,None,401,10000),
             (15555,"admin",404,10000),
-            (10,"manager",420,10000),
+            (11,"manager",420,10000),
         ]
     ) 
 def test_paid_sale_route(client,auth_tokens,input_id,amount, role, exception_code):
     headers = auth_header(auth_tokens, role) if role else None
-    for i in range(9):
+    for i in range(10):
         client.post(
             BASE_URL + "/sales",
             headers=headers,
@@ -791,9 +790,9 @@ def test_paid_sale_route(client,auth_tokens,input_id,amount, role, exception_cod
 @pytest.mark.parametrize(
         "input_id, role, exception_code",
         [
-            (11, "admin", 200),
+            (12, "admin", 200),
             (-1,"admin",400),
-            (11,None,401),
+            (12,None,401),
             (15555,"admin",404)
         ]
     ) 

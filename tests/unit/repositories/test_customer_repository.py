@@ -11,6 +11,7 @@ from app.models.DAO.customer_dao import CustomerDAO
 from app.models.DAO.card_dao import CardDAO
 from app.models.errors.notfound_error import NotFoundError
 from app.models.errors.conflict_error import ConflictError
+from app.models.errors.bad_request import BadRequestError
 from app.models.errors.customer_card_error import CustomerCardError
 from app.repositories.customer_repository import CustomerRepository
 
@@ -74,7 +75,7 @@ class TestCustomerRepository:
  
 
     @pytest.mark.parametrize(
-        "customer_1, customer_2, card",
+        "customer_1, customer_2, card, expected_error",
         [
             (
                 CustomerDAO(id=1, 
@@ -85,12 +86,12 @@ class TestCustomerRepository:
                       name="Jane Smith", 
                       cardId="0000000001"
                       ), 
-   
-          CardDAO(cardId="0000000001", points=50)
+          CardDAO(cardId="0000000001", points=50),
+          BadRequestError
           )
           ],
     )
-    async def test_create_customer_with_card_already_attached(self, repo, mock_session, customer_1, customer_2, card):
+    async def test_create_customer_with_card_already_attached(self, repo, mock_session, customer_1, customer_2, card, expected_error):
         """Test creating a customer when card is already attached to another customer."""
         #existing_customer = CustomerDAO(id=99, name=name_1, cardId=cardId)
         #card_dao = CardDAO(cardId=cardId, points=50)
@@ -101,14 +102,12 @@ class TestCustomerRepository:
         # First call: check for card existence, Second call: check for conflict
         mock_result.scalars.return_value.first.side_effect = [card, customer_1]
         
-        result = await repo.create_customer(customer_2.name, card.cardId, 0)
+        if expected_error:
+            with pytest.raises(expected_error):
+                await repo.create_customer(customer_2.name, card.cardId, 0)
+            
         
-        assert isinstance(result, CustomerDAO)
-        assert result.name == customer_2.name
-        assert result.cardId == None # Because the card is already attached to another customer
-        
-        # Should still add customer but without the card
-        mock_session.add.assert_called_once()
+            
         
 
     # ===== LIST CUSTOMER TESTS =====

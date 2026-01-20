@@ -55,11 +55,8 @@ class ReturnRepository:
                 select(ReturnTransactionDAO).options(selectinload(ReturnTransactionDAO.lines))
             )
             returns = list(result.scalars())
-            return find_or_throw_not_found(
-                [returns] if returns else [],
-                lambda _: True,
-                f"There is no return present in the database",
-            )
+            
+            return returns if returns else [] 
             
     async def get_return_by_id(self, return_id: int) -> ReturnTransactionDAO | None:
         """

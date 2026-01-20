@@ -30,13 +30,20 @@ productivity = ((LOC of production code)+ (LOC of test code)) / effort
 
 ## Comparison
 
-|                                        | Estimated (end of task 1) | Actual (jan 18, end of task 3)|
-| -------------------------------------------------------------------------------- | -------- |----|
-| production code size | unknown  ||
-| test code size | unknown ||
-| total size  |||
-| effort |||
-| productivity  | 10 loc / hour ||
+|                                        | Estimated (end of task 1)               | Actual (jan 18, end of task 3)|
+| ---------------------------------------|---------------------------------------- | ------------------------------|
+| production code size                   | 6050                                    |              3381             |
+| test code size                         | n/a                                     |              8861             |
+| total size                             | 6050                                    |             12242             |
+| effort                                 | 605                                     |               422             |
+| productivity                           | 10 loc / hour                           |          29 loc / hour        |
 
 
 Report, as estimate of effort, the value obtained via activity decomposition technique.  The comparison is meaningful for productivity, since the stimates for size and effort were not based on the Official requirements.
+
+| Activity name                                 | Effort (person hours)           | Productivity  |
+| --------------------------------------------- | ------------------------------- | ------------- |
+| Requirement analysis and definition           | 71.5                            |      n/a      |
+| Backend Development                           | 154                             | 22 loc / hour |
+| Testing                                       | 174                             | 51 loc / hour |
+| Total                                         | 399.5                           | 29 loc / hour |

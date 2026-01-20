@@ -34,6 +34,7 @@ class ProductsController:
 
         validate_field_is_present(product_dto.description, "description")
         validate_field_is_present(product_dto.price_per_unit, "price_per_unit")
+        validate_field_is_positive(product_dto.price_per_unit, "price_per_unit")
         validate_field_is_present(product_dto.barcode, "barcode")
         validate_product_barcode(product_dto.barcode)
 
@@ -96,8 +97,6 @@ class ProductsController:
         """
         products_daos = await self.repo.get_product_by_description(description)
 
-        if not products_daos:
-            raise NotFoundError("Products not found")
         return [productdao_to_product_type_dto(dao) for dao in products_daos]
 
     async def update_product_position(
@@ -153,7 +152,6 @@ class ProductsController:
         """
 
         validate_field_is_positive(product_id, "product_id")
-        validate_field_is_present(product_dto.description, "description")
         validate_field_is_present(product_dto.barcode, "barcode")
         validate_product_barcode(product_dto.barcode)
 

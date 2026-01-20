@@ -56,7 +56,7 @@ def validate_product_position(position: str) -> None:
     - Throws:
         - BadRequestError if position doesn't match the pattern 'aisle-shelf-level'
     """
-    position_pattern = re.compile(r"^\w-\w-\w$")
+    position_pattern = re.compile(r"^\d-[a-zA-Z]-\d$")
 
     if position == "":
         return

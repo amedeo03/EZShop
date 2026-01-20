@@ -155,7 +155,6 @@ async def delete_sale(sale_id: int) -> None:
     - Status code: 204 sale deleted succesfully
     - Status code: 400 invalid ID or sale cannot be deleted
     - Status code: 401 unauthenticated
-    - Status code: 404 sale or product not found
     """
     await controller.delete_sale(
         sale_id,
@@ -176,11 +175,11 @@ async def delete_sale(sale_id: int) -> None:
         )
     ],
 )
-async def edit_product_quantity(
+async def remove_product_quantity(
     sale_id: int, barcode: str, amount: int
 ) -> BooleanResponseDTO:
     """
-    delete a product from an OPEN sale
+    remove specified quantity from a product present in an OPEN sale
 
     - Permissions: Administrator, ShopManager, Cashier
     - Request body: sale_id as int
@@ -192,7 +191,7 @@ async def edit_product_quantity(
     - Status code: 420 invalid sale status
     """
 
-    return await controller.edit_sold_product_quantity(
+    return await controller.remove_sold_product_quantity(
         sale_id,
         barcode,
         amount,
