@@ -1,0 +1,1331 @@
+{
+	"info": {
+		"_postman_id": "96cededf-83c3-4c23-85e4-c207e4196127",
+		"name": "EZShop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50412296",
+		"_collection_link": "https://s356980-439130.postman.co/workspace/Andrei's-Workspace~458324b2-b587-491b-835e-3c18fbde56c2/collection/50412296-96cededf-83c3-4c23-85e4-c207e4196127?action=share&source=collection_link&creator=50412296"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"andreiis\",\r\n  \"password\": \"andrei\",\r\n  \"type\":\"Administrator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n        \"username\": \"andrei\",\r\n        \"password\": \"andrei\",\r\n        \"type\": \"Customer\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product Type",
+			"item": [
+				{
+					"name": "Create a Product type",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"description\": \"Chocolate Bar\",\r\n        \"barcode\": \"123456789012\",\r\n        \"price_per_unit\": 2.99,\r\n        \"note\": \"Imported from Belgium\",\r\n        \"quantity\": 0,\r\n        \"position\": \"1-A-4\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all products type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product type by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/2889",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"2889"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product type by barcode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/barcode/9501234567891",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"barcode",
+								"9501234567891"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search product type by description",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/search?query=te",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "te"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Prodcut type",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\": \"Milk\",\r\n    \"barcode\": \"0000000000000\",\r\n    \"price_per_unit\": 2,\r\n    \"note\": \"Expiration: 7 months :S\",\r\n    \"quantity\": 5,\r\n    \"position\": \"s-2-u\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a product type",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\" : \"Caffe\",\r\n    \"productCode\" : \"0000000010\",\r\n    \"pricePerUnit\" : 1.2,\r\n    \"note\" : \"Black Coffee, very good\" \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update product quantity",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\" : \"Coffee\",\r\n    \"productCode\" : \"0000000010\",\r\n    \"pricePerUnit\" : 0.5,\r\n    \"note\" : \"Black Coffee\" \r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/2/quantity?quantity=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"2",
+								"quantity"
+							],
+							"query": [
+								{
+									"key": "quantity",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product position",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/2/position?position=1-B-2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"2",
+								"position"
+							],
+							"query": [
+								{
+									"key": "position",
+									"value": "1-B-2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "Get customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Tommaso Fulcini\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get customer",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer Card",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/cards",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Attach card to a customer",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/4/attach-card/0000000002",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"4",
+								"attach-card",
+								"0000000002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update card points",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/cards/0000000009?points=-550",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"cards",
+								"0000000009"
+							],
+							"query": [
+								{
+									"key": "points",
+									"value": "-550"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"id\": 3,\r\n        \"name\": \"Andrei\"       \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customers",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Get all orders",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Issue Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"product_barcode\": \"0901234123452\",\r\n  \"quantity\": 100,\r\n  \"price_per_unit\": 10.5,\r\n  \"status\": \"My invalid status\",\r\n  \"issue_date\": \"2025-10-30T12:34:56Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create an order and pay for it",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_barcode\" : \"0901234123452\",\r\n    \"quantity\" : 5,\r\n    \"price_per_unit\" : 2.5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/payfor",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"payfor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pay order",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"productTypeBarcode\" : \"0000000010\",\r\n    \"quantity\" : 5,\r\n    \"pricePerUnit\" : 2.5\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/13/pay",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"13",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Record arrival",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/1/arrival",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders",
+								"1",
+								"arrival"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sales",
+			"item": [
+				{
+					"name": "Start Sale",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all sales",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sales/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add product to sale",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/items?barcode=1502234567865&amount=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"items"
+							],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "1502234567865"
+								},
+								{
+									"key": "amount",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a sale transaction",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"admin\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Sale",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove produt line from sales",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/4/items?barcode=0901234123452&amount=7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"4",
+								"items"
+							],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "0901234123452"
+								},
+								{
+									"key": "amount",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Compute points for a sale",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/points",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"points"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Discount a product in the sale",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/items/0000000010/discount?discountRate=0.1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"items",
+								"0000000010",
+								"discount"
+							],
+							"query": [
+								{
+									"key": "discountRate",
+									"value": "0.1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Close a sale Transaction",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"admin\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/close",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"close"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Discount a sale",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/discount?discountRate=0.1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"discount"
+							],
+							"query": [
+								{
+									"key": "discountRate",
+									"value": "0.1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pay sale",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sales/1/pay?cash_amount=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"1",
+								"pay"
+							],
+							"query": [
+								{
+									"key": "cash_amount",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Returns",
+			"item": [
+				{
+					"name": "Start a return",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/?sale_id=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								""
+							],
+							"query": [
+								{
+									"key": "sale_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all returns",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a return",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add a product to return",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/1/items?barcode=0901234123452&amount=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"1",
+								"items"
+							],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "0901234123452"
+								},
+								{
+									"key": "amount",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a product from return",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/1/items?barcode=1502234567865&amount=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"1",
+								"items"
+							],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "1502234567865"
+								},
+								{
+									"key": "amount",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Close a return transaction",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/1/close",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"1",
+								"close"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reimburse a sale",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/1/reimburse",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"1",
+								"reimburse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a return transaction",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all returns for a specific sale",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/returns/sale/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"returns",
+								"sale",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Set Balance",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"productTypeBarcode\" : \"0000000010\",\r\n    \"quantity\" : 5,\r\n    \"pricePerUnit\" : 2.5\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/balance/set?amount=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"balance",
+						"set"
+					],
+					"query": [
+						{
+							"key": "amount",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get balance",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "amount",
+						"value": "100",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"productTypeBarcode\" : \"0000000010\",\r\n    \"quantity\" : 5,\r\n    \"pricePerUnit\" : 2.5\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/balance",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Balance",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/balance/reset",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"balance",
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authenticate",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBZG1pbmlzdHJhdG9yIiwiZXhwIjoxNzY4MzMxNDI2fQ.dg7yWsrtwZj2WmK83AQWr749jF1CissZso0z02_g_I4",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": ""
+		},
+		{
+			"key": "username",
+			"value": ""
+		},
+		{
+			"key": "password",
+			"value": ""
+		},
+		{
+			"key": "other_user",
+			"value": ""
+		},
+		{
+			"key": "other_password",
+			"value": ""
+		}
+	]
+}
