@@ -27,4 +27,4 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov --cov-report=term
+          pytest tests/ --cov=app --cov-report=term
