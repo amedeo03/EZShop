@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory2";
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 const drawerWidth = 240;
 
@@ -27,7 +28,7 @@ export default function Layout() {
       >
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
-            EZShop Admin
+            EZShop
           </Typography>
         </Toolbar>
       </AppBar>
@@ -46,7 +47,14 @@ export default function Layout() {
       >
         <Toolbar />
         <List>
-          <ListItemButton onClick={() => navigate("/")}>
+          <ListItemButton onClick={() => navigate("/login")}>
+            <ListItemIcon>
+              <VpnKeyIcon />
+            </ListItemIcon>
+            <ListItemText primary="Login" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/dashboard")}>
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
