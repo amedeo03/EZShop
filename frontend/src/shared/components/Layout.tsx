@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory2";
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 const drawerWidth = 240;
 
@@ -47,21 +46,14 @@ export default function Layout() {
       >
         <Toolbar />
         <List>
-          <ListItemButton onClick={() => navigate("/login")}>
-            <ListItemIcon>
-              <VpnKeyIcon />
-            </ListItemIcon>
-            <ListItemText primary="Login" />
-          </ListItemButton>
-
-          <ListItemButton onClick={() => navigate("/dashboard")}>
+          <ListItemButton onClick={() => navigate("/Dashboard")}>
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
 
-          <ListItemButton onClick={() => navigate("/products")}>
+          <ListItemButton onClick={() => navigate("/Products")}>
             <ListItemIcon>
               <InventoryIcon />
             </ListItemIcon>
