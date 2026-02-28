@@ -11,7 +11,12 @@ import {
   Box,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import InventoryIcon from "@mui/icons-material/Inventory2";
+import PeopleIcon from "@mui/icons-material/People";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 
 const drawerWidth = 240;
 
@@ -46,18 +51,46 @@ export default function Layout() {
       >
         <Toolbar />
         <List>
-          <ListItemButton onClick={() => navigate("/Dashboard")}>
+          <ListItemButton onClick={() => navigate("/Overview")}>
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemText primary="Overview" />
           </ListItemButton>
 
-          <ListItemButton onClick={() => navigate("/Products")}>
+          <ListItemButton onClick={() => navigate("/Sales")}>
+            <ListItemIcon>
+              <ShoppingCartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Sales" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/Inventory")}>
             <ListItemIcon>
               <InventoryIcon />
             </ListItemIcon>
-            <ListItemText primary="Products" />
+            <ListItemText primary="Inventory" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/Suppliers")}>
+            <ListItemIcon>
+              <PeopleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Suppliers" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/Orders")}>
+            <ListItemIcon>
+              <ReceiptLongIcon />
+            </ListItemIcon>
+            <ListItemText primary="Orders" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => navigate("/Analytics")}>
+            <ListItemIcon>
+              <BarChartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Analytics" />
           </ListItemButton>
         </List>
       </Drawer>

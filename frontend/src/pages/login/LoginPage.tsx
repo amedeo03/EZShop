@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
 
@@ -38,8 +38,8 @@ export default function LoginPage() {
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Navigate to dashboard on successful login
-      navigate("/Dashboard");
+      // Navigate to overview on successful login
+      navigate("/Overview");
     } catch (err) {
       setError("Login failed. Please try again.");
       console.error("Login error:", err);
